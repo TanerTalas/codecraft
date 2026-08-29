@@ -1,0 +1,79 @@
+# Aşama 1'in bitiş kriteri: repo her sabah otomatik güncelleniyor ve veri
+# bayatladığında bildirim geliyor (docs/ROADMAP.md).
+#
+# Pipeline deterministik yazar — içerik değişmediyse dosyaya dokunmaz. Bu yüzden
+# "değişiklik varsa commit et" adımı boş commit atmaz.
+name: data
+
+on:
+  schedule:
+    # 05:00 UTC. Mojang yayınları gün içinde düşüyor, sabah koşusu bir sonraki
+    # güne yetişir.
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write # data/ değişikliğini push etmek için
+  issues: write # bayatlama bildirimi için
+
+# İki koşu aynı anda data/ üzerine push etmeye çalışmasın.
+concurrency:
+  group: data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Pipeline
+        run: npm run pipeline
+
+      - name: Değişiklik varsa commit et
+        run: |
+          if [ -z "$(git status --porcelain data/)" ]; then
+            echo "data/ değişmedi, commit yok"
+            exit 0
+          fi
+          version=$(npm run --silent data:version)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git commit -m "data(pipeline): update indexes for $version"
+          git push
+
+      - name: Bayatlama kontrolü
+        run: npm run pipeline:freshness
+
+      # Bildirim: açık bir issue varsa yorum ekle, yoksa aç. Aynı arıza her gün
+      # yeni issue açmasın diye başlığa göre eşleşir.
+      - name: Başarısızlığı bildir
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: "Veri pipeline'ı başarısız"
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          body="Günlük veri pipeline'ı başarısız oldu.
+
+          Koşu: $RUN_URL
+          Tarih: $(date -u '+%Y-%m-%d %H:%M UTC')
+
+          Olası sebepler: upstream yol değişikliği, npm modül sürümü eşleşmemesi
+          veya sürüm biçiminin beklenenden farklı gelmesi. Ayrıntı için koşu
+          günlüğüne bakın."
+          number=$(gh issue list --state open --json number,title \
+            --jq "[.[] | select(.title == \"$TITLE\") | .number] | first // empty")
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body "$body"
+          else
+            gh issue create --title "$TITLE" --body "$body"
+          fi
