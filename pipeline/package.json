@@ -6,5 +6,8 @@
   "description": "Veri toplayici script'ler",
   "exports": {
     ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@codecraft/knowledge": "*"
   }
 }

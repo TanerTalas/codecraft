@@ -11,11 +11,11 @@
 import { access, readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 
+import { listDataVersions } from "@codecraft/knowledge";
+
 import { runIfMain } from "./lib/cli.ts";
 import { DATA_DIR } from "./lib/paths.ts";
 import { resolveVersion } from "./lib/version.ts";
-
-const VERSION_DIR_RE = /^\d+\.\d+\.\d+(?:\.\d+)?$/;
 
 type IndexFile = {
   version?: string;
@@ -33,15 +33,6 @@ type IndexFile = {
 async function countFiles(dir: string): Promise<number> {
   const entries = await readdir(dir, { recursive: true, withFileTypes: true });
   return entries.filter((entry) => entry.isFile()).length;
-}
-
-/** data/ içindeki sürüm klasörleri. blockception/ gibi diğer klasörler elenir. */
-export async function listDataVersions(): Promise<string[]> {
-  const entries = await readdir(DATA_DIR, { withFileTypes: true });
-  return entries
-    .filter((entry) => entry.isDirectory() && VERSION_DIR_RE.test(entry.name))
-    .map((entry) => entry.name)
-    .sort((a, b) => a.localeCompare(b, "en", { numeric: true }));
 }
 
 export async function checkFreshness(): Promise<string[]> {

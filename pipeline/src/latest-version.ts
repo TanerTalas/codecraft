@@ -3,7 +3,8 @@
  * commit mesajına sürümü yazarken sürüm klasörü mantığını YAML'a kopyalamamak
  * için var (bkz. .github/workflows/data.yml).
  */
-import { listDataVersions } from "./check-freshness.ts";
+import { listDataVersions } from "@codecraft/knowledge";
+
 import { runIfMain } from "./lib/cli.ts";
 
 runIfMain(import.meta.url, async () => {
