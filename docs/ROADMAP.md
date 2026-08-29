@@ -5,21 +5,6 @@ Mimari kurallar ve stack için `CLAUDE.md` dosyasına bak.
 
 ---
 
-## Ön koşul: 20 soruluk test
-
-Kod yazmadan önce yapılır.
-
-Sürüme bağımlı 20 Minecraft sorusu hazırla, üç genel modele sor, cevapları Mojang verisine karşı kontrol et.
-
-- Hata oranı düşükse (20'de 3 gibi) ürünün var olma sebebi yok
-- Hata oranı yüksekse (20'de 12 gibi) hem ürün doğrulanmış olur hem de ilk pazarlama materyali hazır olur
-
-Soru konuları: `format_version`, `min_engine_version`, script API sürümü, deneysel anahtar gerektiren özellikler, WebSocket ile dış otomasyon, pazarlama numarası ile API numarası karışıklığı.
-
-Bu tablo sonraki her kararın dayanağı olacak. Sakla.
-
----
-
 ## Aşama 1: Veri pipeline'ı
 
 Node script'i yazılacak:
@@ -138,10 +123,9 @@ O çalıştığında gerisi mekanik iş.
 
 ## Özet sıralama
 
-1. 20 soruluk test (kod yok)
-2. Veri pipeline'ı
-3. Validator
-4. Eval altyapısı ve HTML rapor
-5. CLI, çekirdek paket ayrımıyla
-6. **Geçiş kapısı: 20'de 18**
-7. Web arayüzü
+1. Veri pipeline'ı
+2. Validator
+3. Eval altyapısı ve HTML rapor
+4. CLI, çekirdek paket ayrımıyla
+5. **Geçiş kapısı: 20'de 18**
+6. Web arayüzü

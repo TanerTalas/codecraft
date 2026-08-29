@@ -34,22 +34,6 @@ Dosyalara yazılan biçim her zaman `1.26.xx`. Pazarlama numarası (`26.40`) hi�
 
 ---
 
-## Aşama 0.5 — 20 soruluk test (kod yazılmaz)
-
-Ürünün var olma sebebini ölçen test. Kod yazmadan önce yapılır.
-
-- [ ] Sürüme bağımlı 20 soru hazırla. Konular: `format_version`, `min_engine_version`, script API sürümü, deneysel anahtar gerektiren özellikler, WebSocket ile dış otomasyon, pazarlama numarası / API numarası karışıklığı
-- [ ] Üç genel modele sor, ham cevapları kaydet
-- [ ] Her cevabı Mojang verisine karşı kontrol et
-- [ ] Sonuç tablosunu `docs/` altına kalıcı olarak yaz — sonraki her kararın dayanağı bu
-
-**Bitiş kriteri:** Hata oranı ölçüldü ve yazıldı.
-
-- Hata oranı düşükse (20'de 3 gibi) → **dur.** Ürünün var olma sebebi yok, devam kararı burada yeniden verilir.
-- Hata oranı yüksekse (20'de 12 gibi) → hem ürün doğrulandı hem ilk pazarlama materyali hazır.
-
----
-
 ## Aşama 1 — Veri pipeline'ı
 
 Detaylar ve bilinen aksaklıklar: `docs/SOURCES.md`.
