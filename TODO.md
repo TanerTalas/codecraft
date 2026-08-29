@@ -42,8 +42,11 @@ Detaylar ve bilinen aksaklıklar: `docs/SOURCES.md`.
   - `data/1.26.40.5/` üretildi: 1415 blok, 1607 item, 129 entity, 89 biome + blok durum indeksi
   - Deterministik çıktı (zaman damgası/SHA yok) → cron sadece veri değişince diff görür
 - [x] Blockception şemaları — `main` dalı, tag değil — `pipeline/src/schemas-blockception.ts`
-  - `data/blockception/` altına 1140 şema + `LICENSE` (BSD-3-Clause)
+  - `data/blockception/source/` altına 1140 şema + `LICENSE` (BSD-3-Clause)
   - Sürüm klasörünün içinde değil: kaynak oyun sürümüne göre klasörlenmiyor
+  - **Aşama 2'de genişletildi:** derlenmiş 60 şema (`compiled/`) ve upstream'in
+    glob eşlemesinden türetilen `schema-map.json` de çekiliyor. Doğrulamanın
+    kullandığı küme bu, gerekçe `docs/SOURCES.md`'deki karar bölümünde
 - [x] Mojang'ın kendi şemaları — `pipeline/src/schemas-mojang.ts`
   - `data/1.26.40.5/schemas/` altına 1313 dosya + `schemas-index.json`
   - **EULA kararı:** birebir kopyalanıyor, gerekçesi `docs/SOURCES.md` içinde. Repo public yapılırsa yeniden değerlendirilecek
@@ -78,13 +81,46 @@ Detaylar ve bilinen aksaklıklar: `docs/SOURCES.md`.
 
 LLM yok, arayüz yok. `packages/validator` saf fonksiyonlardan oluşur (mimari kural 3).
 
-- [ ] `validateJson(içerik, tip, sürüm)` — Blockception şemasına karşı, `ajv` ile
-- [ ] `validateScript(kod, apiSürümü)` — `tsc` sarmalayıcısı
-- [ ] `lookup(blokId, sürüm)` — geçerli mi
-- [ ] Sürüm çözümleme: `data/` içindeki mevcut sürümlerden
-- [ ] Test fixture'ları: bilerek doğru 10 dosya + bilerek bozuk 10 dosya
+- [x] Şema kaynağı kararı — **Blockception'ın derlenmiş çıktısı**. Ölçümle
+  kapandı, `npm run validator:compare`, ayrıntı `docs/SOURCES.md`
+- [x] `validateJson(içerik, tip, sürüm)` — `packages/validator/src/json.ts`, `ajv` ile
+  - Tip çözümleme kanonik ad, kısaltma veya dosya yolu kabul ediyor; eşleme
+    `schema-map.json`'dan geliyor, elle yazılmadı
+  - JSON ayrıştırma hatası şema ihlalinden ayrı bir tür olarak dönüyor
+- [x] `validateScript(kod, seçenekler)` — `packages/validator/src/script.ts`
+  - `tsc` ikilisi çalıştırılıyor; typescript 7'nin JS API'si `unstable/` altında
+  - Modül sürümleri `index.json`'dan okunuyor, `stable` / `beta` kanalı seçilebiliyor
+  - `paths` ile mutlak yol; symlink yok (Windows'ta yönetici yetkisi ister)
+- [x] `lookup(blokId, sürüm)` — `packages/knowledge/src/lookup.ts`
+  - `blockStates` de var: bir bloğun durumları ve alabildiği değerler
+- [x] Sürüm çözümleme — `packages/knowledge/src/version.ts`
+  - Üç parçalı istek dördüncü haneli klasöre eşleşiyor (`1.26.40` → `1.26.40.5`),
+    eksik hane önek sayılmıyor. `check-freshness` artık bu paketten okuyor
+- [x] Test fixture'ları: bilerek doğru 10 dosya + bilerek bozuk 10 dosya
+  - `packages/validator/test/fixtures/cases.json` → `core` listesi tam 20 vaka
+  - Bozuk vakalarda hatanın beklenen JSON pointer'da çıktığı doğrulanıyor
+  - `extra` listesi ölçüm: 2 fazladan vaka + şemanın yakalamadığı 4 boşluk
 
-**Bitiş kriteri:** 20 fixture'ın hepsi doğru sonuç veriyor.
+**Bitiş kriteri:** 20 fixture'ın hepsi doğru sonuç veriyor. ✅
+
+> Doğrulandı (30-08-2026): `npm test` → 53/53 geçiyor, bunun 20'si bitiş
+> kriterinin `core` listesi. `npm run typecheck` exit 0.
+>
+> **Negatif kontrol var:** doğru bir fixture bilerek bozulduğunda test kırmızıya
+> dönüyor. Yirmi vakanın yeşil olması tek başına şemanın gerçekten baktığını
+> göstermez, bunun kanıtı o test.
+>
+> `ajv` derlenmiş 60 şemanın 60'ını da derliyor (testte tek tek ölçülüyor).
+> `tsc` sarmalayıcısı çağrı başına ~90 ms.
+>
+> **Ölçülen ve kayda geçen dört şema boşluğu var** (`expect: "gap"`): metin
+> `format_version`'lı manifest hiç doğrulanmıyor, uydurulmuş blok bileşeni,
+> namespace'siz blok identifier'ı, `result`'ı olmayan shaped tarif. Şema
+> güncellenip yakalamaya başlarsa testler kırmızıya döner.
+>
+> **Henüz koşmamış yol:** üretilen bir paketin gerçekten Bedrock'ta yüklenmesi.
+> Şemanın kabul ettiğini oyunun da kabul ettiğini gösteren tek test bu; bitiş
+> kriteri değil ama bir fixture yanlış yazılmışsa orada görünür.
 
 Bu aşama LLM'den önce geliyor: validator çalışmazsa ürün de çalışmaz. En riskli parça en ucuz şekilde test edilmiş olur.
 

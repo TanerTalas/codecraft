@@ -12,7 +12,8 @@ Bu verileri **yeniden yayınlamak** ile onlardan **türetilmiş indeks üretmek*
 |---|---|---|---|
 | `Mojang/bedrock-samples` → `vanilladata_modules` | Blok, entity, item tanımları | Minecraft EULA | **Türetilmiş indeks** (id listeleri, blok durumları) |
 | `Mojang/bedrock-samples` → `metadata/json_schemas/` | Mojang'ın kendi JSON şemaları | Minecraft EULA | **Birebir kopya** — bilinçli karar, aşağıya bak |
-| `Blockception/Minecraft-bedrock-json-schemas` | JSON doğrulama şemaları | BSD-3-Clause, izin verici | Birebir kopya + `LICENSE` |
+| `Blockception/Minecraft-bedrock-json-schemas` → `source/` | Şemaların yazım kaynağı | BSD-3-Clause, izin verici | Birebir kopya + `LICENSE` |
+| `Blockception/…` → kök klasörler | **Doğrulamanın kullandığı** derlenmiş şemalar | BSD-3-Clause | Birebir kopya + türetilmiş `schema-map.json` |
 | `@minecraft/common`, `@minecraft/server`, `@minecraft/server-ui` (npm) | Script tip tanımları | **MIT** (doğrulandı: `npm view @minecraft/server license`) | Birebir `index.d.ts` + `package.json` |
 | `MicrosoftDocs/minecraft-creator` | Sürüm notları | **CC-BY-4.0** (doğrulandı 29-08-2026, GitHub API) | Birebir kopya + atıf başlığı |
 
@@ -32,6 +33,12 @@ kopyalanıyor. Karar bilinçli ve gerekçesi şu:
 **Repo public yapılırsa bu karar yeniden değerlendirilmeli** — git geçmişinden
 temizlemek zahmetlidir. Alternatif: şemaları `pipeline/raw/` içinde tutup
 `data/` altına sadece türetilmiş `schemas-index.json` yazmak.
+
+**Aşama 2 notu:** birinci gerekçe zayıfladı. Doğrulama Blockception'ın
+derlenmiş şemalarını kullanıyor, Mojang'ınkileri değil (aşağıdaki karar
+bölümü). 1313 dosya artık doğrulama için değil, sürüm farklarını okumak ve
+ikinci bir kontrol için duruyor. Repo public yapılırsa kaldırma maliyeti
+düşük — bu karar da o anda birlikte gözden geçirilmeli.
 
 **Çekme notları:**
 - bedrock-samples: `main` dalı kararlı sürümü izler, `preview` haftalık.
@@ -86,48 +93,120 @@ lisans metnini ve telif satırını koymuyorlar. Telif sahibi uydurulmadı: beya
 kendisi (`package.json`) her sürüm klasöründe duruyor, `script-types/NOTICE.md`
 künyeyi kayda geçiriyor.
 
-## Şema kaynağı: Blockception mı, Mojang mı
+## Şema kaynağı: **Blockception'ın derlenmiş çıktısı** (karar verildi)
 
-Karar **Aşama 2'ye bırakıldı** — validator'ın 20 fixture'ı hangisinin daha iyi
-tuttuğunu gösterecek, tahminle seçilmeyecek. Pipeline ikisini de çeker.
+Karar Aşama 2'ye bırakılmıştı. Aşama 2'de ölçüldü ve kapandı.
+Ölçüm script'i: `npm run validator:compare`.
 
-Aşama 1'de ölçülen, karara girdi olacak farklar (`ajv` 8.20.0 ile denendi):
+### Blockception iki ayrı küme yayınlıyor
 
-| | Mojang | Blockception |
+Aşama 1'de sadece `source/` çekiliyordu, asıl kullanılacak küme o değil:
+
+| | `source/` | kök klasörler (`behavior/`, `resource/`, `general/`, …) |
 |---|---|---|
-| Dosya | 1313 | 1140 |
-| `$schema` | tamamı draft-07 | 1066'sında yok, 59'u draft-07, 1'i üçüncü taraf URL |
-| Geçerli JSON | 1313 | **1126** — 14 dosya `//` yorum içeriyor (JSONC), `JSON.parse` reddediyor |
-| `$ref` biçimi | tamamı dosya içi (`#/definitions/…`), dosyalar kendi kendine yeterli | `$id` tabanlı ve dosyalar arası göreli |
-| `ajv` ile derlenme | **1313 / 1313** | ölçülmedi — `$id` çözümleyicisi gerekiyor |
+| Dosya | 1140 | **60** |
+| Ne | yazım kaynağı | GitHub Action'ın ürettiği derlenmiş çıktı |
+| `$ref` | dosyalar arası, `$id` tabanlı | tamamı `#/definitions/…`, **dış ref yok** |
+| JSONC yorumu | 14 dosyada var | yok |
+| Tip eşlemesi | yok | `vscode-settings.json` (glob → şema) |
 
-Aşama 2 için üç somut not:
+**Aşama 1'de yazılan iki engel `source/` klasörüne aitti.** Derlenmiş çıktıda
+`$id` çözümleyicisi de JSONC okuyucusu da gerekmiyor; her dosya tek başına
+yeterli ve `ajv` 60/60'ını derliyor (ölçüldü). Doküman tipi → şema eşlemesini de
+upstream veriyor, elle yazmıyoruz — `CLAUDE.md`'nin "kendi JSON şemalarını yazma"
+kuralı korunuyor.
 
-1. **`ajv` `unicodeRegExp: false` ile kurulmalı.** Varsayılan ayarda 5 Mojang
-   şeması derlenmiyor: `pattern` içindeki `\-` unicode kipinde geçersiz kaçış.
-   Etkilenenlerin hepsi `client_server/packaging/3.0.0/` altında — yani
-   `manifest.json`, behavior pack'in en kritik dosyası.
-2. **Blockception `$id` çözümleyicisi ister.** Şemalar `$id` olarak
-   `blockception.minecraft.resource.texture.ui_definition` gibi değerler
-   kullanıyor; `ajv` göreli `$ref`'leri dosya yoluna göre değil bu `$id`'ye göre
-   çözüyor. Dosya yoluyla yüklemek yetmez.
-3. **14 Blockception dosyası JSONC.** Yorum ayıklayan bir okuyucu gerekir:
-   `resource/cubemaps/cubemaps.json`, `resource/block_culling/block_culling.json`,
-   `resource/biomes/format/minecraft.client_biome.json`,
-   `resource/biomes/format/components/ambient_sounds.json`,
-   `behavior/worldgen/jigsaw_structures/format/pool_aliases.json`,
-   `behavior/features/features/minecraft.structure_template_feature.json`,
-   `behavior/entities/format/components/ageable.json`,
-   `behavior/entities/format/components/breedable.json`,
-   `behavior/entities/format/behaviors/pet_sleep_with_owner.json`,
-   `behavior/entities/format/behaviors/ram_attack.json`,
-   `behavior/entities/format/behaviors/random_fly.json`,
-   `behavior/entities/format/behaviors/use_kinetic_weapon.json`,
-   `behavior/blocks/format/minecraft.block.json`,
-   `behavior/blocks/format/components/random_offset.json`.
-   Ayrıca `resource/lighting/lighting.json` içinde `#/defintions/` yazım hatası var.
+Pipeline artık ikisini de çekiyor: `data/blockception/source/` (yazım kaynağı,
+ileride açıklama ve snippet için) ve `data/blockception/compiled/` +
+`schema-map.json` (doğrulamanın kullandığı).
 
-`CLAUDE.md`'nin "kendi JSON şemalarını yazma" kuralı iki seçenekte de korunuyor.
+### Mojang şemaları neden birincil kaynak değil
+
+Ölçüm sonucu (26 fixture, 30-08-2026):
+
+| | Blockception | Mojang |
+|---|---|---|
+| Beklenen sonucu veren | **26 / 26** | 12 / 26 |
+| Karşılaştırılabilir vakalarda | — | 12 / 17 |
+| Fixture'ların 8 doküman tipinden kapsanan | 8 | 5 |
+
+İki yapısal fark var, ikisi de ölçülerek görüldü:
+
+**1. Şemalar dosyayı değil iç nesneyi tanımlıyor.** `minecraft:block` değerini
+anlatan bir şema var, ama `{format_version, "minecraft:block": …}` dosyasını
+anlatan yok. Dosya düzeyinde doğrulama için o sarmalayıcıyı bizim yazmamız
+gerekirdi. Tarif, diyalog, animasyon denetleyicisi ve feature rules için ise
+Mojang'da hiç şema yok.
+
+**2. Şemalar motorun iç temsilini anlatıyor, yazılan JSON'u değil.** Bu, kritik
+olan madde — kanıt Mojang'ın kendi dosyaları:
+
+- `client_server/packaging/3.0.0/Manifest.json`, `version` ve
+  `min_engine_version` alanlarını **metin** olarak istiyor. Mojang'ın kendi
+  `bedrock-samples/behavior_pack/manifest.json` dosyası ise dizi yazıyor:
+  `"version": [0, 0, 1]`, `"min_engine_version": [1, 26, 40]`.
+- `client_server/spawn/1.21.60/Spawn Rules.json`, her koşulda `weight` alanını
+  zorunlu tutuyor. Yazım biçimi ise `"minecraft:weight": { "default": 50 }`
+  bileşeni. Şema, Mojang'ın kendi `behavior_pack/spawn_rules/creeper.json`
+  dosyasını **reddediyor** (doğrulandı, `ajv` ile koşuldu).
+
+Yani Mojang şemaları birincil kaynak yapılsaydı doğru manifest'lerin ve doğru
+spawn kurallarının tamamı hatalı işaretlenirdi. Bu, aracın var olma sebebinin
+tam tersi olurdu.
+
+`x-ordinal-index`, `x-underlying-type` gibi anahtarların şemalarda bulunması da
+aynı yöne işaret ediyor: bu dosyalar C++ serileştirme meta verisinden
+üretilmiş, yazar için değil motor için.
+
+**Mojang şemaları silinmiyor.** İki gerekçe: (1) `format_version` klasörlerine
+ayrılmış olmaları sürüm farklarını okumak için tek yapılandırılmış kaynak,
+(2) tek bir vakada Blockception'ın kaçırdığını yakalıyorlar
+(`manifest-format-version-string`, aşağıda). Karşılaştırma script'i duruyor;
+Aşama 3'te ikinci bir kontrol olarak değerlendirilebilir.
+
+### Blockception'ın ölçülmüş boşlukları
+
+20 fixture'ın hepsi doğru sonuç veriyor, ama fixture yazarken şemanın
+yakalamadığı dört durum ölçüldü. `packages/validator/test/fixtures/cases.json`
+içinde `expect: "gap"` olarak kayıtlı — şema ilerideki bir güncellemede
+yakalamaya başlarsa test kırmızıya döner ve boşluğun kapandığı görülür:
+
+| Boşluk | Sonuç |
+|---|---|
+| `manifest`'te `format_version` sayı yerine metin | `if/then` dalı eşleşmiyor, manifest gövdesi **hiç doğrulanmıyor** |
+| Uydurulmuş blok bileşeni (`minecraft:hardness`) | Şema bileşen adlarını kısıtlamıyor |
+| Blok `identifier`'ında namespace yok | Şema namespace zorunlu tutmuyor |
+| Shaped tarifte `result` yok | Şema zorunlu tutmuyor |
+
+Birinci maddeyi Mojang'ın manifest şeması yakalıyor. Diğer üçü için ikisinde de
+karşılık yok — bu boşluklar Aşama 3'ün niyet/yapılabilirlik katmanına veya
+`lookup` ile yapılacak ek bir kimlik kontrolüne kalıyor.
+
+`lookup` bu boşluğun bir kısmını zaten kapatabiliyor: uydurulmuş bir blok/item
+kimliğini şema değil `@codecraft/knowledge` yakalar.
+
+### Upstream'de bulunan iki tutarsızlık
+
+Ölçüm sırasında Blockception tarafında iki kusur görüldü, ikisi de bizim
+kodumuzu ilgilendirdiği için kayda geçiyor:
+
+- `vscode-settings.json`, `resource/cubemaps/cubemaps.json` şemasını adresliyor
+  ama o dosya derlenmiş çıktıda yok (raw URL 404). `source/` altında var, yani
+  derleme adımı o şema için henüz koşmamış. Pipeline durmuyor: uyarı basıyor ve
+  eksik listesini `index.json` → `sources.blockception.compiled.missing` altına
+  yazıyor. Liste büyürse günlük diff'te görünür.
+- Üç şemada `"format": "colox-hex"` yazıyor — `color-hex` yazım hatası. Zararsız,
+  çünkü ikisi de `ajv`'nin tanımadığı biçim ve yok sayılıyor.
+
+`ajv` kurulumuyla ilgili Aşama 1'de ölçülen madde hâlâ geçerli ve uygulandı:
+`unicodeRegExp: false` olmadan 5 Mojang şeması derlenmiyor (`pattern` içindeki
+`\-` unicode kipinde geçersiz kaçış), etkilenenlerin hepsi
+`client_server/packaging/3.0.0/` altında.
+
+`ajv` 8'de yerleşik `format` yok; `ajv-formats` ekleniyor. Derlenmiş şemalarda
+geçen biçimler: `uuid` (2) ve `uri` (2) standart, gerçekten doğrulanıyor;
+`color-hex` (25), `molang` (14), `colox-hex` (3) Blockception'a özgü ve yok
+sayılıyor. Kendi tanımlarını yazmak uydurma doğrulama olurdu.
 
 ## Referans (otomatik çekilmez)
 
