@@ -1,26 +1,19 @@
 /**
  * Mojang/bedrock-samples -> data/<sürüm>/
  *
- * Aşama 1'in ilk somut adımı (bkz. TODO.md). Sürümü tespit eder, vanilladata
- * modüllerini indirir ve onlardan kompakt lookup indeksleri türetir.
+ * vanilladata modüllerini indirir ve onlardan kompakt lookup indeksleri türetir
+ * (blok, item, entity, biome kimlikleri ve blok durumları).
  *
  * Ham içerik pipeline/raw/ altında kalır ve git'e girmez — Minecraft EULA.
  * data/ altına sadece türetilmiş indeksler yazılır (docs/SOURCES.md).
- *
- * Çıktı deterministiktir: zaman damgası veya commit SHA yazılmaz. Böylece
- * günlük cron sadece veri gerçekten değiştiğinde diff görür.
  */
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 
-const REPO = "Mojang/bedrock-samples";
-const REF = "main";
-const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/${REF}`;
-
-const ROOT = fileURLToPath(new URL("../../", import.meta.url));
-const RAW_DIR = join(ROOT, "pipeline", "raw", "bedrock-samples");
-const DATA_DIR = join(ROOT, "data");
+import { runIfMain } from "./lib/cli.ts";
+import { fetchText } from "./lib/fetch.ts";
+import { DATA_DIR, RAW_DIR } from "./lib/paths.ts";
+import { toJson, writeIfChanged } from "./lib/fs.ts";
+import { BEDROCK_SAMPLES_RAW, resolveVersion } from "./lib/version.ts";
 
 const MODULES = [
   "biomes", "blocks", "camera-presets", "cooldown-category", "dimensions",
@@ -28,55 +21,9 @@ const MODULES = [
   "potion-effects", "potion-types",
 ] as const;
 
-/** Oyun sürümü beklenir (1.26.40.5). Pazarlama numarası (26.40) reddedilir. */
-const VERSION_RE = /^\d+\.\d+\.\d+(?:\.\d+)?$/;
-
 type BlockProperty = { name: string; type: string; values?: { value: unknown }[] };
 type DataItem = { name?: string; properties?: { name: string }[] };
 type VanillaModule = { data_items?: DataItem[]; block_properties?: BlockProperty[] };
-
-const toJson = (value: unknown): string => `${JSON.stringify(value, null, 2)}\n`;
-
-async function fetchText(url: string): Promise<string> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText} — ${url}`);
-  return res.text();
-}
-
-/** İçerik aynıysa dosyaya dokunmaz. Cron'un "değişiklik varsa commit et" davranışı buna dayanır. */
-async function writeIfChanged(path: string, content: string): Promise<boolean> {
-  try {
-    if ((await readFile(path, "utf8")) === content) return false;
-  } catch {
-    // dosya henüz yok
-  }
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, content, "utf8");
-  return true;
-}
-
-async function resolveVersion(): Promise<{ version: string; date: string | null }> {
-  const raw = await fetchText(`${RAW_BASE}/version.json`);
-  const parsed = JSON.parse(raw) as { latest?: { version?: string; date?: string } };
-  const version = parsed.latest?.version;
-  if (!version) throw new Error("version.json içinde latest.version alanı yok");
-  if (!VERSION_RE.test(version)) {
-    throw new Error(
-      `Beklenmeyen sürüm biçimi: "${version}". Oyun sürümü bekleniyor ` +
-        "(1.26.40.5 gibi), pazarlama numarası değil (26.40).",
-    );
-  }
-  return { version, date: parsed.latest?.date ?? null };
-}
-
-/** "1.26.40.5" -> [1, 26, 40]. manifest.json'daki min_engine_version biçimi. */
-function toMinEngineVersion(version: string): [number, number, number] {
-  const [major, minor, patch] = version.split(".").map(Number);
-  if (major === undefined || minor === undefined || patch === undefined) {
-    throw new Error(`Sürüm üç parçaya ayrılamadı: "${version}"`);
-  }
-  return [major, minor, patch];
-}
 
 function toIds(module: VanillaModule, label: string): string[] {
   const items = module.data_items ?? [];
@@ -107,18 +54,17 @@ function toBlockStates(module: VanillaModule): Record<string, string[]> {
   return out;
 }
 
-async function main(): Promise<void> {
-  const { version, date } = await resolveVersion();
-  console.log(`${REPO}@${REF} -> sürüm ${version}${date === null ? "" : ` (${date})`}`);
+export type VanillaDataResult = { counts: Record<string, number>; changed: string[] };
 
-  const rawDir = join(RAW_DIR, version);
+export async function collectVanillaData(version: string): Promise<VanillaDataResult> {
+  const rawDir = join(RAW_DIR, "bedrock-samples", version);
   const outDir = join(DATA_DIR, version);
   const counts: Record<string, number> = {};
   const changed: string[] = [];
 
   for (const name of MODULES) {
     const file = `mojang-${name}.json`;
-    const text = await fetchText(`${RAW_BASE}/metadata/vanilladata_modules/${file}`);
+    const text = await fetchText(`${BEDROCK_SAMPLES_RAW}/metadata/vanilladata_modules/${file}`);
     await writeIfChanged(join(rawDir, file), text); // ham kopya, git dışında
 
     const module = JSON.parse(text) as VanillaModule;
@@ -132,19 +78,12 @@ async function main(): Promise<void> {
     if (await writeIfChanged(join(outDir, `${name}.json`), toJson(derived))) changed.push(`${name}.json`);
   }
 
-  const index = {
-    version,
-    minEngineVersion: toMinEngineVersion(version),
-    releaseDate: date,
-    source: { repo: REPO, ref: REF },
-    counts,
-  };
-  if (await writeIfChanged(join(outDir, "index.json"), toJson(index))) changed.push("index.json");
-
-  console.log(`data/${version}/ — ${changed.length === 0 ? "değişiklik yok" : `güncellendi: ${changed.join(", ")}`}`);
+  return { counts, changed };
 }
 
-main().catch((error: unknown) => {
-  console.error(`pipeline hatası: ${error instanceof Error ? error.message : String(error)}`);
-  process.exitCode = 1;
+runIfMain(import.meta.url, async () => {
+  const { version, date } = await resolveVersion();
+  console.log(`bedrock-samples -> sürüm ${version}${date === null ? "" : ` (${date})`}`);
+  const { counts, changed } = await collectVanillaData(version);
+  console.log(`  ${Object.keys(counts).length} modül, ${changed.length} dosya güncellendi`);
 });

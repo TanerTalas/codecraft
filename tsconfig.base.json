@@ -12,6 +12,9 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
 
+    // Node 24 .ts dosyalarini dogrudan calistiriyor ve goreli import'larda
+    // .ts uzantisi zorunlu. Derleme adimi yok (noEmit), sadece tip kontrolu.
+    "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true,
