@@ -54,7 +54,7 @@ Detaylar ve bilinen aksaklıklar: `docs/SOURCES.md`.
 - [x] Ham içerik `pipeline/raw/` içinde kalır, git'e girmez — `vanilladata_modules` ham hâli commit edilmiyor, sadece türetilen indeks
 - [x] GitHub Actions: günlük cron, değişiklik varsa otomatik commit — `.github/workflows/data.yml`
 - [x] Veri bayatlama bildirimi — `pipeline/src/check-freshness.ts` + workflow'un `if: failure()` adımı GitHub issue açar
-- [ ] **Kalan tek adım (senin):** repo → Settings → Actions → General → Workflow permissions → "Read and write permissions". Bu açılmadan Actions `data/` değişikliğini push edemez ve cron uçtan uca test edilemez
+- [x] Workflow izinleri açıldı ("Read and write permissions") ve workflow GitHub'da elle tetiklenip yeşil koştu (30-08-2026)
 - ~~WebSocket sağlık kontrolü~~ → **Aşama 3'e taşındı.** Çalışan bir Minecraft istemcisi gerektiriyor, GitHub Actions'ta oyun çalıştırılamıyor. Lisans engel değil, ortam engel
 
 **Bitiş kriteri:** Repo her sabah otomatik güncelleniyor ve veri bayatladığında bildirim geliyor.
@@ -64,7 +64,13 @@ Detaylar ve bilinen aksaklıklar: `docs/SOURCES.md`.
 > güncel veride "veri güncel", sürüm klasörü yeniden adlandırıldığında `exit 1`.
 > `ajv` 1313/1313 Mojang şemasını derliyor; `tsc` indirilen tip tanımlarıyla doğru
 > kodu geçiriyor, `runCommandAsync` gibi 2.x'te kaldırılmış çağrıları reddediyor.
-> **Workflow'un kendisi GitHub'da henüz koşmadı** — yukarıdaki izin adımına bağlı.
+>
+> GitHub'da doğrulandı (30-08-2026): `workflow_dispatch` ile koşu yeşil, veri
+> güncel olduğu için commit atılmadı — cron'un boş commit atmadığının kanıtı.
+>
+> **Henüz koşmamış iki yol:** (1) veri gerçekten değiştiğinde bot'un commit +
+> push atması, (2) başarısızlıkta GitHub issue açılması. İlki Mojang bir sonraki
+> sürümü yayınladığında kendiliğinden test olur.
 
 ---
 
