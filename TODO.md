@@ -18,15 +18,19 @@ Dosyalara yazılan biçim her zaman `1.26.xx`. Pazarlama numarası (`26.40`) hi�
 
 - [x] Git deposu başlatıldı, `origin` bağlandı, ilk push atıldı
 - [x] `.gitignore` Node/TS şablonuyla değiştirildi (eski Visual Studio şablonu `packages/` klasörünü gizliyordu)
-- [ ] Node workspace iskeleti: kök `package.json`, npm workspaces tanımı, `tsconfig.json`
-- [ ] Klasör iskeleti: `packages/core`, `packages/validator`, `packages/knowledge`, `pipeline/`, `evals/`, `data/`
+- [x] Node workspace iskeleti: kök `package.json`, npm workspaces tanımı, `tsconfig.base.json` + `tsconfig.json`
+- [x] Klasör iskeleti: `packages/core`, `packages/validator`, `packages/knowledge`, `pipeline/`, `evals/`, `data/`
 - [ ] Test ortamı — `notlar/kurulum-ve-legal.md` listesinden:
   - [ ] Minecraft Bedrock lisansı (Windows) — çıktının gerçekten çalıştığını doğrulamanın başka yolu yok
   - [x] Node.js
   - [x] Python 3.10+
   - [ ] Opsiyonel: Bedrock Dedicated Server
 
-**Bitiş kriteri:** `npm install` ve `npx tsc --noEmit` hatasız koşuyor.
+**Bitiş kriteri:** `npm install` ve `npm run typecheck` hatasız koşuyor. ✅
+
+> Doğrulandı: TypeScript 7.0.2, `tsc --noEmit` → exit 0. Paketler arası import
+> (`@codecraft/validator` → `@codecraft/core`) hem `tsc` hem Node çalışma zamanında
+> çözülüyor. Node 24 `.ts` dosyalarını doğrudan çalıştırıyor, ayrı derleme adımı yok.
 
 ---
 

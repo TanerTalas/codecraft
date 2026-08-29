@@ -1,0 +1,10 @@
+{
+  "name": "@codecraft/knowledge",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "data/ uzerinde lookup katmani",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "codecraft",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Minecraft Bedrock icin dogrulanmis komut, behavior pack ve otomasyon script'i ureten asistan",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "packages/*",
+    "pipeline",
+    "evals"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "typescript": "^7.0.2"
+  }
+}

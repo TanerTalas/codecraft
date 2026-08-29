@@ -1,0 +1,10 @@
+{
+  "name": "@codecraft/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Uretim dongusu: veri toplama, prompt, model cagrisi, dogrulama, tek retry",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

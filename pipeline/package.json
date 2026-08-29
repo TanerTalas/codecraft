@@ -1,0 +1,10 @@
+{
+  "name": "@codecraft/pipeline",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Veri toplayici script'ler",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

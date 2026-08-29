@@ -1,0 +1,10 @@
+{
+  "name": "@codecraft/evals",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Test vakalari ve runner",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
