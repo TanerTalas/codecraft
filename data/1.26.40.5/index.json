@@ -35,7 +35,15 @@
       "ref": "main",
       "path": "../blockception/source",
       "files": 1140,
-      "hash": "sha256:cf9eb19cc373327d23719fb9ecd2beb041e584d6fa26b268846b7aa125f33e44"
+      "compiled": {
+        "path": "../blockception/compiled",
+        "map": "../blockception/schema-map.json",
+        "files": 60,
+        "missing": [
+          "resource/cubemaps/cubemaps.json"
+        ]
+      },
+      "hash": "sha256:4c22bb39187ae0ddda323471677dd259bf8f282b7bd14e6178b03835a5420f8f"
     },
     "scriptTypes": {
       "path": "script-types",
