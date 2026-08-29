@@ -1,0 +1,27 @@
+{
+  "version": "1.26.40.5",
+  "minEngineVersion": [
+    1,
+    26,
+    40
+  ],
+  "releaseDate": "04-08-2026",
+  "source": {
+    "repo": "Mojang/bedrock-samples",
+    "ref": "main"
+  },
+  "counts": {
+    "biomes": 89,
+    "blocks": 1415,
+    "camera-presets": 7,
+    "cooldown-category": 6,
+    "dimensions": 3,
+    "effects": 37,
+    "enchantments": 42,
+    "entities": 129,
+    "features": 17,
+    "items": 1607,
+    "potion-effects": 47,
+    "potion-types": 3
+  }
+}

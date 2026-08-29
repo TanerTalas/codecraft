@@ -38,7 +38,9 @@ Dosyalara yazılan biçim her zaman `1.26.xx`. Pazarlama numarası (`26.40`) hi�
 
 Detaylar ve bilinen aksaklıklar: `docs/SOURCES.md`.
 
-- [ ] **İlk somut adım:** bedrock-samples'ı çeken, sürüm numarasını çıkaran ve `data/<sürüm>/` altına yazan tek script. Yüz satırı geçmez, projenin en riskli varsayımını doğrular
+- [x] **İlk somut adım:** bedrock-samples'ı çeken, sürüm numarasını çıkaran ve `data/<sürüm>/` altına yazan script — `pipeline/src/bedrock-samples.ts`, `npm run pipeline:bedrock`
+  - `data/1.26.40.5/` üretildi: 1415 blok, 1607 item, 129 entity, 89 biome + blok durum indeksi
+  - Deterministik çıktı (zaman damgası/SHA yok) → cron sadece veri değişince diff görür
 - [ ] Blockception şemaları — `main` dalı, tag değil (tag'ler geride kalabiliyor)
 - [ ] npm'den `@minecraft/server` tip tanımları
 - [ ] MicrosoftDocs/minecraft-creator sürüm notları
