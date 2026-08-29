@@ -64,6 +64,37 @@ app/                  # Next.js
 | Model ID'lerini koda gömmek | Yapılandırmadan oku, ekosistem sık değişiyor |
 | Komut sözdizimi doğrulayıcısı (v1'de) | En zahmetli parça, v1 onsuz da anlamlı |
 
+## Takıldığında dur ve sor
+
+Emin olmadığın veya erişemediğin bir şeyle karşılaştığında tahmin etme, uydurma, etrafından dolaşma. **Dur ve kullanıcıya sor.**
+
+Mutlaka sorulacak durumlar:
+
+| Durum | Örnek |
+|---|---|
+| Erişim gerekiyor | Bir siteye giriş yapılamıyor, hesap açılması gerekiyor (GitHub, Vercel, Cloudflare, sağlayıcı konsolları), API anahtarı yok veya süresi dolmuş |
+| Ödeme veya lisans gerekiyor | Minecraft Bedrock lisansı, ücretli tier, alan adı |
+| Bilgi doğrulanamıyor | Bir sürüm numarası, API adı veya alan adı kaynağa karşı kontrol edilemiyor |
+| İşlem geri alınması zor | Force push, dal silme, dışarıya yayınlama, üçüncü taraf servise veri gönderme |
+| Kural esnetilmesi gerekiyor | "Mimari kurallar" veya "Yapılmayacaklar" tablosuna aykırı bir şey yapmak gerekiyor |
+
+Doğrulanamayan bilgi maddesi bu projede özellikle önemli: Bedrock'ta yanlış hatırlanan bir alan adı sessizce çalışmayan çıktı üretir. CodeCraft'ın var olma sebebi tam olarak bu hata, o yüzden kendi kodunda da aynı hatayı yapma.
+
+### Nasıl sorulur
+
+- Ne denendiğini, tam olarak neye takıldığını ve varsa hata mesajını yaz.
+- Kullanıcının ne yapması gerektiğini tek adımda söyle.
+- Terminalde bir komut çalıştırması gerekiyorsa `! komut` biçiminde ver, çıktı doğrudan oturuma düşer.
+- **Cevabı beklerken o soruya bağlı olmayan işleri bitir.** Bütün işi durdurma, sadece bağımlı olan parçayı beklet.
+
+### Yapılmayacak olan
+
+- "Muhtemelen şöyledir" deyip devam etmek
+- Sahte veya örnek veriyle ilerleyip gerçekmiş gibi raporlamak
+- Erişilemeyen adımı sessizce atlayıp "tamamlandı" demek
+
+Atlanan bir adım varsa açıkça yazılır. Yarım iş, yanlış tamamlanmış işten iyidir.
+
 ## Ayrıntı
 
 - Veri kaynakları ve lisansları: `docs/SOURCES.md`
