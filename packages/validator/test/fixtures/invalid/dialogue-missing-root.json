@@ -1,0 +1,9 @@
+{
+  "format_version": "1.17.0",
+  "scenes": [
+    {
+      "scene_tag": "codecraft_merchant_greeting",
+      "text": "Yakut alır mısın?"
+    }
+  ]
+}

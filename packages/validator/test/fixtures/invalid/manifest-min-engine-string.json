@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "CodeCraft Örnek Davranış Paketi",
+    "description": "min_engine_version dizi olmalı, metin verilmiş",
+    "uuid": "8b6c1f42-5d3a-4e77-9f10-2ac4d8e5b901",
+    "version": [1, 0, 0],
+    "min_engine_version": "1.26.40"
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "0d2f7c11-9b84-4a6e-8c35-71ef03ab52d4",
+      "version": [1, 0, 0]
+    }
+  ]
+}

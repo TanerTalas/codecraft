@@ -1,0 +1,14 @@
+{
+  "format_version": "1.21.100",
+  "minecraft:item": {
+    "description": {
+      "identifier": "codecraft:ruby",
+      "menu_category": {
+        "category": "tools"
+      }
+    },
+    "components": {
+      "minecraft:icon": "ruby"
+    }
+  }
+}

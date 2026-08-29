@@ -1,0 +1,10 @@
+{
+  "format_version": 2,
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "0d2f7c11-9b84-4a6e-8c35-71ef03ab52d4",
+      "version": [1, 0, 0]
+    }
+  ]
+}

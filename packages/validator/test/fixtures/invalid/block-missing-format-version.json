@@ -1,0 +1,12 @@
+{
+  "minecraft:block": {
+    "description": {
+      "identifier": "codecraft:ruby_ore"
+    },
+    "components": {
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 3
+      }
+    }
+  }
+}

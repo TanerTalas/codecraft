@@ -1,0 +1,10 @@
+{
+  "format_version": "2",
+  "header": {
+    "name": "CodeCraft Örnek Davranış Paketi",
+    "description": "format_version metin — şemanın if/then dalı eşleşmiyor",
+    "uuid": "codecraft-behavior-pack",
+    "version": [1, 0, 0],
+    "min_engine_version": "1.26.40"
+  }
+}

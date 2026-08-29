@@ -1,0 +1,202 @@
+{
+  "$aciklama": [
+    "Aşama 2'nin bitiş kriteri 'core' listesidir: bilerek doğru 10 dosya,",
+    "bilerek bozuk 10 dosya (docs/ROADMAP.md). Hepsi doğru sonuç vermeli.",
+    "",
+    "'extra' listesi ölçüt değil, ölçüm: fazladan yakalanan vakalar ve",
+    "şemanın bugün yakalamadığı boşluklar. expect='gap' olanlar bilerek",
+    "böyle — şema ilerideki bir güncellemede yakalamaya başlarsa test",
+    "kırmızıya döner ve boşluğun kapandığını görürüz.",
+    "",
+    "expectedPath: hatanın çıkması beklenen JSON pointer. 'Bir hata çıktı'",
+    "demek yetmez, doğru hatanın çıktığı doğrulanır."
+  ],
+  "core": [
+    {
+      "id": "manifest-bp",
+      "file": "valid/manifest-behavior-pack.json",
+      "type": "general/manifest",
+      "expect": "pass"
+    },
+    {
+      "id": "manifest-rp",
+      "file": "valid/manifest-resource-pack.json",
+      "type": "general/manifest",
+      "expect": "pass"
+    },
+    {
+      "id": "block-ruby-ore",
+      "file": "valid/block-ruby-ore.json",
+      "type": "behavior/blocks",
+      "expect": "pass"
+    },
+    {
+      "id": "item-ruby",
+      "file": "valid/item-ruby.json",
+      "type": "behavior/items",
+      "expect": "pass"
+    },
+    {
+      "id": "entity-guard",
+      "file": "valid/entity-guard.json",
+      "type": "behavior/entities",
+      "expect": "pass"
+    },
+    {
+      "id": "recipe-ruby-block",
+      "file": "valid/recipe-ruby-block.json",
+      "type": "behavior/recipes",
+      "expect": "pass"
+    },
+    {
+      "id": "spawn-rules-guard",
+      "file": "valid/spawn-rules-guard.json",
+      "type": "behavior/spawn_rules",
+      "expect": "pass"
+    },
+    {
+      "id": "animation-controller-guard",
+      "file": "valid/animation-controller-guard.json",
+      "type": "behavior/animation_controllers/animation_controller",
+      "expect": "pass"
+    },
+    {
+      "id": "dialogue-merchant",
+      "file": "valid/dialogue-merchant.json",
+      "type": "behavior/dialogue",
+      "expect": "pass"
+    },
+    {
+      "id": "feature-rules-ruby-ore",
+      "file": "valid/feature-rules-ruby-ore.json",
+      "type": "behavior/feature_rules",
+      "expect": "pass"
+    },
+    {
+      "id": "manifest-min-engine-string",
+      "file": "invalid/manifest-min-engine-string.json",
+      "type": "general/manifest",
+      "expect": "fail",
+      "reason": "min_engine_version dizi olmalı, metin verilmiş",
+      "expectedPath": "/header/min_engine_version"
+    },
+    {
+      "id": "manifest-bad-uuid",
+      "file": "invalid/manifest-bad-uuid.json",
+      "type": "general/manifest",
+      "expect": "fail",
+      "reason": "uuid v4 biçiminde değil",
+      "expectedPath": "/header/uuid"
+    },
+    {
+      "id": "manifest-trailing-comma",
+      "file": "invalid/manifest-trailing-comma.json",
+      "type": "general/manifest",
+      "expect": "fail",
+      "reason": "fazladan virgül — dosya JSON olarak hiç ayrıştırılamıyor",
+      "expectedKind": "parse"
+    },
+    {
+      "id": "block-missing-format-version",
+      "file": "invalid/block-missing-format-version.json",
+      "type": "behavior/blocks",
+      "expect": "fail",
+      "reason": "format_version zorunlu",
+      "expectedPath": ""
+    },
+    {
+      "id": "item-max-stack-size-string",
+      "file": "invalid/item-icon-wrong-type.json",
+      "type": "behavior/items",
+      "expect": "fail",
+      "reason": "minecraft:max_stack_size sayı olmalı, metin verilmiş",
+      "expectedPath": "/minecraft:item/components/minecraft:max_stack_size"
+    },
+    {
+      "id": "item-menu-category-invalid",
+      "file": "invalid/item-menu-category-invalid.json",
+      "type": "behavior/items",
+      "expect": "fail",
+      "reason": "menu_category.category listede olmayan bir değer",
+      "expectedPath": "/minecraft:item/description/menu_category/category"
+    },
+    {
+      "id": "entity-is-spawnable-string",
+      "file": "invalid/entity-is-spawnable-string.json",
+      "type": "behavior/entities",
+      "expect": "fail",
+      "reason": "is_spawnable boolean olmalı, metin verilmiş",
+      "expectedPath": "/minecraft:entity/description/is_spawnable"
+    },
+    {
+      "id": "spawn-rules-conditions-object",
+      "file": "invalid/spawn-rules-conditions-object.json",
+      "type": "behavior/spawn_rules",
+      "expect": "fail",
+      "reason": "conditions dizi olmalı, nesne verilmiş",
+      "expectedPath": "/minecraft:spawn_rules/conditions"
+    },
+    {
+      "id": "dialogue-missing-root",
+      "file": "invalid/dialogue-missing-root.json",
+      "type": "behavior/dialogue",
+      "expect": "fail",
+      "reason": "minecraft:npc_dialogue sarmalayıcısı yok, scenes köke yazılmış",
+      "expectedPath": ""
+    },
+    {
+      "id": "animation-controller-bad-name",
+      "file": "invalid/animation-controller-bad-name.json",
+      "type": "behavior/animation_controllers/animation_controller",
+      "expect": "fail",
+      "reason": "denetleyici adı controller.animation. ile başlamıyor",
+      "expectedPath": "/animation_controllers"
+    }
+  ],
+  "extra": [
+    {
+      "id": "manifest-missing-header",
+      "file": "invalid/manifest-missing-header.json",
+      "type": "general/manifest",
+      "expect": "fail",
+      "reason": "header zorunlu",
+      "expectedPath": ""
+    },
+    {
+      "id": "feature-rules-missing-places-feature",
+      "file": "invalid/feature-rules-missing-places-feature.json",
+      "type": "behavior/feature_rules",
+      "expect": "fail",
+      "reason": "description.places_feature zorunlu",
+      "expectedPath": "/minecraft:feature_rules/description"
+    },
+    {
+      "id": "block-unknown-component",
+      "file": "invalid/block-unknown-component.json",
+      "type": "behavior/blocks",
+      "expect": "gap",
+      "reason": "minecraft:hardness diye bir bileşen yok (doğrusu minecraft:destructible_by_mining) ama şema bileşen adlarını kısıtlamıyor"
+    },
+    {
+      "id": "block-identifier-without-namespace",
+      "file": "invalid/block-identifier-without-namespace.json",
+      "type": "behavior/blocks",
+      "expect": "gap",
+      "reason": "identifier namespace'siz; şema blok identifier'ında namespace zorunlu tutmuyor"
+    },
+    {
+      "id": "manifest-format-version-string",
+      "file": "invalid/manifest-format-version-string.json",
+      "type": "general/manifest",
+      "expect": "gap",
+      "reason": "format_version sayı yerine metin verilince şemanın if/then dalı hiç eşleşmiyor ve manifest gövdesi tümüyle doğrulanmadan geçiyor — dosyadaki uuid ve min_engine_version da bilerek bozuk, ikisi de yakalanmıyor"
+    },
+    {
+      "id": "recipe-result-missing",
+      "file": "invalid/recipe-result-missing.json",
+      "type": "behavior/recipes",
+      "expect": "gap",
+      "reason": "shaped tarifte result yok ama şema onu zorunlu tutmuyor"
+    }
+  ]
+}

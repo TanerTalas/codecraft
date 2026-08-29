@@ -1,0 +1,18 @@
+{
+  "format_version": "1.17.0",
+  "minecraft:npc_dialogue": {
+    "scenes": [
+      {
+        "scene_tag": "codecraft_merchant_greeting",
+        "npc_name": "Tüccar",
+        "text": "Yakut alır mısın?",
+        "buttons": [
+          {
+            "name": "Göster",
+            "commands": ["/say yakutlar burada"]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "format_version": "1.21.100",
+  "minecraft:block": {
+    "description": {
+      "identifier": "codecraft:ruby_ore"
+    },
+    "components": {
+      "minecraft:hardness": 3
+    }
+  }
+}
