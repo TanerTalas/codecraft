@@ -6,5 +6,10 @@
   "description": "Dogrulama. Saf TypeScript, LLM cagrisi yok",
   "exports": {
     ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@codecraft/knowledge": "*",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
   }
 }
