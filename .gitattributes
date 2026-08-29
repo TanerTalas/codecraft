@@ -1,0 +1,14 @@
+# Satir sonlari depoda her zaman LF.
+# data/ altina her gun JSON yazilacak ve GitHub Actions "degisiklik varsa commit et"
+# diye diff'e bakacak. CRLF cevrimi sahte diff uretip cron'u bos yere tetikler.
+* text=auto eol=lf
+
+*.json text eol=lf
+*.md   text eol=lf
+*.ts   text eol=lf
+*.yml  text eol=lf
+
+*.png  binary
+*.jpg  binary
+*.mcpack  binary
+*.mcaddon binary
