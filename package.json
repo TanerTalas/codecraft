@@ -14,7 +14,13 @@
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "pipeline:bedrock": "node pipeline/src/bedrock-samples.ts"
+    "pipeline": "node pipeline/src/index.ts",
+    "pipeline:bedrock": "node pipeline/src/bedrock-samples.ts",
+    "pipeline:schemas": "node pipeline/src/schemas-mojang.ts",
+    "pipeline:blockception": "node pipeline/src/schemas-blockception.ts",
+    "pipeline:types": "node pipeline/src/script-types.ts",
+    "pipeline:notes": "node pipeline/src/release-notes.ts",
+    "pipeline:freshness": "node pipeline/src/check-freshness.ts"
   },
   "devDependencies": {
     "@types/node": "^26.4.0",

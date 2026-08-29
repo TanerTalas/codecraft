@@ -26,6 +26,8 @@ export const BLOCKCEPTION_REF = "main";
 export const BLOCKCEPTION_DIR = "blockception";
 
 export type BlockceptionResult = {
+  /** source/ altındaki şema sayısı. LICENSE bu sayıya girmez — index.json'daki
+   *  `path` source/ klasörünü gösteriyor, sayım onunla aynı şeyi ölçmeli. */
   files: number;
   written: string[];
   deleted: string[];
@@ -50,13 +52,14 @@ export async function collectBlockception(): Promise<BlockceptionResult> {
   }
 
   const { written, deleted } = await writeTree(join(DATA_DIR, BLOCKCEPTION_DIR), files);
-  return { files: files.size, written, deleted, hash: hashTree(files) };
+  const schemas = [...files.keys()].filter((path) => path.startsWith("source/")).length;
+  return { files: schemas, written, deleted, hash: hashTree(files) };
 }
 
 runIfMain(import.meta.url, async () => {
   const result = await collectBlockception();
   console.log(
-    `blockception -> data/${BLOCKCEPTION_DIR}/ — ${result.files} dosya, ` +
+    `blockception -> data/${BLOCKCEPTION_DIR}/ — ${result.files} şema, ` +
       `${result.written.length} yazıldı, ${result.deleted.length} silindi`,
   );
 });
