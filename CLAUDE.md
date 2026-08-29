@@ -16,11 +16,28 @@ Genel modellerden iki farkı var: sürekli güncellenen resmi veri kaynaklarına
 
 ## Sürüm numaralandırma (dikkat)
 
-Bedrock'ta iki numara var ve karıştırılıyor:
-- Pazarlama numarası: `26.40`
-- API ve JSON numarası: `1.26.40`
+Bedrock'ta **dört** ayrı sürüm biçimi dolaşıyor ve sürekli karıştırılıyor:
 
-`manifest.json`, `format_version` ve `min_engine_version` alanlarına **her zaman** `1.26.xx` biçimi yazılır. Pazarlama numarasını dosyaya yazma.
+| Numara | Örnek | Nerede kullanılır |
+|---|---|---|
+| Pazarlama numarası | `26.40` | Sadece duyurularda. **Hiçbir dosyaya yazılmaz** |
+| Oyun / veri sürümü | `1.26.40.5` | `data/` klasör adı, veri indeksleri. Kaynağı `bedrock-samples/version.json` |
+| `min_engine_version` | `[1, 26, 40]` | `manifest.json`. Üç parçalı dizi, dördüncü hane düşer |
+| `@minecraft/server` modül sürümü | `2.9.0` | `manifest.json` → `dependencies` |
+
+`format_version` ve `min_engine_version` alanlarına **her zaman** `1.26.xx` biçimi
+yazılır. Pazarlama numarasını dosyaya yazma.
+
+Dördüncü satır en çok tuzak olan yer: `@minecraft/server` npm'de kendi semver'iyle
+yayınlanıyor ve oyun sürümü prerelease etiketinin **içine gömülü** geliyor:
+
+```
+2.9.0                              kararlı modül sürümü (npm "latest")
+2.11.0-beta.1.26.50-preview.27     modül 2.11.0, oyun 1.26.50-preview.27
+```
+
+Yani modül `2.x`, oyun `1.26.x`. Biri diğerinin yerine yazılırsa paket sessizce
+yüklenmez. Modül sürümü ile oyun sürümü asla birbirinin yerine kullanılmaz.
 
 ## Stack
 
