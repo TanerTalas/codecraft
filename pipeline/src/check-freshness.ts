@@ -21,7 +21,11 @@ type IndexFile = {
   version?: string;
   sources?: {
     mojangSchemas?: { path?: string; files?: number };
-    blockception?: { path?: string; files?: number };
+    blockception?: {
+      path?: string;
+      files?: number;
+      compiled?: { path?: string; map?: string; files?: number };
+    };
     scriptTypes?: { path?: string };
   };
 };
@@ -85,6 +89,29 @@ export async function checkFreshness(): Promise<string[]> {
       }
     } catch {
       problems.push(`${label}: klasör yok — ${path}`);
+    }
+  }
+
+  // Doğrulamanın kullandığı küme. Kaynak şemalar yerinde olup derlenmiş olanlar
+  // eksik kalırsa pipeline yeşil koşar ama validator hiçbir dosyayı doğrulayamaz.
+  const compiled = blockception?.compiled;
+  if (compiled?.path === undefined || compiled.files === undefined || compiled.map === undefined) {
+    problems.push("index.json içinde blockception derlenmiş şema kaydı eksik");
+  } else {
+    try {
+      const actual = await countFiles(join(dir, compiled.path));
+      if (actual < compiled.files) {
+        problems.push(
+          `blockception derlenmiş: ${compiled.files} şema bekleniyordu, ${actual} bulundu`,
+        );
+      }
+    } catch {
+      problems.push(`blockception derlenmiş: klasör yok — ${join(dir, compiled.path)}`);
+    }
+    try {
+      await access(join(dir, compiled.map));
+    } catch {
+      problems.push(`blockception tip haritası yok — ${join(dir, compiled.map)}`);
     }
   }
 

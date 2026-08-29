@@ -13,7 +13,14 @@ import { join } from "node:path";
 
 import { collectVanillaData } from "./bedrock-samples.ts";
 import { collectMojangSchemas } from "./schemas-mojang.ts";
-import { BLOCKCEPTION_DIR, BLOCKCEPTION_REF, BLOCKCEPTION_REPO, collectBlockception } from "./schemas-blockception.ts";
+import {
+  BLOCKCEPTION_DIR,
+  BLOCKCEPTION_REF,
+  BLOCKCEPTION_REPO,
+  COMPILED_SUBDIR,
+  SCHEMA_MAP_FILE,
+  collectBlockception,
+} from "./schemas-blockception.ts";
 import { collectReleaseNotes } from "./release-notes.ts";
 import { collectScriptTypes } from "./script-types.ts";
 import { runIfMain } from "./lib/cli.ts";
@@ -39,7 +46,10 @@ export async function runPipeline(): Promise<void> {
   console.log(`  mojang şemaları  ${mojang.files} dosya, ${mojang.written.length} güncellendi`);
 
   const blockception = await collectBlockception();
-  console.log(`  blockception     ${blockception.files} şema, ${blockception.written.length} güncellendi`);
+  console.log(
+    `  blockception     ${blockception.files} kaynak + ${blockception.compiled} derlenmiş şema, ` +
+      `${blockception.written.length} güncellendi`,
+  );
 
   const scriptTypes = await collectScriptTypes(version);
   console.log(`  script tipleri   ${scriptTypes.written.length} dosya güncellendi`);
@@ -63,6 +73,16 @@ export async function runPipeline(): Promise<void> {
         // data/ köküne göreli: kaynak sürüme bağlı değil, tek kopya tutulur.
         path: `../${BLOCKCEPTION_DIR}/source`,
         files: blockception.files,
+        // Doğrulamanın kullandığı küme: tek başına yeterli, derlenmiş şemalar
+        // ve upstream'in glob eşlemesinden türetilen tip haritası.
+        compiled: {
+          path: `../${BLOCKCEPTION_DIR}/${COMPILED_SUBDIR}`,
+          map: `../${BLOCKCEPTION_DIR}/${SCHEMA_MAP_FILE}`,
+          files: blockception.compiled,
+          // Eşlemede adı geçip derlenmiş çıktıda olmayanlar. Boş olması beklenir;
+          // dolduğunda günlük diff'te görünür (docs/SOURCES.md).
+          missing: blockception.missing,
+        },
         hash: blockception.hash,
       },
       scriptTypes: { path: "script-types", modules: scriptTypes.modules },
