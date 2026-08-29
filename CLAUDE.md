@@ -1,0 +1,165 @@
+# CodeCraft
+
+> **Bu doküman canlı.** Buradaki yapı ve isimlendirmeler öneri niteliğinde, kural değil. Daha iyi bir yaklaşım varsa öner ve gerekçesini söyle. Kod ile bu doküman çeliştiğinde kodu değil dokümanı güncelle.
+>
+> Değiştirilemez olanlar sadece "Mimari kurallar" ve "Yapılmayacaklar" başlıkları altındaki maddeler. Onları değiştirmek istiyorsan önce sor.
+
+Minecraft Bedrock için komut, behavior pack ve otomasyon script'i üreten yapay zeka asistanı. Kullanıcı oyuncu diliyle isteğini söyler, araç doğrulanmış çıktı verir.
+
+Genel modellerden iki farkı var: sürekli güncellenen resmi veri kaynaklarına bağlı olması, ve ürettiği çıktıyı şemaya karşı gerçekten doğrulaması.
+
+## v1 kapsamı
+
+**İçeride:** Bedrock Edition, PC, tek oyunculu. Komut ve behavior pack üretimi, çıktı doğrulama, dışarıdan çalışan otomasyon script'leri.
+
+**Dışarıda:** Java Edition, Bedrock dışı platformlar, Realms ve sunucular, kullanıcı hesabı sistemi, ödeme.
+
+## Sürüm numaralandırma (dikkat)
+
+Bedrock'ta iki numara var ve karıştırılıyor:
+- Pazarlama numarası: `26.40`
+- API ve JSON numarası: `1.26.40`
+
+`manifest.json`, `format_version` ve `min_engine_version` alanlarına **her zaman** `1.26.xx` biçimi yazılır. Pazarlama numarasını dosyaya yazma.
+
+## Stack
+
+- TypeScript (zorunlu, script doğrulaması `tsc` ile yapılıyor)
+- Veri pipeline: Node script'leri + GitHub Actions
+- JSON doğrulama: `ajv`
+- Script doğrulama: `typescript` derleyicisi
+- Arayüz: Next.js + Tailwind
+- LLM soyutlaması: Vercel AI SDK
+- Hosting: Vercel veya Cloudflare, ücretsiz kademe
+
+Python sadece **üretilen** otomasyon script'lerinin dili. Altyapıda Python çalıştırılmıyor.
+
+## Repo yapısı
+
+```
+data/                 # üretilen indeksler, sürüme göre (1.26.40/ gibi)
+pipeline/             # veri toplayıcı script'ler
+packages/core/        # üretim döngüsü, CLI ve web ortak kullanır
+packages/validator/   # doğrulama, saf TS, LLM yok
+packages/knowledge/   # lookup katmanı
+evals/                # test vakaları ve runner
+app/                  # Next.js
+.github/workflows/    # günlük cron
+```
+
+## Mimari kurallar
+
+1. **Çekirdek mantık `packages/core` içinde.** CLI ve web arayüzü ince kabuklar. Mantığı arayüz koduna gömme.
+2. **Üretim tarayıcıda, doğrulama sunucuda.** LLM çağrısı kullanıcının anahtarıyla client tarafında yapılır, anahtar sunucuya hiç uğramaz. `tsc` ve şema doğrulaması sunucuda.
+3. **Validator LLM'siz.** `packages/validator` saf fonksiyonlardan oluşur, hiçbir model çağrısı yapmaz.
+4. **`data/` git içinde durur.** Veritabanı yok, dosya olarak tutulur ve versiyonlanır.
+
+## Yapılmayacaklar
+
+| Yapma | Neden |
+|---|---|
+| Vektör DB, embedding, RAG altyapısı | Veri yapılandırılmış ve küçük. Sürüm ve niyet belliyse hangi JSON'un gideceği de belli |
+| Kullanıcı hesabı, oturum, veritabanı | v1'de sıfır kişisel veri. Anahtar tarayıcıda, geçmiş yerelde |
+| Kendi JSON şemalarını yazmak | Blockception zaten yazmış, BSD-3-Clause |
+| Model ID'lerini koda gömmek | Yapılandırmadan oku, ekosistem sık değişiyor |
+| Komut sözdizimi doğrulayıcısı (v1'de) | En zahmetli parça, v1 onsuz da anlamlı |
+
+## Ayrıntı
+
+- Veri kaynakları ve lisansları: `docs/SOURCES.md`
+- Aşamalar ve geçiş kapısı: `docs/ROADMAP.md`
+
+## Git kuralları
+
+Repo **private**. Yine de gizli bilgi asla commit edilmez, private olması bir güvenlik önlemi değil.
+
+### Commit sıklığı
+
+Her tamamlanan değişiklikten sonra commit at. Birden fazla işi tek commit'te toplama, ama yarım kalmış bir değişikliği de commit etme. Bir commit tek bir mantıksal iş olsun.
+
+### Commit mesajı formatı
+
+```
+type(scope): kısa özet
+
+- yapılan değişiklik
+- yapılan değişiklik
+```
+
+Kullanılacak tipler:
+
+| Tip | Ne zaman |
+|---|---|
+| `feat` | Yeni özellik |
+| `fix` | Hata düzeltme |
+| `refactor` | Davranış değişmeden kod düzenleme |
+| `style` | Biçim, boşluk, isimlendirme |
+| `docs` | Dokümantasyon |
+| `test` | Test ekleme veya düzeltme |
+| `chore` | Bağımlılık, yapılandırma, pipeline |
+| `data` | Üretilen veri indekslerinin güncellenmesi |
+
+Örnek:
+
+```
+feat(validator): add script type checking
+
+- add tsc wrapper for @minecraft/server validation
+- add version resolution from data directory
+- add error formatting for CLI output
+```
+
+Kurallar:
+- Özet satırı 72 karakteri geçmesin
+- Özet satırında nokta kullanma
+- Emir kipi kullan ("add", "fix", "remove"), geçmiş zaman değil
+- Scope opsiyonel ama varsa tutarlı olsun
+- Gövde satırları `-` ile başlasın
+
+### .gitignore
+
+Aşağıdakiler baştan `.gitignore` içinde olmalı ve yeni bir hassas dosya türü ortaya çıktığında listeye eklenmeli:
+
+**Kimlik bilgileri ve gizli veri**
+```
+.env
+.env.*
+*.key
+*.pem
+secrets/
+config.local.*
+```
+
+**Bağımlılık ve derleme çıktısı**
+```
+node_modules/
+.next/
+dist/
+build/
+*.tsbuildinfo
+```
+
+**Eval ve test çıktıları**
+```
+evals/output/
+evals/*.html
+*.log
+```
+Eval çıktıları model cevaplarını ve muhtemelen istek metinlerini içerir, commit edilmez.
+
+**Ham kaynak verisi**
+```
+pipeline/cache/
+pipeline/raw/
+```
+Bu önemli. bedrock-samples içeriği Minecraft EULA'ya tabi, ham hali repoya girmez. Sadece ondan türetilen indeksler commit edilir.
+
+**Yerel test dosyaları**
+```
+test-worlds/
+*.mcpack
+*.mcaddon
+.DS_Store
+```
+
+Bir dosyanın hassas olup olduğundan emin değilsen commit etme, önce sor.

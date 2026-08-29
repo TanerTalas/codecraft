@@ -1,0 +1,52 @@
+# --- Kimlik bilgileri ve gizli veri ---
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+config.local.*
+
+# --- Bagimlilik ve derleme ciktisi ---
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+.turbo/
+coverage/
+
+# --- Eval ve test ciktilari ---
+# Model cevaplarini ve istek metinlerini icerir, commit edilmez
+evals/output/
+evals/*.html
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# --- Ham kaynak verisi ---
+# bedrock-samples icerigi Minecraft EULA'ya tabi, ham hali repoya girmez.
+# Sadece ondan turetilen data/ indeksleri commit edilir.
+pipeline/cache/
+pipeline/raw/
+
+# --- Yerel test dosyalari ---
+test-worlds/
+*.mcpack
+*.mcaddon
+
+# --- Python (uretilen otomasyon script'lerini test ederken) ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# --- Editor ve isletim sistemi ---
+.vs/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
