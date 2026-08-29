@@ -1,0 +1,39 @@
+{
+  "definitions": {
+    "size_coord": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^( *[+-]? *([0-9]+(\\.[0-9]+)? ?(px|%([cxy]|cm|sm)?)|default|fill))+$",
+          "$comment": "Equation with units"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "examples": ["default", "fill", "100px", "100%", "100% - 2px"]
+    }
+  },
+  "oneOf": [
+    {
+      "type": "string",
+      "description": "A variable",
+      "$ref": "./item_ref.json"
+    },
+    {
+      "type": "array",
+      "description": "A size with width and height.",
+      "items": [
+        {
+          "title": "Width",
+          "$ref": "#/definitions/size_coord"
+        },
+        {
+          "title": "Height",
+          "$ref": "#/definitions/size_coord"
+        }
+      ]
+    }
+  ],
+  "examples": ["default", "fill", ["100%", "100%"]]
+}

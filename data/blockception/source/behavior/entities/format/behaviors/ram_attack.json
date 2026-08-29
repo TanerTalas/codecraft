@@ -1,0 +1,99 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.ram_attack",
+  "description": "Allows the mob to search for a random target and, if a direct path exists between the mob and the target, it will perform a charge. If the attack hits, the target will be knocked back based on the mob's speed.",
+  "type": "object",
+  "title": "Ram Attack",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "priority": {
+      "$ref": "types/priority.json"
+    },
+    "control_flags": {
+      "$ref": "./types/control_flags.json"
+    },
+    "baby_knockback_modifier": {
+      "title": "Baby Knockback Modifier",
+      "type": "number",
+      "default": 0.3333333432674408,
+      "description": "The modifier to knockback that babies have."
+    },
+    "cooldown_range": {
+      "title": "Cooldown Range",
+      "$ref": "../../../../general/min_max_float.json",
+      "description": "Minimum and maximum cooldown time-range (positive, in seconds) between each attempted ram attack."
+    },
+    "knockback_force": {
+      "title": "Knockback Force",
+      "type": "number",
+      "default": 5.0,
+      "description": "The force of the knockback of the ram attack."
+    },
+    "knockback_height": {
+      "title": "Knockback Height",
+      "type": "number",
+      "default": 0.1,
+      "description": "The height of the knockback of the ram attack."
+    },
+    "min_ram_distance": {
+      "title": "Min Ram Distance",
+      "type": "number",
+      "default": 4.0,
+      "description": "The minimum distance at which the mob can start a ram attack."
+    },
+    "on_start": {
+      "title": "On Start",
+      "$ref": "../types/trigger.json",
+      "description": "The event to trigger when attacking."
+    },
+    "pre_ram_sound": {
+      "title": "Pre Ram Sound",
+      "$ref": "../../../../general/sound_event.json",
+      "default": "",
+      "description": "The sound to play when an entity is about to perform a ram attack."
+    },
+    "ram_distance": {
+      "title": "Ram Distance",
+      "type": "number",
+      "default": 7.0,
+      "description": "The distance at which the mob start to run with ram speed."
+    },
+    "ram_impact_sound": {
+      "title": "Ram Impact Sound",
+      "$ref": "../../../../general/sound_event.json",
+      "default": "",
+      "description": "The sound to play when an entity is impacting on a ram attack."
+    },
+    "ram_speed": {
+      "title": "Ram Speed",
+      "type": "number",
+      "default": 2.0,
+      "description": "Sets the entity's speed when charging toward the target."
+    },
+    "run_speed": {
+      "title": "Run Speed",
+      "type": "number",
+      "default": 1.0,
+      "description": "Sets the entity's speed when running toward the target."
+    },
+    "trigger": { //TODO: Figure out where this is from and if it works
+      "description": "The event to trigger when attacking.",
+      "title": "Trigger",
+      "$ref": "../types/trigger.json"
+    }
+  },
+  "examples": [
+    {
+      "baby_knockback_modifier": 4,
+      "cooldown_range": [],
+      "knockback_force": 5,
+      "knockback_height": 0.1,
+      "min_ram_distance": 4,
+      "pre_ram_sound": "example",
+      "ram_distance": 7,
+      "ram_impact_sound": "example",
+      "ram_speed": 2,
+      "run_speed": 1
+    }
+  ]
+}

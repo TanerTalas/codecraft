@@ -1,0 +1,45 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.celebrate",
+  "type": "object",
+  "title": "Celebrate",
+  "description": "Allows this entity to celebrate surviving a raid by making celebration sounds and jumping.",
+  "additionalProperties": false,
+  "properties": {
+    "priority": { "$ref": "types/priority.json" },
+    "control_flags": {
+      "$ref": "./types/control_flags.json"
+    },
+    "celebration_sound": {
+      "description": "The sound event to trigger during the celebration.",
+      "title": "Celebration Sound",
+      "$ref": "../../../../general/sound_event.json"
+    },
+    "duration": {
+      "type": "number",
+      "default": 30,
+      "description": "The duration in seconds that the celebration lasts for.",
+      "title": "Duration"
+    },
+    "jump_interval": {
+      "description": "Minimum and maximum time between jumping (positive, in seconds).",
+      "title": "Jump Interval",
+      "$ref": "../../../../general/min_max_float.json"
+    },
+    "on_celebration_end_event": {
+      "$ref": "../types/trigger.json",
+      "description": "The event to trigger when the goal's duration expires.",
+      "title": "On Celebration End Event"
+    },
+    "sound_interval": {
+      "description": "Minimum and maximum time between sound events (positive, in seconds).",
+      "title": "Sound Interval",
+      "$ref": "../../../../general/min_max_float.json"
+    }
+  },
+  "examples": [
+    {
+      "celebration_sound": "",
+      "duration": 1
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "blockception.minecraft.behavior.biomes",
+  "title": "Biome Definition",
+  "description": "A custom biome definition.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["description", "components"],
+  "definitions": {
+    "components_ref": {
+      "type": "object",
+      "title": "Components",
+      "additionalProperties": false,
+      "properties": {
+        "minecraft:climate": { "$ref": "./components/climate.json" },
+        "minecraft:creature_spawn_probability": { "$ref": "./components/creature_spawn_probability.json" },
+        "minecraft:humidity": { "$ref": "./components/humidity.json" },
+        "minecraft:map_tints": { "$ref": "./components/map_tints.json" },
+        "minecraft:mountain_parameters": { "$ref": "./components/mountain_parameters.json" },
+        "minecraft:multinoise_generation_rules": { "$ref": "./components/multinoise_generation_rules.json" },
+        "minecraft:overworld_generation_rules": { "$ref": "./components/overworld_generation_rules.json" },
+        "minecraft:overworld_height": { "$ref": "./components/overworld_height.json" },
+        "minecraft:partially_frozen": { "$ref": "./components/partially_frozen.json" },
+        "minecraft:replace_biomes": { "$ref": "./components/replace_biomes.json" },
+        "minecraft:subsurface_builder": { "$ref": "./components/subsurface_builder.json" },
+        "minecraft:surface_material_adjustments": { "$ref": "./components/surface_material_adjustments.json" },
+        "minecraft:surface_builder": { "$ref": "./components/surface_builder.json" },
+        "minecraft:tags": { "$ref": "./components/tags.json" },
+        "minecraft:village_type": { "$ref": "./components/village_type.json" }
+      }
+    }
+  },
+  "properties": {
+    "description": {
+      "title": "Biome Description",
+      "description": "The description for this biome.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identifier"],
+      "properties": {
+        "identifier": {
+          "title": "Identifier",
+          "description": "The identifier for this biome. The name must include a namespace and must not use the Minecraft namespace unless overriding a Vanilla biome.",
+          "type": "string",
+          "$ref": "../../../general/identifier.json"
+        }
+      }
+    },
+    "components": { "$ref": "#/definitions/components_ref" }
+  }
+}

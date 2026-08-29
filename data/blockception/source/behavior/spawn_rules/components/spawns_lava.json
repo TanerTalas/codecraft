@@ -1,0 +1,8 @@
+{
+  "$id": "blockception.minecraft.behavior.spawn_rules.minecraft.spawns_lava",
+  "additionalProperties": false,
+  "type": "object",
+  "title": "Spawns On Lava",
+  "description": "This component determines if an entity spawns lava.",
+  "properties": {}
+}

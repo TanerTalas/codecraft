@@ -1,0 +1,93 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.jump_to_block",
+  "type": "object",
+  "title": "Jump To Block",
+  "description": "Allows an entity to jump to another random block.",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "priority": {
+      "$ref": "./types/priority.json"
+    },
+    "control_flags": {
+      "$ref": "./types/control_flags.json"
+    },
+    "cooldown_range": {
+      "title": "Cooldown Range",
+      "$ref": "../../../../general/min_max_float.json",
+      "description": "Minimum and maximum cooldown time-range (positive, in seconds) between each attempted jump."
+    },
+    "forbidden_blocks": {
+      "title": "Forbidden Blocks",
+      "type": "array",
+      "description": "Blocks that the mob can't jump to.",
+      "items": {
+        "$ref": "../../../../general/item/descriptor.json"
+      }
+    },
+    "max_velocity": {
+      "title": "Max Velocity",
+      "type": "number",
+      "default": 1.5,
+      "description": "The maximum velocity with which the mob can jump."
+    },
+    "minimum_distance": {
+      "title": "Minimum Distance",
+      "type": "integer",
+      "default": 2,
+      "description": "The minimum distance (in blocks) from the mob to a block, in order to consider jumping to it."
+    },
+    "minimum_path_length": {
+      "title": "Minimum Path Length",
+      "type": "integer",
+      "default": 5,
+      "description": "The minimum length (in blocks) of the mobs path to a block, in order to consider jumping to it."
+    },
+    "preferred_blocks": {
+      "title": "Preferred Blocks",
+      "type": "array",
+      "description": "Blocks that the mob prefers jumping to.",
+      "items": {
+        "$ref": "../../../../general/item/descriptor.json"
+      }
+    },
+    "preferred_blocks_chance": {
+      "title": "Preferred Blocks Chance",
+      "type": "number",
+      "default": 1.0,
+      "description": "Chance (between 0.0 and 1.0) that the mob will jump to a preferred block, if in range. Only matters if preferred blocks are defined."
+    },
+    "scale_factor": {
+      "title": "Scale Factor",
+      "type": "number",
+      "default": 0.7,
+      "description": "The scalefactor of the bounding box of the mob while it is jumping."
+    },
+    "search_height": {
+      "title": "Search Height",
+      "type": "integer",
+      "default": 10,
+      "maximum": 15,
+      "minimum": 1,
+      "description": "The height (in blocks, in range [1, 15]) of the search box, centered around the mob."
+    },
+    "search_width": {
+      "title": "Search Width",
+      "type": "integer",
+      "default": 8,
+      "maximum": 15,
+      "minimum": 1,
+      "description": "The width (in blocks, in range [1, 15]) of the search box, centered around the mob."
+    }
+  },
+  "examples": [
+    {
+      "search_width": 8,
+      "search_height": 10,
+      "minimum_path_length": 5,
+      "minimum_distance": 5,
+      "scale_factor": 0.7,
+      "cooldown_range": []
+    }
+  ]
+}

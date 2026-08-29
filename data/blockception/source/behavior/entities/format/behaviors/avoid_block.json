@@ -1,0 +1,93 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.avoid_block",
+  "type": "object",
+  "title": "Avoid Block",
+  "description": "Allows this entity to avoid certain blocks.",
+  "additionalProperties": false,
+  "properties": {
+    "priority": { "$ref": "types/priority.json" },
+    "tick_interval": {
+      "type": "integer",
+      "title": "Tick Interval",
+      "default": 1,
+      "description": "Should start tick interval."
+    },
+    "control_flags": {
+      "$ref": "./types/control_flags.json"
+    },
+    "search_range": {
+      "type": "integer",
+      "title": "Search Range",
+      "description": "Maximum distance to look for a block in xz.",
+      "default": 0
+    },
+    "search_height": {
+      "type": "integer",
+      "title": "Search Height",
+      "description": "Maximum distance to look for a block in y.",
+      "default": 0
+    },
+    "sprint_speed_modifier": {
+      "type": "number",
+      "title": "Sprint Speed Modifier",
+      "description": "Modifier for sprint speed. 1.0 means keep the regular speed, while higher numbers make the sprint speed faster.",
+      "default": 1.0
+    },
+    "target_selection_method": {
+      "type": "string",
+      "title": "Target Selection Method",
+      "description": "Block search method.",
+      "enum": ["random", "nearest"],
+      "default": "nearest"
+    },
+    "target_blocks": {
+      "type": "array",
+      "title": "Target Blocks",
+      "description": "List of block types this mob avoids.",
+      "items": { "title": "Block ID", "$ref": "../../../../general/item/descriptor.json" }
+    },
+    "avoid_block_sound": {
+      "title": "Avoid Block Sound",
+      "description": "The sound event to play when the mob is avoiding a block.",
+      "$ref": "../../../../general/sound_event.json"
+    },
+    "walk_speed_modifier": {
+      "type": "number",
+      "title": "Walk Speed Modifier",
+      "default": 1.0,
+      "description": "Modifier for walking speed. 1.0 means keep the regular speed, while higher numbers make the walking speed faster."
+    },
+    "on_escape": {
+      "type": "array",
+      "title": "Walk Speed Modifier",
+      "description": "Escape trigger.",
+      "items": {
+        "$ref": "../types/event.json"
+      }
+    },
+    "sound_interval": {
+      "default": 0,
+      "description": "The range of time in seconds to randomly wait before playing the sound again.",
+      "title": "Sound Interval",
+      "oneOf": [
+        {
+          "$ref": "../../../../general/min_max_float.json"
+        },
+        { "type": "number" }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "tick_interval": 0,
+      "search_range": 0,
+      "search_height": 0,
+      "sprint_speed_modifier": 0.0,
+      "target_selection_method": "example",
+      "target_blocks": [],
+      "avoid_block_sound": "example",
+      "walk_speed_modifier": 0.0,
+      "on_escape": []
+    }
+  ]
+}

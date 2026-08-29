@@ -1,0 +1,155 @@
+{
+  "client/biome": [
+    "1.21.40",
+    "1.21.70",
+    "1.21.80",
+    "1.21.90",
+    "1.21.100",
+    "1.21.110",
+    "1.21.120",
+    "1.21.130"
+  ],
+  "client/block": [
+    "1.20.60",
+    "1.21.80"
+  ],
+  "client/entity": [
+    "beta"
+  ],
+  "client/particles": [
+    "1.21.0",
+    "1.21.10",
+    "legacy"
+  ],
+  "client_server/biome": [
+    "beta"
+  ],
+  "client_server/block": [
+    "1.20.50",
+    "1.20.60"
+  ],
+  "client_server/block_components": [
+    "1.20.60"
+  ],
+  "client_server/common": [
+    "1.21.10",
+    "1.21.20",
+    "1.21.60",
+    "legacy"
+  ],
+  "client_server/dimension": [
+    "1.21.60"
+  ],
+  "client_server/entity": [
+    "1.21.30"
+  ],
+  "client_server/packaging": [
+    "3.0.0"
+  ],
+  "client_server/spawn": [
+    "1.21.60"
+  ],
+  "client_server/structure": [
+    "1.21.20",
+    "1.21.50",
+    "1.21.80"
+  ],
+  "client_server/world": [
+    "1.21.20"
+  ],
+  "client_server/world_common": [
+    "1.21.20"
+  ],
+  "client_server/world_components": [
+    "1.21.10"
+  ],
+  "server/biome": [
+    "1.20.60",
+    "1.21.80",
+    "1.21.100",
+    "1.21.110",
+    "1.21.120",
+    "1.26.0",
+    "1.26.20",
+    "1.26.30",
+    "beta"
+  ],
+  "server/block": [
+    "1.21.110",
+    "1.26.20"
+  ],
+  "server/block_components": [
+    "1.26.20"
+  ],
+  "server/common": [
+    "1.20.50",
+    "1.21.100",
+    "1.26.20"
+  ],
+  "server/crafting_catalog": [
+    "1.21.60"
+  ],
+  "server/entity": [
+    "1.21.80",
+    "1.21.90",
+    "1.21.100",
+    "1.21.110",
+    "1.21.120",
+    "1.21.130",
+    "1.26.0",
+    "1.26.10",
+    "1.26.20",
+    "1.26.30",
+    "1.26.40",
+    "beta"
+  ],
+  "server/item": [
+    "1.20.50",
+    "1.20.60",
+    "1.20.80",
+    "1.21.10",
+    "1.21.30",
+    "1.21.40",
+    "1.21.50",
+    "1.21.60",
+    "1.21.80",
+    "1.21.90",
+    "1.21.110",
+    "1.26.0",
+    "1.26.30",
+    "beta"
+  ],
+  "server/item_common": [
+    "legacy"
+  ],
+  "server/item_components": [
+    "1.20.50",
+    "1.20.60",
+    "1.21.10",
+    "1.21.30",
+    "1.21.40",
+    "1.21.50",
+    "1.21.60",
+    "1.21.80",
+    "1.21.90",
+    "1.26.0",
+    "1.26.30",
+    "beta"
+  ],
+  "server/server_config": [
+    "legacy"
+  ],
+  "server/sound": [
+    "beta"
+  ],
+  "server/spawn": [
+    "1.21.50",
+    "legacy"
+  ],
+  "server/voxel_shapes": [
+    "1.21.110"
+  ],
+  "server/world": [
+    "1.21.20"
+  ]
+}

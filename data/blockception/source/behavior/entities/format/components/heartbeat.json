@@ -1,0 +1,21 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.heartbeat",
+  "description": "defines the entity's heartbeat..",
+  "type": "object",
+  "title": "Heartbeat",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "interval": {
+      "title": "Interval",
+      "description": "A Molang expression defining the inter-beat interval in seconds. A value of zero or less means no heartbeat..",
+      "$ref": "../../../../molang/number.json"
+    },
+    "sound_event": {
+      "title": "Sound Event",
+      "description": "Level sound event to be played as the heartbeat sound.",
+      "type": "string"
+    }
+  },
+  "examples": [{}]
+}

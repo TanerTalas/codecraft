@@ -1,0 +1,44 @@
+{
+  "definitions": {
+    "color_item": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  },
+  "oneOf": [
+    {
+      "type": "string",
+      "description": "A color animation.",
+      "$ref": "./animation_reference.json"
+    },
+    {
+      "type": "string",
+      "description": "A color variable.",
+      "$ref": "./variable.json"
+    },
+    {
+      "type": "string",
+      "description": "A predefined color name.",
+      "enum": ["black", "white"]
+    },
+    {
+      "type": "array",
+      "description": "An RGB color definition.",
+      "items": [
+        {
+          "title": "Red",
+          "$ref": "#/definitions/color_item"
+        },
+        {
+          "title": "Green",
+          "$ref": "#/definitions/color_item"
+        },
+        {
+          "title": "Blue",
+          "$ref": "#/definitions/color_item"
+        }
+      ]
+    }
+  ]
+}

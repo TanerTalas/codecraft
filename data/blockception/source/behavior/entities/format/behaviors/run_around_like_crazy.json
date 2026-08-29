@@ -1,0 +1,19 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.run_around_like_crazy",
+  "description": "Allows the mob to run around aimlessly.",
+  "type": "object",
+  "title": "Run Around Like Crazy",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "priority": {
+      "$ref": "types/priority.json"
+    },
+    "control_flags": {
+      "$ref": "./types/control_flags.json"
+    },
+    "speed_multiplier": {
+      "$ref": "types/speed_multiplier.json"
+    }
+  }
+}

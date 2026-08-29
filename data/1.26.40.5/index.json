@@ -6,10 +6,6 @@
     40
   ],
   "releaseDate": "04-08-2026",
-  "source": {
-    "repo": "Mojang/bedrock-samples",
-    "ref": "main"
-  },
   "counts": {
     "biomes": 89,
     "blocks": 1415,
@@ -23,5 +19,44 @@
     "items": 1607,
     "potion-effects": 47,
     "potion-types": 3
+  },
+  "sources": {
+    "bedrockSamples": {
+      "repo": "Mojang/bedrock-samples",
+      "ref": "main"
+    },
+    "mojangSchemas": {
+      "path": "schemas",
+      "index": "schemas-index.json",
+      "files": 1313
+    },
+    "blockception": {
+      "repo": "Blockception/Minecraft-bedrock-json-schemas",
+      "ref": "main",
+      "path": "../blockception/source",
+      "files": 1140,
+      "hash": "sha256:cf9eb19cc373327d23719fb9ecd2beb041e584d6fa26b268846b7aa125f33e44"
+    },
+    "scriptTypes": {
+      "path": "script-types",
+      "modules": {
+        "@minecraft/common": {
+          "stable": "1.3.0",
+          "beta": null
+        },
+        "@minecraft/server": {
+          "stable": "2.9.0",
+          "beta": "2.10.0-beta"
+        },
+        "@minecraft/server-ui": {
+          "stable": "2.1.0",
+          "beta": "2.2.0-beta"
+        }
+      }
+    },
+    "releaseNotes": {
+      "repo": "MicrosoftDocs/minecraft-creator",
+      "path": "release-notes/Update1.26.40.md"
+    }
   }
 }

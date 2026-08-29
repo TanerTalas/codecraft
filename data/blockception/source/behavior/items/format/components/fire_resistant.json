@@ -1,0 +1,12 @@
+{
+  "$id": "blockception.minecraft.behavior.items.minecraft:fire_resistant",
+  "title": "Fire Resistant",
+  "description": "Determines whether an item is immune to burning when dropped in fire or lava",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "value": {
+      "type": "boolean"
+    }
+  }
+}

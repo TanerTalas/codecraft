@@ -1,0 +1,32 @@
+{
+  "$id": "blockception.minecraft.behavior.items.minecraft:food",
+  "title": "Food",
+  "description": "When an item has a food component, it becomes edible to the player.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "can_always_eat": {
+      "title": "Can Always Eat",
+      "description": "If true you can always eat this item (even when not hungry), defaults to false.",
+      "type": "boolean",
+      "default": false
+    },
+    "nutrition": {
+      "title": "Nutrition",
+      "description": "How much nutrition does this food item give the player when eaten.",
+      "type": "integer",
+      "default": 0
+    },
+    "saturation_modifier": {
+      "title": "Saturation Modifier",
+      "description": "Saturation Modifier is used in this formula: (nutrition * saturation_modifier * 2) when appling the saturation buff. Which happens when you eat the item.",
+      "type": "number",
+      "default": 0.6
+    },
+    "using_converts_to": {
+      "title": "Using Converts To",
+      "description": "When used, convert the *this* item to the one specified by `using_converts_to`.",
+      "type": "string"
+    }
+  }
+}

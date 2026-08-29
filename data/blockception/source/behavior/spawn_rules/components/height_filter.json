@@ -1,0 +1,11 @@
+{
+  "$id": "blockception.minecraft.behavior.spawn_rules.minecraft.height_filter",
+  "additionalProperties": false,
+  "type": "object",
+  "title": "Height Filter",
+  "description": "This component allows players to set mobs spawn within certain heights of their map.",
+  "properties": {
+    "min": { "type": "integer", "description": "This is the minimum height level that a mob spawns.", "title": "Min" },
+    "max": { "type": "integer", "description": "This is the maximum height level that a mob spawns.", "title": "Max" }
+  }
+}

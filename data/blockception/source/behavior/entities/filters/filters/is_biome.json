@@ -1,0 +1,25 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.filters.is_biome",
+  "type": "object",
+  "title": "Is Biome",
+  "description": "Tests whether the Subject is currently in the named biome.",
+  "required": ["value"],
+  "properties": {
+    "test": {
+      "type": "string",
+      "title": "Test Property",
+      "description": "Tests whether the Subject is currently in the named biome."
+    },
+    "operator": {
+      "$ref": "./types/operator.json"
+    },
+    "subject": {
+      "$ref": "./types/subject.json"
+    },
+    "value": {
+      "description": "The biome type to test.",
+      "title": "Value",
+      "type": "string"
+    }
+  }
+}

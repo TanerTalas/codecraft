@@ -1,0 +1,30 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.move_towards_target",
+  "type": "object",
+  "title": "Move Towards Target",
+  "additionalProperties": false,
+  "description": "Allows mob to move towards its current target.",
+  "required": [],
+  "properties": {
+    "priority": {
+      "$ref": "./types/priority.json"
+    },
+    "speed_multiplier": {
+      "$ref": "./types/speed_multiplier.json"
+    },
+    "control_flags": {
+      "$ref": "./types/control_flags.json"
+    },
+    "within_radius": {
+      "type": "number",
+      "default": 0.0,
+      "description": "Defines the radius in blocks that the mob tries to be from the target. A value of 0 means it tries to occupy the same block as the target",
+      "title": "Within Radius"
+    }
+  },
+  "examples": [
+    {
+      "within_radius": 0.0
+    }
+  ]
+}

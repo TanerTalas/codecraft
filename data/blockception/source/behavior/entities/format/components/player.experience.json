@@ -1,0 +1,28 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.player.experience",
+  "additionalProperties": false,
+  "type": "object",
+  "title": "Player.experience",
+  "description": "Defines how much experience each player action should take.",
+  "required": [],
+  "properties": {
+    "value": {
+      "type": "integer",
+      "default": 1,
+      "title": "Value",
+      "description": "The initial value of the player experience."
+    },
+    "max": {
+      "type": "integer",
+      "default": 5,
+      "title": "Maximum",
+      "description": "The maximum player experience of this entity."
+    }
+  },
+  "examples": [
+    {
+      "value": 0,
+      "max": 1
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "$id": "format_version",
+  "title": "Format Version",
+  "description": "A version that tells minecraft what type of data format can be expected when reading this file.",
+  "oneOf": [
+    {
+      "pattern": "^([1-9]+)\\.([0-9]+)\\.([0-9]+)$"
+    },
+    {
+      "const": "beta"
+    }
+  ],
+  "type": "string",
+  "default": "1.26.0",
+  "examples": [
+    "1.26.0",
+    "1.21.50",
+    "1.20.80",
+    "1.20.40",
+    "1.19.0",
+    "1.12.0",
+    "1.10.0",
+    "1.8.0"
+  ],
+  "defaultSnippets": [
+    {
+      "label": "New Format version",
+      "body": "1.${1|8,10,12,17,18,19,20|}.${3|2|0|}"
+    }
+  ]
+}

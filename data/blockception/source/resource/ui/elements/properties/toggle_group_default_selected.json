@@ -1,0 +1,12 @@
+{
+  "title": "Toggle Group Default Selected",
+  "description": "The default selected toggle of the toggle group.",
+  "anyOf": [
+    {
+      "$ref": "../../general/string.json"
+    },
+    {
+      "$ref": "../../general/integer.json"
+    }
+  ]
+}

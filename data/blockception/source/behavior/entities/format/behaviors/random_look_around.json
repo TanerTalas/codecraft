@@ -1,0 +1,54 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.random_look_around",
+  "additionalProperties": false,
+  "description": "Allows the mob to randomly look around.",
+  "type": "object",
+  "title": "Random Look Around",
+  "required": [],
+  "properties": {
+    "priority": {
+      "$ref": "./types/priority.json"
+    },
+    "control_flags": {
+      "$ref": "./types/control_flags.json"
+    },
+    "angle_of_view_horizontal": {
+      "title": "Angle Of View Horizontal",
+      "type": "integer",
+      "default": 180,
+      "description": "The angle in degrees that an entity can see in the Y-axis (up-down)."
+    },
+    "angle_of_view_vertical": {
+      "title": "Angle Of View Vertical",
+      "type": "integer",
+      "default": 180,
+      "description": "The angle in degrees that an entity can see in the X-axis (left-right)."
+    },
+    "look_time": {
+      "title": "Look Time",
+      "description": "The range of time in seconds the mob will stay looking in a random direction before looking elsewhere",
+      "$ref": "../../../../general/min_max_int.json"
+    },
+    "probability": {
+      "title": "Probability",
+      "type": "number",
+      "default": 0.02,
+      "minimum": 0,
+      "maximum": 1,
+      "description": "The probability of looking at the target."
+    }
+  },
+  "examples": [
+    {
+      "look_distance": 0.0
+    },
+    {
+      "priority": 2,
+      "max_look_count": 4,
+      "min_look_count": 1,
+      "max_look_time": 60,
+      "min_look_time": 5,
+      "probability": 0.35
+    }
+  ]
+}

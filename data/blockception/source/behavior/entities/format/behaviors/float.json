@@ -1,0 +1,34 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.float",
+  "type": "object",
+  "title": "Float",
+  "description": "Allows the mob to stay afloat while swimming.",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "priority": {
+      "$ref": "./types/priority.json"
+    },
+    "control_flags": {
+      "$ref": "./types/control_flags.json"
+    },
+    "sink_with_passengers": {
+      "title": "Sink With Passengers",
+      "description": "If true, the mob will keep sinking as long as it has passengers.",
+      "type": "boolean",
+      "default": false
+    },
+    "chance_per_tick_to_float": {
+      "title": "Chance Per Tick To Float",
+      "description": "The chance per tick to cause an upward impulse.",
+      "type": "number",
+      "default": 0.8
+    },
+    "time_under_water_to_dismount_passengers": {
+      "title": "Time Under Water To Dismount Passengers",
+      "description": "Time in seconds that a floating vehicles head can be underwater before it causes its passengers to dismount.",
+      "type": "number",
+      "default": 0.0
+    }
+  }
+}

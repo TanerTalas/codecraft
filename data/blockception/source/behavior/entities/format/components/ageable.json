@@ -1,0 +1,125 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.ageable",
+  "type": "object",
+  "title": "Ageable",
+  "description": "Adds a timer for the entity to grow up. It can be accelerated by giving the entity the items it likes as defined by feedItems.",
+  "additionalProperties": false,
+  "properties": {
+    "drop_items": {
+      "description": "List of items that the entity drops when it grows up.",
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "../../../../general/item/descriptor.json"
+          }
+        },
+        {
+          "type": "string",
+          "$ref": "../../../../general/item/descriptor.json"
+        }
+      ],
+      "title": "Drop Items"
+    },
+    "pause_growth_items": {
+      "description": "List of items that can be fed to the entity to pause growth for baby entities.",
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "../../../../general/item/descriptor.json"
+          }
+        },
+        {
+          "type": "string",
+          "$ref": "../../../../general/item/descriptor.json"
+        }
+      ],
+      "title": "Pause Growth Items"
+    },
+    "reset_growth_items": {
+      "description": "List of items that can be used to reset growth for baby entities.",
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "../../../../general/item/descriptor.json"
+          }
+        },
+        {
+          "type": "string",
+          "$ref": "../../../../general/item/descriptor.json"
+        }
+      ],
+      "title": "Reset Growth Items"
+    },
+    "duration": {
+      "type": "number",
+      "default": 1200,
+      "description": "Amount of time before the entity grows up, -1 for always a baby.",
+      "title": "Duration"
+    },
+    "feed_items": {
+      "description": "List of items that can be fed to the entity. Includes `item` for the item name and `growth` to define how much time it grows up by",
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "../../../../general/item/identifier.json"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "growth": {
+                    "type": "number"
+                  },
+                  "item": {
+                    "$ref": "../../../../general/item/descriptor.json"
+                  },
+                  "result_item": {
+                    "$ref": "../../../../general/item/descriptor.json",
+                    "title": "Result Item",
+                    "description": "The feed item used will transform to this item upon successful interaction. Format: itemName:auxValue"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "string",
+          "$ref": "../../../../general/item/identifier.json"
+        }
+      ],
+      "title": "Feed Items"
+    },
+    "grow_up": {
+      "$ref": "../types/event_object.json",
+      "description": "Event to run when this entity grows up.",
+      "title": "Grow Up"
+    },
+    "reset_growth": {
+      "$ref": "../types/event_object.json",
+      "description": "Event to run when aging is reset for baby entities",
+      "title": "Reset Growth"
+    },
+    "pause_growth": {
+      "$ref": "../types/event_object.json",
+      "description": "Event to run when aging is paused for baby entities",
+      "title": "Pause Growth"
+    },
+    // TODO: Figure out if result_item is valid here or restricted to within feed_items
+    "interact_filters": {
+      "$ref": "../../filters/filters.json",
+      "title": "Interact Filters",
+      "description": "List of conditions to meet so that the entity can be fed."
+    }
+  },
+  "examples": [
+    {
+      "duration": 1200
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "title": "Structure Template Feature",
+  "description": "`minecraft:structure_template_feature` places a structure in the world. The structure must be stored as a .mcstructure file in the `structures` subdirectory of a behavior pack. It is possible to reference structures that are part of other behavior packs, they do not need to come from the same behavior pack as this feature. Constraints can be defined to specify where the structure is allowed to be placed. During placement, the feature will search for a position within the 'adjustment_radius' that satisfies all constraints. If none are found, the structure will not be placed.\nSucceeds if: The structure is placed in the world.\nFails if: The structure fails to be placed within the world.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["description", "structure_name", "constraints"],
+  "properties": {
+    "description": {
+      "$ref": "../types/description.json"
+    },
+    "structure_name": {
+      "title": "Structure Name",
+      "description": "Reference to the structure to be placed.",
+      "type": "string",
+      "pattern": "^\\w+:(\\w|/)+"
+    },
+    "adjustment_radius": {
+      "title": "Adjustment Radius",
+      "description": "How far the structure is allowed to move when searching for a valid placement position. Search is radial, stopping when the nearest valid position is found. Defaults to 0 if omitted.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 16
+    },
+    "facing_direction": {
+      "title": "Facing Direction",
+      "description": "Direction the structure will face when placed in the world. Defaults to `random` if omitted.",
+      "type": "string",
+      "enum": ["north", "south", "east", "west", "random"]
+    },
+    "rotate_around_center": {
+      "title": "Rotate Around Center",
+      "description": "If true, tries to rotate the structure around its center when placed in the world.",
+      "type": "boolean",
+      "default": false
+    },
+    "ground_level": {
+      "title": "Ground Level",
+      "description": "Specifies which Y coordinate of the structure is considered its ground level. This value determines which layer of the structure is checked by the \"grounded\" and \"leveled\" constraints and is used as a downward vertical offset during placement. If the value exceeds the structure's height, it is clamped to the maximum valid value and a content warning is emitted.",
+      "type": "integer", 
+      "minimum": 0,
+      "default": 0
+    },
+    "constraints": {
+      "title": "",
+      "description": "Specific constraints that must be satisfied when placing this structure.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "grounded": {
+          "title": "Grounded",
+          "description": "When specified, ensures the structure is on the ground.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        },
+        "leveled": {
+          "title": "Leveled",
+          "description": "When specified, ensures the structure's ground level is placed on mostly flat terrain.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "max_steepness": {
+              "title": "Max Steepness",
+              "description": "Maximum allowed height difference between the placement position and terrain samples taken halfway along each side of the structure. A valid terrain sample consists of a solid block with a non‑solid block above it.",
+              "type": "integer", 
+              "minimum": 0,
+              "maximum": 8,
+              "default": 2
+            }
+          }
+        },
+        "unburied": {
+          "title": "Unburied",
+          "description": "When specified, ensures the structure has air above it.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        },
+        // When specified, ensures the structure only intersects with allowlisted blocks.
+        "block_intersection": {
+          "title": "Unburied",
+          "description": "When specified, ensures the structure has air above it.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "only_check_intersection_for_motion_blocking_blocks": {
+              "title": "Only Check Intersection For Motion Blocking Blocks",
+              "description": "If true, only motion-blocking blocks within the structure are checked for intersections with blocks in \"block_allowlist|block_whitelist\". If false, all blocks in the structure except empty ones are checked for intersections, including air.",
+              "type": "boolean",
+              "default": false
+            },
+            "block_allowlist": {
+              "title": "Block Allowlist",
+              "description": "List of blocks the owning structure is allowed to intersect with.",
+              "type": "array",
+              "items": {
+                "title": "Block",
+                "$ref": "../../../general/block/reference.json"
+              }
+            },
+            "block_whitelist": {
+              "title": "Block Whitelist",
+              "description": "List of blocks the owning structure is allowed to intersect with.",
+              "type": "array",
+              "items": {
+                "title": "Block",
+                "$ref": "../../../general/block/reference.json"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

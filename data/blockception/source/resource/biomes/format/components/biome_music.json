@@ -1,0 +1,26 @@
+{
+  "$id": "blockception.minecraft.resource.biomes.minecraft.biome_music",
+  "title": "Biome Music",
+  "description": "Affects how music plays within the biome.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "music_definition": {
+      "title": "Music Definition",
+      "description": "Music to be played when inside this biome. If left off or not found the default music will be determined by the dimension. Empty string will result in no music.",
+      "type": "string"
+    },
+    "underwater_music": {
+      "title": "Underwater Music",
+      "description": "Enables underwater music",
+      "type": "boolean"
+    },
+    "volume_multiplier": {
+      "title": "Volume Multiplier",
+      "description": "Multiplier temporarily and gradually applied to music volume when within this biome.",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.environment_sensor",
+  "title": "Environment Sensor",
+  "description": "Creates a trigger based on environment conditions.",
+  "type": "object",
+  "additionalProperties": false,
+  "examples": [
+    {
+      "triggers": [
+        {
+          "event": "self:example",
+          "target": "self",
+          "filters": { "test": "has_tag", "value": "example" }
+        }
+      ]
+    }
+  ],
+  "properties": {
+    "triggers": {
+      "description": "The list of triggers that fire when the environment conditions match the given filter criteria.",
+      "title": "Triggers",
+      "$ref": "../types/trigger.json"
+    }
+  }
+}

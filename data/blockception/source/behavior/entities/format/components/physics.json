@@ -1,0 +1,29 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.physics",
+  "additionalProperties": false,
+  "type": "object",
+  "title": "Physics",
+  "description": "Defines the physical properties of an actor, including whether it is affected by gravity, whether it collides with objects, or whether it is pushed to the closest space.",
+  "required": [],
+  "properties": {
+    "has_collision": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether or not the entity collides with things.",
+      "title": "Has Collision"
+    },
+    "has_gravity": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether or not the entity is affected by gravity.",
+      "title": "Has Gravity"
+    },
+    "push_towards_closest_space": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether or not the entity is pushed to the closest space.",
+      "title": "Pushed Towards Closest Space"
+    }
+  },
+  "examples": [{}, { "has_collision": true, "has_gravity": true }, { "push_towards_closest_space": true }]
+}

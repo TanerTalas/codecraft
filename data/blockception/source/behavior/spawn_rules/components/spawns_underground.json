@@ -1,0 +1,8 @@
+{
+  "$id": "blockception.minecraft.behavior.spawn_rules.minecraft.spawns_underground",
+  "additionalProperties": false,
+  "type": "object",
+  "title": "Spawns Underground",
+  "description": "This component allows an entity to spawn underground.",
+  "properties": {}
+}

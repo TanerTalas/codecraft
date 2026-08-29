@@ -1,0 +1,28 @@
+{
+  "$id": "blockception.minecraft.behavior.loot_tables.set_count",
+  "additionalProperties": false,
+  "type": "object",
+  "description": "The function set_count.",
+  "title": "Set Count",
+  "properties": {
+    "add": {
+      "title": "Add",
+      "description": "UNDOCUMENTED.",
+      "$comment": "UNDOCUMENTED",
+      "type": "boolean"
+    },
+    "function": {
+      "type": "string",
+      "const": "set_count",
+      "title": "Function",
+      "description": "UNDOCUMENTED.",
+      "$comment": "UNDOCUMENTED"
+    },
+    "count": {
+      "title": "Count",
+      "$ref": "../../../general/int_or_range.json",
+      "description": "UNDOCUMENTED.",
+      "$comment": "UNDOCUMENTED"
+    }
+  }
+}

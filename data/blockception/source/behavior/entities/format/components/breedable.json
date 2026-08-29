@@ -1,0 +1,194 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.breedable",
+  "type": "object",
+  "title": "Breedable",
+  "additionalProperties": false,
+  "description": "Defines the way an entity can get into the `love` state.",
+  "definitions": {
+    "breeds_with_spec": {
+      "type": "object",
+      "description": "An entity definitions that this entity can breed with.",
+      "additionalItems": false,
+      "properties": {
+        "baby_type": {
+          "type": "string",
+          "description": "The entity definition of this entity's babies.",
+          "title": "Baby Type"
+        },
+        "breed_event": {
+          "$ref": "../types/event_object.json",
+          "description": "Event to run when this entity breeds.",
+          "title": "Breed Event"
+        },
+        "mate_type": {
+          "type": "string",
+          "description": "The entity definition of this entity's mate.",
+          "title": "Mate Type"
+        }
+      }
+    },
+    "enviroment_requirements": {
+      "type": "object",
+      "description": "A nearby block requirements to get the entity into the `love` state.",
+      "properties": {
+        "blocks": {
+          "description": "The block types required nearby for the entity to breed.",
+          "title": "Blocks",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "description": "A block type required nearby for the entity to breed.",
+                "type": "string",
+                "$ref": "../../../../general/block/reference.json",
+                "title": "Blocks"
+              }
+            },
+            {
+              "description": "A block type required nearby for the entity to breed.",
+              "type": "string",
+              "$ref": "../../../../general/block/reference.json",
+              "title": "Blocks"
+            }
+          ]
+        },
+        "count": {
+          "type": "number",
+          "description": "The number of the required block types nearby for the entity to breed.",
+          "title": "Count"
+        },
+        "radius": {
+          "type": "number",
+          "description": "How many blocks radius from the mob's center to search in for the required blocks. Bounded between 0 and 16.",
+          "minimum": 0,
+          "title": "Radius"
+        }
+      },
+      "title": "Environment Requirements"
+    }
+  },
+  "properties": {
+    "allow_sitting": {
+      "description": "If true, entities can breed while sitting.",
+      "type": "boolean",
+      "default": false,
+      "title": "Allow Sitting"
+    },
+    "breed_cooldown": {
+      "description": "Time in seconds before the Entity can breed again.",
+      "type": "number",
+      "default": 60.0,
+      "title": "Breed Cooldown"
+    },
+    "breed_items": {
+      "description": "The list of items that can be used to get the entity into the `love` state.",
+      "title": "Breed Items",
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "../../../../general/item/identifier.json"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "item": {
+                    "$ref": "../../../../general/item/descriptor.json"
+                  },
+                  "result_item": {
+                    "$ref": "../../../../general/item/descriptor.json",
+                    "title": "Result Item",
+                    "description": "The item used will transform to this item upon successful interaction. Format: itemName:auxValue"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "string",
+          "$ref": "../../../../general/item/descriptor.json"
+        }
+      ]
+    },
+    "breeds_with": {
+      "description": "The list of entity definitions that this entity can breed with.",
+      "title": "Breeds With",
+      "oneOf": [
+        {
+          "type": "object",
+          "$ref": "#/definitions/breeds_with_spec"
+        },
+        {
+          "uniqueItems": true,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/breeds_with_spec"
+          }
+        }
+      ]
+    },
+    "causes_pregnancy": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, the entity will become pregnant instead of spawning a baby.",
+      "title": "Causes Pregnancy"
+    },
+    "environment_requirements": {
+      "description": "The list of nearby block requirements to get the entity into the `love` state.",
+      "oneOf": [
+        {
+          "type": "object",
+          "$ref": "#/definitions/enviroment_requirements"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/enviroment_requirements"
+          }
+        }
+      ],
+      "title": "Environment Requirements"
+    },
+    "extra_baby_chance": {
+      "type": "number",
+      "default": 0.0,
+      "description": "Chance that up to 16 babies will spawn between 0.0 and 1.0, where 1.0 is 100%.",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "title": "Extra Baby Chance"
+    },
+    "love_filters": {
+      "$ref": "../../filters/filters.json",
+      "description": "The filters to run when attempting to fall in love.",
+      "title": "Love Filters"
+    },
+    "require_full_health": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, the entity needs to be at full health before it can breed.",
+      "title": "Require Full Health"
+    },
+    "require_tame": {
+      "type": "boolean",
+      "default": true,
+      "description": "If true, the entities need to be tamed first before they can breed.",
+      "title": "Require Tame"
+    }
+    // TODO: Figure out if result_item is valid here or restricted to within breed_items
+  },
+  "examples": [
+    {
+      "allow_sitting": false,
+      "breed_cooldown": 60.0,
+      "extra_baby_chance": 0.0,
+      "causes_pregnancy": false,
+      "inherit_tamed": true,
+      "require_full_health": false,
+      "require_tame": true
+    }
+  ]
+}

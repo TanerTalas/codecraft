@@ -1,0 +1,42 @@
+{
+  "$id": "blockception.minecraft.behavior.loot_tables.exploration_map",
+  "additionalProperties": false,
+  "description": "Transforms a normal map into a treasure map that marks the location of hidden treasure.",
+  "title": "Exploration Map",
+  "type": "object",
+  "properties": {
+    "function": {
+      "type": "string",
+      "const": "exploration_map",
+      "description": "Transforms a normal map into a treasure map that marks the location of hidden treasure.",
+      "title": "Function"
+    },
+    "destination": {
+      "type": "string",
+      "description": "The destination value defines what type of treasure map they receive. (Note: The following do not work, even though the docs say they do: endcity, fortress, mineshaft, ruins, stronghold, temple, village, shipwreck, and pillageroutpost.)",
+      "enum": [
+        "endcity",
+        "fortress",
+        "mineshaft",
+        "monument",
+        "ruins",
+        "stronghold",
+        "temple",
+        "village_desert",
+        "village_plains",
+        "village_savanna",
+        "village_snowy",
+        "village_taiga",
+        "village",
+        "mansion",
+        "shipwreck",
+        "buriedtreasure",
+        "pillageroutpost",
+        "jungle_temple",
+        "swamp_hut",
+        "trial_chambers"
+      ],
+      "title": "Destination"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$id": "blockception.minecraft.behavior.loot_tables.trader_material_type",
+  "additionalProperties": false,
+  "description": "The function trader_material_type.",
+  "title": "Trader Material Type",
+  "type": "object",
+  "properties": {
+    "function": {
+      "type": "string",
+      "const": "trader_material_type",
+      "description": "UNDOCUMENTED.",
+      "$comment": "UNDOCUMENTED",
+      "title": "Function"
+    }
+  }
+}

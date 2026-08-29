@@ -1,0 +1,41 @@
+{
+  "$id": "blockception.minecraft.behavior.blocks.traits.minecraft.placement_direction",
+  "title": "Placement Direction",
+  "description": "Contains information about the player's rotation when the block was placed.",
+  "additionalProperties": false,
+  "type": "object",
+  "required": ["enabled_states"],
+  "properties": {
+    "enabled_states": {
+      "title": "Enabled States",
+      "description": "Block states you wish to enable",
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": {
+        "enum": [
+          "minecraft:cardinal_direction",
+          "minecraft:facing_direction",
+          "minecraft:corner_and_cardinal_direction",
+          "minecraft:sixteen_way_rotation"
+        ]
+      }
+    },
+    "y_rotation_offset": {
+      "title": "Y Rotation Offset",
+      "description": "This rotation offset only applies to the horizontal state values",
+      "type": "number",
+      "multipleOf": 90,
+      "default": 0,
+      "enum": [0, 90, 180, 270, 360]
+    },
+    "blocks_to_corner_with": {
+      "title": "Blocks To Corner With",
+      "description": "Decides the criteria with an array of block descriptors to determine what blocks to form a corner with. The default behavior for this field is to corner with the same block name",
+      "type": "array",
+      "items": {
+        "$ref": "../../../../general/block/reference.json"
+      }
+    }
+  }
+}

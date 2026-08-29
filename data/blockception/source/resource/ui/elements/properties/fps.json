@@ -1,0 +1,6 @@
+{
+  "title": "FPS",
+  "description": "The FPS of the animation.",
+  "$ref": "../../general/number.json",
+  "multipleOf": 1
+}

@@ -1,0 +1,31 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.filters.has_mob_effect",
+  "type": "object",
+  "title": "Has Mob Effect",
+  "description": "Tests whether the Subject has the specified mob effect.",
+  "required": ["value"],
+  "properties": {
+    "test": {
+      "type": "string",
+      "title": "Test Property",
+      "description": "Tests whether the Subject has the specified mob effect."
+    },
+    "operator": {
+      "$ref": "./types/operator.json"
+    },
+    "subject": {
+      "$ref": "./types/subject.json"
+    },
+    "value": {
+      "$ref": "../../../../general/vanilla/effect.json",
+      "description": "The specified mob effect.",
+      "title": "Value"
+    }
+  },
+  "examples": [
+    {
+      "test": "has_mob_effect",
+      "value": "bad_omen"
+    }
+  ]
+}

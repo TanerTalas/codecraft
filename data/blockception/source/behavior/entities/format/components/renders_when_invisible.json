@@ -1,0 +1,8 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.renders_when_invisible",
+  "title": "Renders When Invisible",
+  "description": "When set, the entity will render even when invisible. Appropriate rendering behavior can then be specified in the corresponding \"minecraft:client_entity\".",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}

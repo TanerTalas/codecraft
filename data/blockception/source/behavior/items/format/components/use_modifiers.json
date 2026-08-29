@@ -1,0 +1,42 @@
+{
+  "$id": "blockception.minecraft.behavior.items.minecraft:use_modifiers",
+  "additionalProperties": false,
+  "required": ["use_duration"],
+  "type": "object",
+  "title": "Use Modifiers",
+  "description": "How long to use before item is done being used.",
+  "properties": {
+    "movement_modifier": {
+      "title": "Movement Modifier",
+      "description": "Modifier value to scale the players movement speed when item is in use.",
+      "type": "number",
+      "minimum": 0
+    },
+    "use_duration": {
+      "title": "Use Duration",
+      "description": "How long the item takes to use in seconds.",
+      "type": "number",
+      "minimum": 0
+    },
+    "emit_vibrations": {
+      "title": "Emit Vibrations",
+      "description": "Whether vibrations are emitted when the item starts or stops being used.",
+      "type": "boolean",
+      "default": true
+    },
+    "start_sound": {
+      "title": "Start Sound",
+      "description": "Sound played when the item starts being used.",
+      "type": "string"
+    },
+    "start_using": {
+      "title": "Start Using",
+      "description": "Controls how using the item triggers start using behavior. \"if_first\" only starts if no other component has started using yet; \"always\" always restarts using. Defaults to \"if_first\".",
+      "enum": [
+        "if_first",
+        "always"
+      ],
+      "default": "if_first"
+    }
+  }
+}

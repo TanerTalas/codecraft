@@ -1,0 +1,40 @@
+{
+  "$id": "blockception.minecraft.behavior.blocks.minecraft.flammable",
+  "title": "Flammable",
+  "description": "Describes the flammable properties for this block. If set to true, default values are used. If set to false, or if this component is omitted, the block will not be able to catch on fire naturally from neighbors, but it can still be directly ignited.",
+  "oneOf": [
+    {
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "catch_chance_modifier": {
+          "title": "Catch Chance Modifier",
+          "description": "A modifier affecting the chance that this block will catch flame when next to a fire. Values are greater than or equal to 0, with a higher number meaning more likely to catch on fire",
+          "type": "number",
+          "default": 5
+        },
+        "destroy_chance_modifier": {
+          "title": "Destroy Chance Modifier",
+          "description": "A modifier affecting the chance that this block will be destroyed by flames when on fire.",
+          "type": "number",
+          "default": 20
+        },
+        "lava_flammable": {
+          "default": "never",
+          "description": "Determines lava fire consideration. \"always\" includes this block when lava attempts to spread fire (triggered by adjacent block changes), but normal fire-placement rules still apply.\n\"never\" excludes this block from that check.",
+          "enum": [
+            "always",
+            "never"
+          ],
+          "title": "Lava Flammable",
+          "type": "string"
+        }
+      }
+    }
+  ]
+}

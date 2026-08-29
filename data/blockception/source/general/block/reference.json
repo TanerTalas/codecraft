@@ -1,0 +1,38 @@
+{
+  "$id": "blockception.minecraft.block.reference",
+  "description": "A minecraft block reference.",
+  "examples": ["namespace:block", { "name": "namespace:block" }],
+  "title": "Block Reference",
+  "defaultSnippets": [{ "label": "New Identifier", "body": "$1:$2" }],
+  "oneOf": [
+    { "type": "string", "$ref": "./identifier.json" },
+    {
+      "title": "Block Reference",
+      "description": "",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "$ref": "./identifier.json" },
+        "states": {
+          "title": "States",
+          "description": "",
+          "type": "object",
+          "propertyNames": {
+            "pattern": "\\w*:?\\w+"
+          },
+          "example": [{ "property": "value" }],
+          "additionalProperties": {
+            "type": ["boolean", "integer", "string"],
+            "title": "State Value",
+            "description": "The key of property is the name of the block state/property, the value must be the same as the block properties accepted values."
+          }
+        },
+        "tags": {
+          "$ref": "../../molang/string.json",
+          "description": "A condition using Molang queries that results to true/false that can be used to query for blocks with certain tags.",
+          "examples": ["query.any_tag('wood')", "q.any_tag('minecraft:cornerable_stairs')"]
+        }
+      }
+    }
+  ]
+}

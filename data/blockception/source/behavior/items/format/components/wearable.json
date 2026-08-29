@@ -1,0 +1,47 @@
+{
+  "$id": "blockception.minecraft.behavior.items.minecraft:wearable",
+  "title": "Wearable",
+  "description": "Wearable item component.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "protection": {
+      "type": "integer",
+      "description": "How much protection does the armor item have.",
+      "title": "Protection",
+      "minimum": 0
+    },
+    "dispensable": {
+      "title": "Dispensable",
+      "description": "Sets if the item can be dropped by a dispenser block",
+      "type": "boolean"
+    },
+    "slot": {
+      "title": "Slot",
+      "description": "Which equipment slot the item can fit in",
+      "type": "string",
+      "enum": [
+        "none",
+        "slot.weapon.mainhand",
+        "slot.weapon.offhand",
+        "slot.armor.head",
+        "slot.armor.chest",
+        "slot.armor.legs",
+        "slot.armor.feet",
+        "slot.hotbar",
+        "slot.inventory",
+        "slot.enderchest",
+        "slot.saddle",
+        "slot.armor",
+        "slot.chest",
+        "slot.equippable"
+      ]
+    },
+    "hides_player_location": {
+      "title": "Hides Player Location",
+      "description": "Defines whether Players are hidden on the Locator Bar and Locator Maps when eqipped in the appropriate wearable slot",
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

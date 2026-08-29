@@ -1,0 +1,424 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.events",
+  "type": "object",
+  "title": "Events",
+  "description": "Events for entities.",
+  "additionalProperties": { "$ref": "#/definitions/event_base" },
+  "definitions": {
+    "addremove": {
+      "additionalProperties": false,
+      "title": "Add Or Remove",
+      "description": "The components groups to add or remove.",
+      "type": "object",
+      "examples": [{ "component_groups": ["self:variant1"] }],
+      "properties": {
+        "component_groups": {
+          "title": "Component Groups",
+          "description": "The components groups to add or remove.",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "description": "A reference to a component group.",
+                "title": "Component Groups"
+              }
+            },
+            {
+              "type": "string",
+              "description": "A reference to a component group.",
+              "title": "Component Groups"
+            }
+          ]
+        }
+      }
+    },
+    "event_base": {
+      "additionalProperties": false,
+      "type": "object",
+      "examples": [{}, { "add": { "component_groups": [] } }, { "remove": { "component_groups": [] } }],
+      "defaultSnippets": [
+        { "label": "New Add Event", "body": { "add": { "component_groups": ["$1"] } } },
+        { "label": "New Remove Event", "body": { "remove": { "component_groups": ["$1"] } } },
+        {
+          "label": "New Random Event",
+          "body": {
+            "randomize": [
+              { "add": { "component_groups": ["$1"] }, "weight": 1 },
+              { "add": { "component_groups": ["$2"] }, "weight": 1 }
+            ]
+          }
+        },
+        {
+          "label": "New Sequence Events",
+          "body": {
+            "sequence": [{ "add": { "component_groups": ["$1"] } }, { "add": { "component_groups": ["$2"] } }]
+          }
+        }
+      ],
+      "properties": {
+        "filters": { "$ref": "./../filters/filters.json" },
+        "trigger": {
+          "description": "Triggers additional events.",
+          "$comment": "UNDOCUMENTED",
+          "title": "Trigger",
+          "$ref": "./types/trigger.json"
+        },
+        "add": {
+          "$ref": "#/definitions/addremove",
+          "description": "What gets added when the event gets triggered.",
+          "title": "Add"
+        },
+        "remove": {
+          "$ref": "#/definitions/addremove",
+          "description": "What gets removed when the event gets triggered.",
+          "title": "Remove"
+        },
+        "randomize": {
+          "type": "array",
+          "description": "Randomly selects one of the following items based upon their weight and the total weights.",
+          "title": "Randomize",
+          "items": {
+            "description": "Randomly selects one of the following items based upon their weight and the total weights.",
+            "title": "Randomize",
+            "examples": [{ "add": { "component_groups": ["foo:example"] }, "weight": 1 }],
+            "$ref": "#/definitions/weighted_event_base"
+          }
+        },
+        "sequence": {
+          "type": "array",
+          "description": "A series of filters and components to be added.",
+          "title": "Sequences",
+          "items": {
+            "description": "Filters and components to be added.",
+            "title": "Sequence",
+            "type": "object",
+            "$ref": "#/definitions/event_base"
+          }
+        },
+        "execute_event_on_home_block": {
+          "title": "Execute Event On Home Block",
+          "description": "Allows the entity to execute an event on the block at its home position",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "event": {
+              "title": "Event",
+              "description": "The event to execute",
+              "type": "string"
+            }
+          }
+        },
+        "reset_target": {
+          "title": "Reset Target",
+          "description": "Allows an entity to reset its target.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        },
+        "emit_vibration": {
+          "title": "Emit Vibration",
+          "description": "UNDOCUMENTED",
+          "type": "object",
+          "properties": {
+            "vibration": {
+              "enum": ["shear", "entity_act", "entity_interact"]
+            }
+          },
+          "examples": [{ "vibration": "shear" }, { "vibration": "entity_act" }, { "vibration": "entity_interact" }]
+        },
+        "drop_item": {
+          "title": "Drop Item",
+          "description": "Allows an entity to drop its item in a given slot",
+          "type": "object",
+          "properties": {
+            "slot": {
+              "enum": [
+                "slot.armor.head",
+                "slot.armor.chest",
+                "slot.armor.legs",
+                "slot.armor.feet",
+                "slot.armor.body",
+                "slot.weapon.offhand",
+                "slot.weapon.mainhand"
+              ]
+            }
+          }
+        },
+        "set_property": {
+          "title": "Set Property",
+          "description": "Sets a property on the entity.",
+          "type": "object",
+          "additionalProperties": {
+            "title": "Property",
+            "type": ["string", "number", "integer", "boolean"],
+            "description": "The value to set the property to.",
+            "examples": [false, 0, 0.0, "math.random(0, 10)"]
+          },
+          "examples": [
+            { "example:property": false },
+            { "example:property": 0 },
+            { "example:property": 0.0 },
+            { "example:property": "one" },
+            { "example:property": "math.random(0, 10)" }
+          ]
+        },
+        "queue_command": {
+          "description": "Queues a command to be executed.",
+          "properties": {
+            "command": {
+              "title": "Command",
+              "description": "The command to execute.",
+              "oneOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[^/].*$",
+                  "examples": ["say Hello World"]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "The command to execute.",
+                    "examples": ["say Hello World"],
+                    "pattern": "^[^/].*$"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "play_sound": {
+          "title": "Play Sound",
+          "description": "Allows the owner entity to emit sounds",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sound": {
+              "title": "Sound",
+              "description": "Specifies the sound event to play",
+              "type": "string"
+            }
+          }
+        },
+        "emit_particle": {
+          "title": "Emit Particle",
+          "description": "Allowing particles to be emitted at the center of the entity's bounding box",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "particle": {
+              "title": "Particle",
+              "description": "Specifies the type of particle to emit",
+              "type": "string"
+            }
+          }
+        },
+        "stop_movement": {
+          "title": "Stop Movement",
+          "description": "Stops the entity's movement",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "stop_vertical_movement": {
+              "title": "Stop Vertical Movement",
+              "description": "Specifies whether vertical movement should be stopped",
+              "type": "boolean",
+              "default": false
+            },
+            "stop_horizontal_movement": {
+              "title": "Stop Horizontal Movement",
+              "description": "Specifies whether horizontal movement should be stopped",
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "set_home_position": {
+          "title": "Set Home Position",
+          "description": "Sets the entity's home position to its current position",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        },
+        "first_valid": {
+          "title": "First Valid",
+          "description": "Will evaluate every filter in order and execute the first valid one",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/event_base"
+          }
+        },
+        "unleash": {
+          "title": "Unleash",
+          "description": "Determine how to unleash itself and/or attached entities",
+          "type": "object", 
+          "additionalProperties": false,
+          "properties": {
+            "unleash_self": {
+              "title": "Unleash Self",
+              "description": "If true, it unleashes the entity from the entity it is leashed to",
+              "type": "boolean",
+              "default": false
+            },
+            "unleash_others": {
+              "title": "Unleash Others",
+              "description": "If true, it unleashes all entities that are leashed to the entity",
+              "type": "boolean",
+              "default": false
+            }
+          }
+        }
+      }
+    },
+    "weighted_event_base": {
+      "additionalProperties": false,
+      "type": "object",
+      "examples": [{}, { "add": { "component_groups": [] } }, { "remove": { "component_groups": [] } }],
+      "defaultSnippets": [
+        { "label": "New Add Event", "body": { "add": { "component_groups": ["$1"] } } },
+        { "label": "New Remove Event", "body": { "remove": { "component_groups": ["$1"] } } },
+        {
+          "label": "New Random Event",
+          "body": {
+            "randomize": [
+              { "add": { "component_groups": ["$1"] }, "weight": 1 },
+              { "add": { "component_groups": ["$2"] }, "weight": 1 }
+            ]
+          }
+        },
+        {
+          "label": "New Sequence Events",
+          "body": {
+            "sequence": [{ "add": { "component_groups": ["$1"] } }, { "add": { "component_groups": ["$2"] } }]
+          }
+        }
+      ],
+      "properties": {
+        "filters": { "$ref": "./../filters/filters.json" },
+        "trigger": {
+          "description": "Triggers additional events.",
+          "$comment": "UNDOCUMENTED",
+          "title": "Trigger",
+          "$ref": "./types/trigger.json"
+        },
+        "add": {
+          "$ref": "#/definitions/addremove",
+          "description": "What gets added when the event gets triggered.",
+          "title": "Add"
+        },
+        "remove": {
+          "$ref": "#/definitions/addremove",
+          "description": "What gets removed when the event gets triggered.",
+          "title": "Remove"
+        },
+        "randomize": {
+          "type": "array",
+          "description": "Randomly selects one of the following items based upon their weight and the total weights.",
+          "title": "Randomize",
+          "items": {
+            "description": "Randomly selects one of the following items based upon their weight and the total weights.",
+            "title": "Randomize",
+            "examples": [{ "add": { "component_groups": ["foo:example"] }, "weight": 1 }],
+            "$ref": "#/definitions/weighted_event_base"
+          }
+        },
+        "sequence": {
+          "type": "array",
+          "description": "A series of filters and components to be added.",
+          "title": "Sequences",
+          "items": {
+            "description": "Filters and components to be added.",
+            "title": "Sequence",
+            "type": "object",
+            "$ref": "#/definitions/event_base"
+          }
+        },
+        "emit_vibration": {
+          "title": "Emit Vibration",
+          "description": "UNDOCUMENTED",
+          "type": "object",
+          "properties": {
+            "vibration": {
+              "enum": ["shear", "entity_act", "entity_interact"]
+            }
+          },
+          "examples": [{ "vibration": "shear" }, { "vibration": "entity_act" }, { "vibration": "entity_interact" }]
+        },
+        "set_property": {
+          "title": "Set Property",
+          "description": "Sets a property on the entity.",
+          "type": "object",
+          "additionalProperties": {
+            "title": "Property",
+            "type": ["string", "number", "integer", "boolean"],
+            "description": "The value to set the property to.",
+            "examples": [false, 0, 0.0, "math.random(0, 10)"]
+          },
+          "examples": [
+            { "example:property": false },
+            { "example:property": 0 },
+            { "example:property": 0.0 },
+            { "example:property": "one" },
+            { "example:property": "math.random(0, 10)" }
+          ]
+        },
+        "queue_command": {
+          "description": "Queues a command to be executed.",
+          "properties": {
+            "command": {
+              "title": "Command",
+              "description": "The command to execute.",
+              "oneOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[^/].*$",
+                  "examples": ["say Hello World"]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "The command to execute.",
+                    "examples": ["say Hello World"],
+                    "pattern": "^[^/].*$"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "weight": {
+          "type": "number",
+          "default": 1,
+          "minimum": 1,
+          "description": "The weight on how likely this section is to trigger.",
+          "$comment": "UNDOCUMENTED",
+          "title": "Weight"
+        }
+      }
+    }
+  },
+  "properties": {
+    "minecraft:entity_transformed": {
+      "description": "Event called on an entity that transforms into another entity.",
+      "$ref": "#/definitions/event_base",
+      "title": "Entity Transformed"
+    },
+    "minecraft:entity_born": {
+      "description": "Event called on an entity that is spawned through two entities breeding.",
+      "$ref": "#/definitions/event_base",
+      "title": "Entity Born"
+    },
+    "minecraft:entity_spawned": {
+      "description": "Event called on an entity that is placed in the level.",
+      "$ref": "#/definitions/event_base",
+      "title": "Entity Spawned"
+    },
+    "minecraft:on_prime": {
+      "description": "Event called on an entity whose fuse is lit and is ready to explode.",
+      "$ref": "#/definitions/event_base",
+      "title": "On Prime"
+    }
+  }
+}

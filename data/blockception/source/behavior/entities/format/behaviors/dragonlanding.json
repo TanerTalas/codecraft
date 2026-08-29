@@ -1,0 +1,15 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.dragonlanding",
+  "additionalProperties": false,
+  "type": "object",
+  "title": "Dragonlanding",
+  "description": "Allows the Dragon to stop flying and transition into perching mode. Note: This behavior can only be used by the ender_dragon entity type.",
+  "properties": {
+    "priority": {
+      "$ref": "./types/priority.json"
+    },
+    "control_flags": {
+      "$ref": "./types/control_flags.json"
+    }
+  }
+}

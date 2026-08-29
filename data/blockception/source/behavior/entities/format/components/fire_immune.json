@@ -1,0 +1,9 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.fire_immune",
+  "title": "Fire Immune",
+  "additionalProperties": false,
+  "description": "Sets that this entity doesn't take damage from fire.",
+  "type": "object",
+  "required": [],
+  "properties": {}
+}

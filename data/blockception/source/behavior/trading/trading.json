@@ -1,0 +1,202 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "blockception.minecraft.behavior.trading",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "UNDOCUMENTED.",
+  "$comment": "UNDOCUMENTED",
+  "title": "Trading",
+  "examples": [
+    {
+      "tiers": [
+        {
+          "trades": [
+            {
+              "wants": [{ "item": "minecraft:coal:0", "quantity": { "min": 16, "max": 24 } }],
+              "gives": [{ "item": "minecraft:emerald" }]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "definitions": {
+    "Item": {
+      "title": "Item",
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "item": { "type": "string", "title": "Item Identifier" },
+            "price_multiplier": { "type": "number", "title": "Price Multiplier" },
+            "functions": { "$ref": "#/definitions/Functions" },
+            "biomes": {
+              "title": "Biomes",
+              "description": "UNDOCUMENTED.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "quantity": {
+              "title": "Quantity",
+              "oneOf": [
+                { "type": "integer", "minimum": 1, "title": "Amount" },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["min", "max"],
+                  "properties": {
+                    "min": { "type": "integer", "minimum": 1, "title": "Minimum" },
+                    "max": { "type": "integer", "minimum": 1, "title": "Maximum" }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Functions": {
+      "title": "Functions",
+      "type": "array",
+      "items": { "type": "object", "required": ["function"], "$ref": "../loot_tables/functions.json" }
+    },
+    "TradeArray": {
+      "type": "array",
+      "title": "Trades",
+      "items": {
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Trade",
+        "required": ["wants", "gives"],
+        "properties": {
+          "gives": {
+            "type": "array",
+            "title": "Gives",
+            "items": {
+              "title": "Give",
+              "oneOf": [
+                { "type": "string" },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "item": { "type": "string", "title": "Item Identifier" },
+                    "quantity": {
+                      "title": "Quantity",
+                      "oneOf": [
+                        { "type": "integer", "minimum": 1, "title": "Amount" },
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": ["min", "max"],
+                          "properties": {
+                            "min": { "type": "integer", "minimum": 1, "title": "Minimum" },
+                            "max": { "type": "integer", "minimum": 1, "title": "Maximum" }
+                          }
+                        }
+                      ]
+                    },
+                    "functions": { "$ref": "#/definitions/Functions" },
+                    "choice": {
+                      "title": "Choice",
+                      "description": "UNDOCUMENTED.",
+                      "$comment": "UNDOCUMENTED",
+                      "type": "array",
+                      "items": { "$ref": "#/definitions/Item" }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "wants": {
+            "type": "array",
+            "title": "Wants",
+            "items": {
+              "title": "Want",
+              "oneOf": [
+                { "type": "string" },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "item": { "type": "string", "title": "Item Identifier" },
+                    "quantity": {
+                      "title": "Quantity",
+                      "oneOf": [
+                        { "type": "integer", "minimum": 1, "title": "Amount" },
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": ["min", "max"],
+                          "properties": {
+                            "min": { "type": "integer", "minimum": 1, "title": "Minimum" },
+                            "max": { "type": "integer", "minimum": 1, "title": "Maximum" }
+                          }
+                        }
+                      ]
+                    },
+                    "price_multiplier": {
+                      "title": "Price Multiplier",
+                      "description": "UNDOCUMENTED.",
+                      "$comment": "UNDOCUMENTED",
+                      "type": "number"
+                    },
+                    "functions": { "$ref": "#/definitions/Functions" },
+                    "choice": {
+                      "title": "Choice",
+                      "description": "UNDOCUMENTED.",
+                      "$comment": "UNDOCUMENTED",
+                      "type": "array",
+                      "items": { "$ref": "#/definitions/Item" }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "trader_exp": { "type": "integer", "title": "Trader Experience" },
+          "max_uses": { "type": "integer", "title": "Maximum Uses" },
+          "weight": { "type": "integer", "title": "Weight" },
+          "reward_exp": { "type": "boolean", "title": "Reward Experience" }
+        }
+      }
+    }
+  },
+  "properties": {
+    "format_version": { "$ref": "../../general/format_version.json" },
+    "tiers": {
+      "type": "array",
+      "title": "Tiers",
+      "description": "A collection of tiers.",
+      "items": {
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Tier",
+        "required": ["total_exp_required", "groups"],
+        "properties": {
+          "trades": { "$ref": "#/definitions/TradeArray" },
+          "total_exp_required": { "title": "Total Experience Required", "type": "integer" },
+          "groups": {
+            "type": "array",
+            "title": "Groups",
+            "description": "A collection of groups.",
+            "items": {
+              "type": "object",
+              "title": "Group",
+              "additionalProperties": false,
+              "properties": {
+                "num_to_select": { "title": "Number To Select", "type": "integer" },
+                "trades": { "$ref": "#/definitions/TradeArray" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

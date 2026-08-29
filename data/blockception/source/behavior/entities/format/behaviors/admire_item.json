@@ -1,0 +1,46 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.admire_item",
+  "type": "object",
+  "title": "Admire Item",
+  "description": "Enables the mob to admire items that have been configured as admirable. Must be used in combination with the admire_item component.",
+  "additionalProperties": false,
+  "properties": {
+    "priority": {
+      "$ref": "types/priority.json"
+    },
+    "control_flags": {
+      "$ref": "./types/control_flags.json"
+    },
+    "admire_item_sound": {
+      "title": "Admire Item Sound",
+      "$ref": "../../../../general/sound_event.json",
+      "description": "The sound event to play when admiring the item."
+    },
+    "on_admire_item_start": {
+      "title": "On Admire Item Start",
+      "$ref": "../types/event.json",
+      "description": "The event to run when admiring the item."
+    },
+    "on_admire_item_stop": {
+      "title": "On Admire Item Stop",
+      "$ref": "../types/event.json",
+      "description": "The event to run when no longer admiring the item."
+    },
+    "sound_interval": {
+      "title": "Sound Interval",
+      "default": 0,
+      "description": "The range of time in seconds to randomly wait before playing the sound again.",
+      "oneOf": [
+        {
+          "$ref": "../../../../general/min_max_float.json"
+        },
+        { "type": "number" }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "admire_item_sound": ""
+    }
+  ]
+}

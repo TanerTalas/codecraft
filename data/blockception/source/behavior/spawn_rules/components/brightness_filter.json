@@ -1,0 +1,31 @@
+{
+  "$id": "blockception.minecraft.behavior.spawn_rules.minecraft.brightness_filter",
+  "additionalProperties": false,
+  "type": "object",
+  "title": "Brightness Filter",
+  "description": "This component allows players to set the light level range that causes the mob to spawn.",
+  "properties": {
+    "min": {
+      "type": "integer",
+      "description": "This is the minimum light level value that allows the mob to spawn.",
+      "title": "Min",
+      "minimum": 0,
+      "maximum": 15,
+      "default": 0
+    },
+    "max": {
+      "type": "integer",
+      "description": "This is the maximum light level value that allows the mob to spawn.",
+      "title": "Max",
+      "maximum": 15,
+      "minimum": 0,
+      "default": 15
+    },
+    "adjust_for_weather": {
+      "type": "boolean",
+      "description": "This determines if weather can affect the light level conditions that cause the mob to spawn (e.g. Allowing hostile mobs to spawn during the day when it rains.)",
+      "title": "Adjust For Weather",
+      "default": true
+    }
+  }
+}

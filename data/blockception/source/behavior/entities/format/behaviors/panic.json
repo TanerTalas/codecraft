@@ -1,0 +1,94 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.panic",
+  "description": "Allows the mob to enter the panic state, which makes it run around and away from the damage source that made it enter this state.",
+  "type": "object",
+  "title": "Panic",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "priority": {
+      "$ref": "./types/priority.json"
+    },
+    "speed_multiplier": {
+      "$ref": "./types/speed_multiplier.json"
+    },
+    "damage_sources": {
+      "title": "Damage Sources",
+      "type": "array",
+      "items": {
+        "$ref": "../../../../general/entity/damage_source.json"
+      },
+      "default": [
+        "campfire",
+        "entity_attack",
+        "entity_explosion",
+        "fire",
+        "fire_tick",
+        "fireworks",
+        "freezing",
+        "lava",
+        "lightning",
+        "magic",
+        "magma",
+        "projectile",
+        "ram_attack",
+        "sonic_boom",
+        "soul_campfire",
+        "temperature",
+        "wither"
+      ],
+      "description": "The list of Entity Damage Sources that will cause this mob to panic."
+    },
+    "force": {
+      "title": "Force",
+      "type": "boolean",
+      "default": false,
+      "description": "If true, this mob will not stop panicking until it can't move anymore or the goal is removed from it."
+    },
+    "ignore_mob_damage": {
+      "title": "Ignore Mob Damage",
+      "type": "boolean",
+      "default": false,
+      "description": "If true, the mob will not panic in response to damage from other mobs. This overrides the damage types in `damage_sources`"
+    },
+    "prefer_water": {
+      "title": "Prefer Water",
+      "type": "boolean",
+      "default": false,
+      "description": "If true, the mob will prefer water over land."
+    },
+    "panic_sound": {
+      "title": "Panic Sound",
+      "$ref": "../../../../general/sound_event.json",
+      "description": "The sound event to play when this mob is in panic."
+    },
+    "sound_interval": {
+      "title": "Sound Interval",
+      "type": "object",
+      "description": "The range of time in seconds to randomly wait before playing the sound again.",
+      "properties": {
+        "range_min": {
+          "type": "number",
+          "description": "The minimum time in seconds before the `panic_sound` plays.",
+          "title": "Range Minimum"
+        },
+        "range_max": {
+          "type": "number",
+          "description": "The maximum time in seconds before the `panic_sound` plays.",
+          "title": "Range Maximum"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    {
+      "damage_sources": [],
+      "force": false,
+      "ignore_mob_damage": false,
+      "prefer_water": false,
+      "panic_sound": "example",
+      "sound_interval": {}
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "$id": "blockception.minecraft.behavior.blocks.minecraft.geometry",
+  "title": "Geometry",
+  "description": "The description identifier of the geometry file to use to render this block. This identifier must match an existing geometry identifier in any of the currently loaded resource packs.",
+  "oneOf": [
+    {
+      "type": "string",
+      "pattern": "^(?:minecraft:geometry\\.(full_block(_v1)?|cross)|(?!minecraft:)[a-z0-9].*[a-z0-9])$"
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "identifier" ],
+      "properties": {
+        "identifier": {
+          "title": "Identifier",
+          "description": "The description identifier of the geometry file to use to render this block. This identifier must match an existing geometry identifier in any of the currently loaded resource packs.",
+          "type": "string",
+          "pattern": "^(?:minecraft:geometry\\.(full_block(_v1)?|cross)|(?!minecraft:)[a-z0-9].*[a-z0-9])$"
+        },
+        "bone_visibility": {
+          "title": "Bone Visibility",
+          "description": "A list of bones that should be visible when rendering this block. If not specified, all bones will be visible.",
+          "type": "object",
+          "additionalProperties": {
+            "type": [ "boolean", "string" ],
+            "description": "Whether or not the bone should be visible. Can be defined as a boolean or a molang expression resulting in a boolean.",
+            "title": "Bone Visibility"
+          }
+        },
+        "culling": {
+          "title": "Block Culling Rule",
+          "description": "The description identifier of the block culling rule or voxel shape used to cull this block. This identifier must match an existing block culling rule or voxel shape identifier in any of the currently loaded resource or behavior packs.",
+          "type": "string"
+        },
+        "culling_layer": {
+          "title": "Culling Layer",
+          "description": "A string that allows culling rule to group multiple blocks together when comparing them.",
+          "type": "string",
+          "examples": [ "minecraft:culling_layer.undefined", "minecraft:culling_layer.leaves" ]
+        },
+        "culling_shape": {
+          "title": "Culling Shape",
+          "description": "The voxel shape used for culling adjacent block faces.",
+          "type": "string",
+          "examples": [ "minecraft:empty", "minecraft:unit_cube" ]
+        },
+        "n_way_visual_rotation": {
+          "title": "N Way Visual Rotation",
+          "description": "Optional object that maps x/y/z axes to block state names that drive visual-only geometry rotation.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "x": {
+              "title": "X",
+              "description": "Block state name that controls visual rotation around the x axis.",
+              "maxLength": 256,
+              "type": "string"
+            },
+            "y": {
+              "title": "Y",
+              "description": "Block state name that controls visual rotation around the y axis.",
+              "maxLength": 256,
+              "type": "string"
+            },
+            "z": {
+              "title": "Z",
+              "description": "Block state name that controls visual rotation around the z axis.",
+              "maxLength": 256,
+              "type": "string"
+            }
+          }
+        },
+        "uv_lock": {
+          "anyOf": [
+            {
+              "title": "UV Lock",
+              "description": "A Boolean locking UV orientation of all bones in the geometry, or an array of strings locking UV orientation of specific bones in the geometry. For performance reasons it is recommended to use the Boolean. Note that for cubes using Box UVs, rather than Per-face UVs, 'uv_lock' is only supported if the cube faces are square.",
+              "type": "boolean",
+              "default": false
+            },
+            {
+              "title": "UV Lock",
+              "description": "A Boolean locking UV orientation of all bones in the geometry, or an array of strings locking UV orientation of specific bones in the geometry. For performance reasons it is recommended to use the Boolean. Note that for cubes using Box UVs, rather than Per-face UVs, 'uv_lock' is only supported if the cube faces are square.",
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

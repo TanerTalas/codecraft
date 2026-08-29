@@ -1,0 +1,266 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft:entity",
+  "title": "Entity",
+  "required": ["description"],
+  "dependencies": { "component_groups": ["events"] },
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "description": {
+      "required": ["identifier"],
+      "title": "Description",
+      "description": "The description of the this entity.",
+      "properties": {
+        "animations": {
+          "title": "Animations",
+          "description": "Sets the mapping of internal animation / animation controllers references to actual animations. This is a JSON Object of name/animation pairs",
+          "type": "object",
+          "additionalProperties": {
+            "title": "Animation / Controller",
+            "description": "The name of the animation controller / animation.",
+            "type": "string",
+            "examples": ["animation.", "controller."]
+          }
+        },
+        "identifier": {
+          "$ref": "../../../general/entity/identifier.json",
+          "description": "Sets the identifier for this entity's description.",
+          "title": "Identifier"
+        },
+        "is_spawnable": {
+          "type": "boolean",
+          "title": "Is Spawnable",
+          "description": "Sets whether or not this entity has a spawn egg in the creative ui.",
+          "default": false
+        },
+        "is_summonable": {
+          "type": "boolean",
+          "title": "Is Summonable Property",
+          "description": "Sets whether or not we can summon this entity using commands such as /summon.",
+          "default": true
+        },
+        "is_experimental": {
+          "type": "boolean",
+          "title": "Is Experimental",
+          "description": "Sets whether or not this entity is experimental. Experimental entities are only enabled when the experimental toggle is enabled.",
+          "default": false
+        },
+        "properties": {
+          "title": "Properties",
+          "description": "List of entity property definitions.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "title": "Type",
+                "description": "The type of the property.",
+                "enum": ["bool", "int", "float", "enum"]
+              },
+              "client_sync": {
+                "title": "Client Sync",
+                "description": "Sets whether or not the property is synced to the client.",
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "oneOf": [
+              {
+                "properties": {
+                  "type": { "const": "bool" },
+                  "default": {
+                    "title": "Default",
+                    "description": "The default value of the property.",
+                    "$ref": "../../../molang/boolean.json"
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "type": { "const": "int" },
+                  "default": {
+                    "title": "Default",
+                    "description": "The default value of the property.",
+                    "$ref": "../../../molang/number.json"
+                  },
+                  "range": {
+                    "title": "Range",
+                    "description": "The range of the property.",
+                    "type": "array",
+                    "items": [
+                      {
+                        "title": "Min",
+                        "type": "integer",
+                        "description": "The minimum value of the property."
+                      },
+                      {
+                        "title": "Max",
+                        "type": "integer",
+                        "description": "The minimum value of the property."
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "type": { "const": "float" },
+                  "default": {
+                    "title": "Default",
+                    "description": "The default value of the property.",
+                    "$ref": "../../../molang/number.json"
+                  },
+                  "range": {
+                    "title": "Range",
+                    "description": "The range of the property.",
+                    "type": "array",
+                    "items": [
+                      {
+                        "title": "Min",
+                        "type": "number",
+                        "description": "The minimum value of the property."
+                      },
+                      {
+                        "title": "Max",
+                        "type": "number",
+                        "description": "The minimum value of the property."
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "type": { "const": "enum" },
+                  "default": { "type": "string" },
+                  "client_sync": {
+                    "title": "Client Sync",
+                    "description": "Sets whether or not the property is synced to the client.",
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "values": {
+                    "title": "Values",
+                    "description": "The values of the property.",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "runtime_identifier": {
+          "type": "string",
+          "title": "Runtime Identifier",
+          "description": "Sets the name for the Vanilla Minecraft identifier this entity will use to build itself from."
+        },
+        "scripts": {
+          "type": "object",
+          "title": "Scripts",
+          "description": "Sets the mapping of internal animation controller references to actual animation controller. This is a JSON Array of name/animation-controller pairs",
+          "properties": {
+            "animate": {
+              "type": "array",
+              "title": "Animate",
+              "description": "Tells minecraft to run which animation / animation controllers and under what conditions.",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "title": "Animation",
+                    "description": "The name of an animation controller referenced in animations."
+                  },
+                  {
+                    "type": "object",
+                    "title": "Conditional Animation",
+                    "description": "A conditional statement to run the animation under a specified condition.",
+                    "additionalProperties": { "type": "string", "title": "Animation" }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "spawn_category": {
+          "type": "string",
+          "enum": [
+            "monster",
+            "creature",
+            "ambient",
+            "axolotls",
+            "underground_water_creature",
+            "water_creature",
+            "water_ambient",
+            "misc"
+          ],
+          "description": "At the moment, not fully implemented and does nothing. Recommended to leave it empty or set it to misc",
+          "default": "misc"
+        },
+        "entity_version": {
+          "title": "Entity Version",
+          "description": "Enables per-entity versioning and upgrade handling",
+          "type": "object", 
+          "additionalProperties": false,
+          "properties": {
+            "upgrades": {
+              "title": "Upgrades",
+              "description": "Each entry specifies an integer upgrade_to version and a name string referencing an upgrade handler defined in a new top-level upgrades section of the entity definition.",
+              "type": "array", 
+              "items": {
+                "type": "object", 
+                "additionalProperties": false,
+                "properties": {
+                  "upgrade_to": {
+                    "title": "Upgrade To",
+                    "description": "Version to upgrade to",
+                    "type": "integer", 
+                    "exclusiveMinimum": 0
+                  },
+                  "name": {
+                    "title": "Name",
+                    "description": "Name of the upgrade. Must match the name of a respective upgrade",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "component_groups": {
+      "title": "Component Groups",
+      "description": "Each group when add / remove the default components.",
+      "uniqueItems": true,
+      "type": "object",
+      "propertyNames": { "examples": ["self:"] },
+      "additionalProperties": {
+        "$ref": "./components.json",
+        "uniqueItems": true,
+        "description": "The components that are added as the foundation of the entity.",
+        "title": "Component"
+      }
+    },
+    "components": {
+      "$ref": "./components.json",
+      "uniqueItems": true,
+      "description": "The components that are added as the foundation of the entity.",
+      "title": "Component"
+    },
+    "events": {
+      "$ref": "./events.json",
+      "uniqueItems": true,
+      "description": "The events that the entity can run, these add or remove components_groups.",
+      "title": "Events"
+    },
+    "upgrades": {
+      "$ref": "./events.json",
+      "uniqueItems": true,
+      "description": "The upgrades that the entity can run, these add or remove components_groups.",
+      "title": "Upgrades"
+    }
+  }
+}

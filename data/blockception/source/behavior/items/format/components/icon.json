@@ -1,0 +1,36 @@
+{
+  "$id": "blockception.minecraft.behavior.items.minecraft:icon",
+  "title": "Icon",
+  "description": "The icon item componenent determines the icon to represent the item in the UI and elsewhere.",
+  "examples": ["stick", { "textures": { "default": "stick" } }],
+  "oneOf": [
+    {
+      "type": "string"
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["textures"],
+      "properties": {
+        "textures": {
+          "title": "Textures",
+          "description": "Contains key-value pairs of textures used by the item",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "title": "Texture",
+            "description": "The key from the resource_pack/textures/item_texture.json `texture_data` object associated with the texture file Example: blaze_powder."
+          },
+          "required": ["default"],
+          "properties": {
+            "default": {
+              "type": "string",
+              "title": "Default Texture",
+              "description": "The key from the resource_pack/textures/item_texture.json `texture_data` object associated with the texture file Example: blaze_powder."
+            }
+          }
+        }
+      }
+    }
+  ]
+}

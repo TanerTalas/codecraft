@@ -1,0 +1,15 @@
+{
+  "title": "Texture",
+  "description": "The texture to display.",
+  "anyOf": [
+    {
+      "$ref": "../../general/texture_file_path.json"
+    },
+    {
+      "$ref": "../../general/item_ref.json"
+    },
+    {
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "$id": "blockception.minecraft.behavior.items",
+  "defaultSnippets": [
+    {
+      "label": "New item",
+      "body": {
+        "format_version": "${1:1.20.80}",
+        "minecraft:item": {
+          "description": {
+            "identifier": "$2:${3:${TM_FILENAME/[\\.].*//}}",
+            "menu_category": {
+              "category": "${4:items}"
+            }
+          },
+          "components": {
+            "minecraft:icon": "$2.${3:${TM_FILENAME/[\\.].*//}}"
+          }
+        }
+      }
+    }
+  ],
+  "description": "Minecraft items",
+  "required": ["format_version", "minecraft:item"],
+  "title": "Item",
+  "type": "object",
+  "properties": {
+    "format_version": { "$ref": "../../general/format_version.json" },
+    "minecraft:item": { "$ref": "./format/minecraft.item.json" }
+  }
+}

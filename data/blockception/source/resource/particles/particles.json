@@ -1,0 +1,222 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "blockception.minecraft.resource.particle",
+  "examples": [
+    {
+      "format_version": "1.20.80",
+      "particle_effect": {
+        "description": {
+          "identifier": "example:particle",
+          "basic_render_parameters": { "material": "particles_alpha", "texture": "textures/particle/particle" }
+        },
+        "curves": {},
+        "components": {}
+      }
+    }
+  ],
+  "definitions": {
+    "event": {
+      "additionalProperties": false,
+      "title": "Particle event",
+      "description": "The particle event.",
+      "properties": {
+        "sequence": {
+          "title": "Event sequence",
+          "description": "A sequence of elements to execute.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/event"
+          }
+        },
+        "randomize": {
+          "title": "Event randomize",
+          "description": "A list of elements to execute one of.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/event"
+          }
+        },
+        "particle_effect": {
+          "title": "Particle Effect",
+          "description": "Particle effect action.",
+          "properties": {
+            "effect": { "type": "string", "description": "Identifier of the effect.", "title": "Effect" },
+            "type": {
+              "type": "string",
+              "description": "UNDOCUMENTED: type.",
+              "title": "Type",
+              "enum": ["emitter", "emitter_bound", "particle", "particle_with_velocity"]
+            },
+            "pre_effect_expression": {
+              "type": "string",
+              "description": "Molang expression to run on the new emitter.",
+              "title": "Pre Effect Expression"
+            }
+          }
+        },
+        "sound_effect": {
+          "title": "Sound Effect",
+          "description": "Sound effect action.",
+          "properties": {
+            "event_name": { "type": "string", "description": "Name of the level sound event.", "title": "Event Name" }
+          }
+        },
+        "expression": {
+          "type": "string",
+          "description": "Molang expression to run on the event-firing emitter.",
+          "title": "Expression"
+        },
+        "log": {
+          "type": "string",
+          "description": "Message to log, along with the firing effect's name and event position.",
+          "title": "Log"
+        },
+        "weight": {
+          "type": "number",
+          "description": "The weight of the element.",
+          "title": "Weight"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "description": "A particle definition file.",
+  "title": "Particle",
+  "properties": {
+    "format_version": { "$ref": "../../general/format_version.json" },
+    "particle_effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "UNDOCUMENTED: particle effect.",
+      "title": "Particle Effect",
+      "properties": {
+        "description": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": ["identifier", "basic_render_parameters"],
+          "properties": {
+            "identifier": {
+              "type": "string",
+              "description": "UNDOCUMENTED: identifier.",
+              "title": "Identifier",
+              "$ref": "../../general/particle/identifier.json"
+            },
+            "basic_render_parameters": {
+              "additionalProperties": false,
+              "type": "object",
+              "description": "UNDOCUMENTED: basic render parameters.",
+              "title": "Basic Render Parameters",
+              "properties": {
+                "material": {
+                  "type": "string",
+                  "examples": ["particles_alpha", "particles_blend", "particles_add", "particles_opaque"],
+                  "description": " Minecraft material to use for emitter.",
+                  "title": "Material"
+                },
+                "texture": {
+                  "type": "string",
+                  "pattern": "^.+$",
+                  "description": "Minecraft texture to use for emitter.",
+                  "title": "Texture"
+                }
+              }
+            }
+          },
+          "description": "UNDOCUMENTED: description.",
+          "title": "Description"
+        },
+        "curves": {
+          "title": "Curves",
+          "description": "Curves are interpolation values, with inputs from 0 to 1, and outputs based on the curve. The result of the curve is a Molang variable of the same name that can be referenced in Molang in components. For each rendering frame for each particle, the curves are evaluated and the result is placed in a Molang variable of the name of the curve.",
+          "type": "object",
+          "propertyNames": { "pattern": "^(v|variable)\\.[a-zA-z0-9]+$" },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "title": "Curve",
+            "description": "The curve definitions, conists out of a couple of nodes.",
+            "$comment": "UNDOCUMENTED",
+            "properties": {
+              "input": {
+                "$ref": "../../molang/number.json",
+                "title": "Input",
+                "description": "What is the input value to use."
+              },
+              "nodes": {
+                "description": "Control nodes for curve.  These are assumed to be equally, used Object for bezier_chain",
+                "title": "Nodes",
+                "oneOf": [
+                  { "minItems": 1, "type": "array", "items": { "$ref": "../../molang/number.json" } },
+                  {
+                    "type": "object",
+                    "propertyNames": { "pattern": "(^[\\-0-9]+$|^[\\-0-9]+\\.[\\-0-9]+$)" },
+                    "additionalProperties": { "type": "object", "properties": {} }
+                  }
+                ]
+              },
+              "type": {
+                "type": "string",
+                "title": "Type",
+                "description": "The type of curve.",
+                "enum": ["linear", "bezier", "bezier_chain", "catmull_rom"]
+              },
+              "horizontal_range": {
+                "title": "Horizontal Range",
+                "description": "What is the range the input is mapped onto.",
+                "$ref": "../../molang/number.json"
+              }
+            }
+          }
+        },
+        "components": {
+          "additionalProperties": false,
+          "type": "object",
+          "description": "The particle components.",
+          "title": "Components",
+          "properties": {
+            "minecraft:emitter_initialization": { "$ref": "./components/emitter_initialization.json" },
+            "minecraft:emitter_lifetime_events": { "$ref": "./components/emitter_lifetime_events.json" },
+            "minecraft:emitter_lifetime_expression": { "$ref": "./components/emitter_lifetime_expression.json" },
+            "minecraft:emitter_lifetime_once": { "$ref": "./components/emitter_lifetime_once.json" },
+            "minecraft:emitter_lifetime_looping": { "$ref": "./components/emitter_lifetime_looping.json" },
+            "minecraft:emitter_local_space": { "$ref": "./components/emitter_local_space.json" },
+            "minecraft:emitter_rate_instant": { "$ref": "./components/emitter_rate_instant.json" },
+            "minecraft:emitter_rate_manual": { "$ref": "./components/emitter_rate_manual.json" },
+            "minecraft:emitter_rate_steady": { "$ref": "./components/emitter_rate_steady.json" },
+            "minecraft:emitter_shape_box": { "$ref": "./components/emitter_shape_box.json" },
+            "minecraft:emitter_shape_custom": { "$ref": "./components/emitter_shape_custom.json" },
+            "minecraft:emitter_shape_disc": { "$ref": "./components/emitter_shape_disc.json" },
+            "minecraft:emitter_shape_entity_aabb": { "$ref": "./components/emitter_shape_entity_aabb.json" },
+            "minecraft:emitter_shape_point": { "$ref": "./components/emitter_shape_point.json" },
+            "minecraft:emitter_shape_sphere": { "$ref": "./components/emitter_shape_sphere.json" },
+            "minecraft:particle_appearance_billboard": { "$ref": "./components/particle_appearance_billboard.json" },
+            "minecraft:particle_appearance_tinting": { "$ref": "./components/particle_appearance_tinting.json" },
+            "minecraft:particle_appearance_lighting": { "$ref": "./components/particle_appearance_lighting.json" },
+            "minecraft:particle_expire_if_not_in_blocks": {
+              "$ref": "./components/particle_expire_if_not_in_blocks.json"
+            },
+            "minecraft:particle_expire_if_in_blocks": { "$ref": "./components/particle_expire_if_in_blocks.json" },
+            "minecraft:particle_initialization": { "$ref": "./components/particle_initialization.json" },
+            "minecraft:particle_initial_speed": { "$ref": "./components/particle_initial_speed.json" },
+            "minecraft:particle_initial_spin": { "$ref": "./components/particle_initial_spin.json" },
+            "minecraft:particle_lifetime_expression": { "$ref": "./components/particle_lifetime_expression.json" },
+            "minecraft:particle_lifetime_events": { "$ref": "./components/particle_lifetime_events.json" },
+            "minecraft:particle_kill_plane": { "$ref": "./components/particle_kill_plane.json" },
+            "minecraft:particle_motion_collision": { "$ref": "./components/particle_motion_collision.json" },
+            "minecraft:particle_motion_dynamic": { "$ref": "./components/particle_motion_dynamic.json" },
+            "minecraft:particle_motion_parametric": { "$ref": "./components/particle_motion_parametric.json" }
+          }
+        },
+        "events": {
+          "type": "object",
+          "description": "UNDOCUMENTED: events.",
+          "title": "Events",
+          "additionalProperties": {
+            "$ref": "#/definitions/event"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "$id": "blockception.minecraft.behavior.blocks.minecraft.loot",
+  "title": "Loot",
+  "description": "The path to the loot table, relative to the behavior pack.",
+  "type": "string",
+  "pattern": "loot_tables/.*\\.json$",
+  "maxLength": 256
+}

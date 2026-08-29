@@ -1,0 +1,32 @@
+{
+  "title": "Type",
+  "description": "The type of the element",
+  "type": "string",
+  "enum": [
+    "always_rotate",
+    "button",
+    "carousel_label",
+    "collection_panel",
+    "custom",
+    "dropdown",
+    "edit_box",
+    "grid",
+    "grid_page_indicator",
+    "image_cycler",
+    "image",
+    "input_panel",
+    "label_cycler",
+    "label",
+    "panel",
+    "screen",
+    "scroll_track",
+    "scroll_view",
+    "scrollbar_box",
+    "selection_wheel",
+    "slider_box",
+    "slider",
+    "stack_panel",
+    "toggle",
+    "tooltip_trigger"
+  ]
+}

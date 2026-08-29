@@ -1,0 +1,34 @@
+{
+  "$id": "blockception.minecraft.behavior.items.minecraft:repairable",
+  "title": "Repairable",
+  "description": "Repairable item component: how much damage can this item repair, what items can repair it.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "repair_items": {
+      "title": "Repair Items",
+      "description": "Repair item entries.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "Repar Item",
+        "description": "List of repair item entries.",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "title": "Items",
+            "description": "Items that can be used to repeair it",
+            "$comment": "List of items",
+            "type": "array",
+            "items": { "$ref": "../../../../general/item/descriptor.json" }
+          },
+          "repair_amount": {
+            "title": "Repair Amount",
+            "description": "Amount that can be repaired",
+            "$ref": "../../../../molang/number.json"
+          }
+        }
+      }
+    }
+  }
+}

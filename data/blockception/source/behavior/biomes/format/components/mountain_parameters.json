@@ -1,0 +1,55 @@
+{
+  "$id": "blockception.minecraft.behavior.biomes.minecraft.mountain_parameters",
+  "title": "Mountain Parameters",
+  "description": "Noise parameters used to drive mountain terrain generation in Overworld.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "steep_material_adjustment": {
+      "type": "object",
+      "title": "Steep Material Adjustment",
+      "description": "Defines surface material for steep slopes.",
+      "additionalProperties": false,
+      "properties": {
+        "material": {
+          "title": "Material",
+          "description": "Block type use as steep material.",
+          "$ref": "../../../../general/block/reference.json"
+        },
+        "north_slopes": {
+          "type": "boolean",
+          "title": "North Slopes",
+          "description": "Enable for north-facing slopes."
+        },
+        "south_slopes": {
+          "type": "boolean",
+          "title": "South Slopes",
+          "description": "Enable for south-facing slopes."
+        },
+        "west_slopes": {
+          "type": "boolean",
+          "title": "West Slopes",
+          "description": "Enable for west-facing slopes."
+        },
+        "east_slopes": {
+          "type": "boolean",
+          "title": "East Slopes",
+          "description": "Enable for east-facing slopes."
+        }
+      }
+    },
+    "top_slide": {
+      "title": "Top Slide",
+      "description": "Controls the density tapering that happens at the top of the world to prevent terrain from reaching too high.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "description": "If false, top slide will be disabled. If true, other parameters will be taken into account"
+        }
+      }
+    }
+  }
+}

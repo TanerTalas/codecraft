@@ -1,0 +1,21 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.player.exhaustion",
+  "title": "Player.exhaustion",
+  "description": "Defines the player's exhaustion level.",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [],
+  "properties": {
+    "value": {
+      "type": "integer",
+      "title": "Value",
+      "description": "The initial value of the player exhaustion."
+    },
+    "max": {
+      "type": "integer",
+      "title": "Maximum",
+      "description": "The maximum player exhaustion of this entity."
+    }
+  },
+  "examples": [{ "value": 0, "max": 20 }]
+}

@@ -1,0 +1,32 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.filters.is_block",
+  "type": "object",
+  "title": "Is Block",
+  "description": "Returns true when the block has the given name.",
+  "required": ["value"],
+  "properties": {
+    "test": {
+      "type": "string",
+      "title": "Test",
+      "description": "The test property."
+    },
+    "operator": {
+      "$ref": "./types/operator.json"
+    },
+    "subject": {
+      "$ref": "./types/subject.json"
+    },
+    "value": {
+      "description": "The Family name to look for.",
+      "type": "string",
+      "title": "Value"
+    }
+  },
+  "examples": [
+    {
+      "test": "is_block",
+      "subject": "block",
+      "value": "minecraft:sweet_berry_bush"
+    }
+  ]
+}

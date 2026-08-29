@@ -1,0 +1,103 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.pushable_by_entity",
+  "title": "Pushable By Entity",
+  "additionalProperties": false,
+  "description": "Allows an entity to be pushed by other entities.",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "presets": {
+      "title": "Presets",
+      "description": "Allows customization of push behavior per entity type",
+      "type": "array",
+      "items": {
+        "type": "object", 
+        "additionalProperties": false,
+        "properties": {
+          "filters": {
+            "title": "Filters",
+            "description": "Conditions that must be met for the preset to be applied",
+            "$ref": "../../filters/filters.json"
+          },
+          "push_mode": {
+            "title": "Push Mode",
+            "description": "The type of push calculation",
+            "type": "string",
+            "enum": ["none", "default", "legacy_boat", "legacy_minecart", "ball"],
+            "default": "default"
+          },
+          "require_collision_overlap": {
+            "title": "Require Collision Overlap",
+            "description": "Determines whether the collision boxes of two entities must overlap for pushing to occur",
+            "type": "boolean",
+            "default": true
+          },
+          "strength_multiplier": {
+            "title": "Strength Multiplier",
+            "description": "Scales the push force applied to the entity",
+            "type": "number"
+          },
+          "min_distance": {
+            "title": "Min Distance",
+            "description": "Minimum distance between entities for push forces to be applied",
+            "type": "number"
+          },
+          "max_distance": {
+            "title": "Max Distance",
+            "description": "Controls the maximum range at which push interactions can occur for all push_mode values",
+            "type": "number"
+          },
+          "push_scale_self": {
+            "title": "Push Scale Self",
+            "description": "Scales how much push force this entity applies to itself away on collision",
+            "type": "number"
+          },
+          "kick_speed_scale": {
+            "title": "Kick Speed Scale",
+            "description": "Multiplier applied to the pushing entity's movement speed to determine kick force. Only used when push_mode is \"ball\"",
+            "type": "number"
+          },
+          "max_kick_speed": {
+            "title": "Max Kick Speed",
+            "description": "Maximum speed the entity can be pushed back at, regardless of how fast the pushing entity is moving. Only used when push_mode is \"ball\".",
+            "type": "number", 
+            "default": 0.5
+          },
+          "min_kick_speed": {
+            "title": "Min Kick Speed",
+            "description": "Minimum speed the the entity will be pushed back at, regardless of how slowly the pushing entity is moving. Only used when push_mode is \"ball\".",
+            "type": "number", 
+            "default": 0
+          },
+          "vertical_kick_multiplier": {
+            "title": "Vertical Kick Multiplier",
+            "description": "Multiplier for the upward force applied when the entity is pushed while on the ground. A value of 0 keeps the entity flat. Only used when push_mode is \"ball\"",
+            "type": "number", 
+            "default": 0.3
+          },
+          "push_scale_other": {
+            "title": "Push Scale Other",
+            "description": "Scales how much push force this entity applies to the other entity on collision",
+            "type": "number"
+          },
+          "play_sound": {
+            "title": "Play Sound",
+            "description": "Control whether the pushed_by_player sound is played",
+            "type": "boolean",
+            "default": false
+          },
+          "play_sound_cooldown_in_seconds": {
+            "title": "Play Sound Cooldown In Seconds",
+            "description": "Cooldown in seconds between sounds, a lower number results in more sounds",
+            "type": "number"
+          },
+          "play_sound_impulse_threshold": {
+            "title": "Play Sound Impulse Threshold",
+            "description": "Minimum change of velocity needed to trigger the push sound, a lower value means higher sensitivity",
+            "type": "number"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.priority",
+  "additionalProperties": false,
+  "type": "integer",
+  "title": "Priority",
+  "minimum": 0,
+  "description": "How important this behavior is. Lower priority behaviors will be executed first."
+}

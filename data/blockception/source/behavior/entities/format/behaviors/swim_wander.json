@@ -1,0 +1,38 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.swim_wander",
+  "description": "Has the fish swim around when they can't pathfind.",
+  "type": "object",
+  "title": "Swim Wander",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "priority": { "$ref": "types/priority.json" },
+    "speed_multiplier": { "$ref": "types/speed_multiplier.json" },
+    "control_flags": { "$ref": "./types/control_flags.json" },
+    "interval": {
+      "title": "Interval",
+      "type": "number",
+      "default": 0.00833,
+      "description": "Percent chance to start wandering, when not path-finding. 1 = 100%"
+    },
+    "look_ahead": {
+      "title": "Look Ahead",
+      "type": "number",
+      "default": 5,
+      "description": "Distance to look ahead for obstacle avoidance, while wandering."
+    },
+    "wander_time": {
+      "title": "Wander Time",
+      "type": "number",
+      "default": 5,
+      "description": "Amount of time (in seconds) to wander after wandering behavior was successfully started."
+    }
+  },
+  "examples": [
+    {
+      "interval": 0.0,
+      "look_ahead": 0.0,
+      "wander_time": 0.0
+    }
+  ]
+}

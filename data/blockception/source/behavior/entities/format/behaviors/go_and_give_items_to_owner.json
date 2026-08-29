@@ -1,0 +1,50 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.go_and_give_items_to_owner",
+  "type": "object",
+  "title": "Go And Give Items To Owner",
+  "description": "The entity will attempt to toss the items from its inventory to its owner.",
+  "additionalProperties": false,
+  "properties": {
+    "priority": {
+      "$ref": "types/priority.json"
+    },
+    "control_flags": {
+      "$ref": "./types/control_flags.json"
+    },
+    "on_item_throw": {
+      "title": "On Item Throw",
+      "description": "Event(s) to run when this mob throws items.",
+      "$ref": "../types/trigger.json"
+    },
+    "reach_mob_distance": {
+      "title": "Reach Mob Distance",
+      "type": "number",
+      "default": 3.0,
+      "description": "Sets the desired distance to be reached before giving items to owner."
+    },
+    "run_speed": {
+      "title": "Run Speed",
+      "type": "number",
+      "default": 1.0,
+      "description": "Sets the entity's speed when running toward the owner."
+    },
+    "throw_force": {
+      "title": "Throw Force",
+      "type": "number",
+      "default": 0.2,
+      "description": "Sets the throw force."
+    },
+    "throw_sound": {
+      "title": "Throw Sound",
+      "$ref": "../../../../general/sound_event.json",
+      "default": "item_thrown",
+      "description": "Sound to play when this mob throws an item."
+    },
+    "vertical_throw_mul": {
+      "title": "Vertical Throw Mul",
+      "type": "number",
+      "default": 1.5,
+      "description": "Sets the vertical throw multiplier that is applied on top of the throw force in the vertical direction."
+    }
+  }
+}

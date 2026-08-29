@@ -1,0 +1,110 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "blockception.behavior.spawn_rules",
+  "defaultSnippets": [
+    {
+      "label": "New spawn rule",
+      "body": {
+        "format_version": "${1:1.8.0}",
+        "minecraft:spawn_rules": {
+          "description": {
+            "identifier": "$2:${3:${TM_FILENAME/[\\.].*//}}",
+            "population_control": "${4:ambient}"
+          },
+          "conditions": ["^{$5}"]
+        }
+      }
+    }
+  ],
+  "examples": [
+    {
+      "format_version": "1.8.0",
+      "minecraft:spawn_rules": {
+        "description": { "identifier": "minecraft:entity", "population_control": "ambient" },
+        "conditions": [{}]
+      }
+    }
+  ],
+  "type": "object",
+  "title": "Spawn Rules",
+  "description": "Data-Driven spawning allows you to adjust the spawn conditions of mobs.",
+  "additionalProperties": false,
+  "required": ["format_version", "minecraft:spawn_rules"],
+  "properties": {
+    "format_version": {
+      "title": "Format Version",
+      "description": "A version that tells minecraft what type of data format can be expected when reading this file.",
+      "enum": ["1.8.0", "1.10.0", "1.12.0"]
+    },
+    "minecraft:spawn_rules": {
+      "type": "object",
+      "title": "Spawn Rules",
+      "description": "Data-Driven spawning allows you to adjust the spawn conditions of mobs.",
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "object",
+          "title": "Description",
+          "description": "The descripton of to which entity this spawn rule belongs.",
+          "$comment": "UNDOCUMENTED",
+          "additionalProperties": false,
+          "required": ["identifier", "population_control"],
+          "properties": {
+            "identifier": {
+              "title": "Identifier",
+              "description": "The entity identifier this spawn rule will apply to, entity must exist.",
+              "$comment": "UNDOCUMENTED",
+              "$ref": "../../general/entity/identifier.json"
+            },
+            "population_control": {
+              "type": "string",
+              "title": "Population Control",
+              "description": "Setting an entity to a pool it will spawn as long as that pool hasn't reached the spawn limit.",
+              "$comment": "UNDOCUMENTED",
+              "enum": ["ambient", "animal", "water_animal", "monster", "cat", "pillager"]
+            }
+          }
+        },
+        "conditions": {
+          "type": "array",
+          "title": "Conditions",
+          "description": "UNDOCUMENTED.",
+          "$comment": "UNDOCUMENTED",
+          "items": {
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Condition",
+            "description": "UNDOCUMENTED.",
+            "$comment": "UNDOCUMENTED",
+            "properties": {
+              "minecraft:biome_filter": { "$ref": "./components/biome_filter.json" },
+              "minecraft:brightness_filter": { "$ref": "./components/brightness_filter.json" },
+              "minecraft:delay_filter": { "$ref": "./components/delay_filter.json" },
+              "minecraft:density_limit": { "$ref": "./components/density_limit.json" },
+              "minecraft:difficulty_filter": { "$ref": "./components/difficulty_filter.json" },
+              "minecraft:disallow_spawns_in_bubble": { "$ref": "./components/disallow_spawns_in_bubble.json" },
+              "minecraft:distance_filter": { "$ref": "./components/distance_filter.json" },
+              "minecraft:height_filter": { "$ref": "./components/height_filter.json" },
+              "minecraft:herd": { "$ref": "./components/herd.json" },
+              "minecraft:mob_event_filter": { "$ref": "./components/mob_event_filter.json" },
+              "minecraft:permute_type": { "$ref": "./components/permute_type.json" },
+              "minecraft:player_in_village_filter": { "$ref": "./components/player_in_village_filter.json" },
+              "minecraft:spawn_event": { "$ref": "./components/spawn_event.json" },
+              "minecraft:spawns_above_block_filter": { "$ref": "./components/spawns_above_block_filter.json" },
+              "minecraft:spawns_lava": { "$ref": "./components/spawns_lava.json" },
+              "minecraft:spawns_on_block_filter": { "$ref": "./components/spawns_on_block_filter.json" },
+              "minecraft:spawns_on_block_prevented_filter": {
+                "$ref": "./components/spawns_on_block_prevented_filter.json"
+              },
+              "minecraft:spawns_on_surface": { "$ref": "./components/spawns_on_surface.json" },
+              "minecraft:spawns_underground": { "$ref": "./components/spawns_underground.json" },
+              "minecraft:spawns_underwater": { "$ref": "./components/spawns_underwater.json" },
+              "minecraft:weight": { "$ref": "./components/weight.json" },
+              "minecraft:world_age_filter": { "$ref": "./components/world_age_filter.json" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

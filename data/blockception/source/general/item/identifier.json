@@ -1,0 +1,8 @@
+{
+  "$id": "blockception.minecraft.item.identifier",
+  "description": "A minecraft item identifier.",
+  "pattern": "^[0-9a-zA-Z:_\\-\\.]+$",
+  "title": "Item Identifier",
+  "type": "string",
+  "defaultSnippets": [{ "label": "New Identifier", "body": "$1:$2" }]
+}

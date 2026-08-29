@@ -1,0 +1,66 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.eat_block",
+  "type": "object",
+  "title": "Eat Block",
+  "description": "Allows the entity to consume a block, replace the eaten block with another block, and trigger an event as a result.",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "priority": { "$ref": "./types/priority.json" },
+    "control_flags": {
+      "$ref": "./types/control_flags.json"
+    },
+    "on_eat": {
+      "title": "On Eat",
+      "$ref": "../types/trigger.json",
+      "description": "The event to trigger when the block eating animation has completed."
+    },
+    "success_chance": {
+      "title": "Succes Chance",
+      "$ref": "../../../../molang/number.json",
+      "default": 0.02,
+      "description": "A molang expression defining the success chance the entity has to consume a block."
+    },
+    "time_until_eat": {
+      "title": "Time Until Eat",
+      "type": "number",
+      "default": 1.8,
+      "description": "The amount of time (in seconds) it takes for the block to be eaten upon a successful eat attempt."
+    },
+    "eat_and_replace_block_pairs": {
+      "title": "Eat And Replace Block Pairs",
+      "type": "array",
+      "description": "A collection of pairs of blocks; the first (\"eat_block\")is the block the entity should eat, the second (\"replace_block\") is the block that should replace the eaten block.",
+      "items": {
+        "type": "object",
+        "title": "Eat And Replace Block Pair",
+        "description": "The block to eat and the block to replace it with.",
+        "properties": {
+          "eat_block": {
+            "type": "string",
+            "title": "Block",
+            "description": "The block the entity should eat.",
+            "$ref": "../../../../general/block/identifier.json"
+          },
+          "replace_block": {
+            "type": "string",
+            "title": "Replace Block",
+            "description": "The block that should replace the eaten block.",
+            "$ref": "../../../../general/block/identifier.json"
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "time_until_eat": 0.0,
+      "eat_and_replace_block_pairs": [
+        {
+          "eat_block": "minecraft:grass",
+          "replace_block": "minecraft:dirt"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.timer_flag",
+  "title": "Timer Flag",
+  "description": "Fires an event when this behavior starts, then waits for a duration before stopping. When stopping due to that timeout or due to being interrupted by another behavior, fires another event. query.timer_flag_<n> will return 1.0 on both the client and server when this behavior is running, and 0.0 otherwise.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "priority": { "$ref": "types/priority.json" },
+    "cooldown_range": {
+      "title": "Cooldown Range",
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "$ref": "../../../../general/min_max_float.json"
+        }
+      ],
+      "description": "Goal cooldown range in seconds."
+    },
+    "duration_range": {
+      "title": "Duration Range",
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "$ref": "../../../../general/min_max_float.json"
+        }
+      ],
+      "description": "Goal duration range in seconds."
+    },
+    "control_flags": {
+      "$ref": "./types/control_flags.json"
+    },
+    "on_end": {
+      "title": "On End",
+      "$ref": "../types/trigger.json",
+      "description": "Event to run when the goal ends."
+    },
+    "on_start": {
+      "title": "On Start",
+      "$ref": "../types/trigger.json",
+      "description": "Event to run when the goal starts."
+    }
+  }
+}

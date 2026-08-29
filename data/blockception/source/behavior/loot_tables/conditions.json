@@ -1,0 +1,91 @@
+{
+  "$id": "blockception.minecraft.behavior.loot_tables.conditions",
+  "description": "A minecraft loot table condition.",
+  "title": "Condition",
+  "allOf": [
+    {
+      "if": { "properties": { "condition": { "const": "biome_has_tag" } } },
+      "then": { "$ref": "./conditions/biome_has_tag.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "const": "has_variant" } } },
+      "then": { "$ref": "./conditions/has_variant.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "const": "has_property" } } },
+      "then": { "$ref": "./conditions/has_property.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "const": "bool_property" } } },
+      "then": { "$ref": "./conditions/bool_property.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "const": "int_property" } } },
+      "then": { "$ref": "./conditions/int_property.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "const": "float_property" } } },
+      "then": { "$ref": "./conditions/float_property.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "const": "enum_property" } } },
+      "then": { "$ref": "./conditions/enum_property.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "const": "match_tool" } } },
+      "then": { "$ref": "./conditions/match_tool.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "type": "string", "const": "has_mark_variant" } } },
+      "then": { "$ref": "./conditions/has_mark_variant.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "type": "string", "const": "match_tool" } } },
+      "then": { "$ref": "./conditions/match_tool.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "type": "string", "const": "killed_by_player" } } },
+      "then": { "$ref": "./conditions/killed_by_player.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "type": "string", "const": "killed_by_player_or_pets" } } },
+      "then": { "$ref": "./conditions/killed_by_player_or_pets.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "type": "string", "const": "killed_by_entity" } } },
+      "then": { "$ref": "./conditions/killed_by_entity.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "type": "string", "const": "damaged_by_entity" } } },
+      "then": { "$ref": "./conditions/damaged_by_entity.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "type": "string", "const": "entity_killed" } } },
+      "then": { "$ref": "./conditions/entity_killed.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "type": "string", "const": "random_chance" } } },
+      "then": { "$ref": "./conditions/random_chance.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "type": "string", "const": "random_chance_with_looting" } } },
+      "then": { "$ref": "./conditions/random_chance_with_looting.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "type": "string", "const": "random_difficulty_chance" } } },
+      "then": { "$ref": "./conditions/random_difficulty_chance.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "type": "string", "const": "random_regional_difficulty_chance" } } },
+      "then": { "$ref": "./conditions/random_regional_difficulty_chance.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "type": "string", "const": "passenger_of_entity" } } },
+      "then": { "$ref": "./conditions/passenger_of_entity.json" }
+    },
+    {
+      "if": { "properties": { "condition": { "type": "string", "const": "is_baby" } } },
+      "then": { "$ref": "./conditions/is_baby.json" }
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.equipment",
+  "type": "object",
+  "title": "Equipment",
+  "description": "Sets the equipment table to use for the entity.",
+  "additionalProperties": false,
+  "properties": {
+    "slot_drop_chance": {
+      "type": "array",
+      "description": "A list of slots with the chance to drop an equipped item from that slot.",
+      "title": "Slot Drop Chance",
+      "items": {
+        "additionalProperties": false,
+        "title": "Slot Drop Chance",
+        "description": "A slots with the chance to drop an equipped item from that slot.",
+        "type": "object",
+        "properties": {
+          "drop_chance": {
+            "type": "number",
+            "title": "Drop Chance",
+            "description": "The chance that the item in this slot will drop.",
+            "$comment": "UNDOCUMENTED"
+          },
+          "slot": {
+            "type": "string",
+            "title": "Slot",
+            "description": "The slot in which the item will drop from.",
+            "$comment": "UNDOCUMENTED",
+            "examples": ["slot.weapon.mainhand"]
+          }
+        }
+      }
+    },
+    "table": {
+      "title": "Table",
+      "description": "The file path to the equipment table, relative to the behavior pack's root.",
+      "$ref": "../../../../general/loot_table/identifier.json"
+    }
+  },
+  "examples": [
+    {
+      "slot_drop_chance": []
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.anger_level",
+  "type": "object",
+  "title": "Anger Level",
+  "description": "Allows this entity to track anger towards a set of nuisances",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "anger_decrement_interval": {
+      "title": "Anger Decrement Interval",
+      "type": "number",
+      "default": 1.0,
+      "description": "Anger level will decay over time. Defines how often anger towards all nuisances will be decreased by one"
+    },
+    "angry_boost": {
+      "title": "Angry Boost",
+      "type": "integer",
+      "minimum": 0,
+      "default": 20,
+      "description": "Anger boost applied to angry threshold when mob gets angry."
+    },
+    "angry_threshold": {
+      "title": "Angry Threshold",
+      "type": "integer",
+      "minimum": 0,
+      "default": 80,
+      "description": "Threshold that define when the mob is considered angry at a nuisance."
+    },
+    "default_annoyingness": {
+      "title": "Default Annoyingness",
+      "type": "number",
+      "default": 0,
+      "description": "The default amount of annoyingness for any given nuisance. Specifies how much to raise anger level on each provocation"
+    },
+    "default_projectile_annoyingness": {
+      "title": "Default Projectile Annoyingness",
+      "type": "number",
+      "default": 0,
+      "description": "The default amount of annoyingness for projectile nuisance. Specifies how much to raise anger level on each provocation"
+    },
+    "max_anger": {
+      "title": "Maximum Anger",
+      "type": "integer",
+      "default": 100,
+      "minimum": 0,
+      "description": "The maximum anger level that can be reached. Applies to any nuisance"
+    },
+    "nuisance_filter": {
+      "title": "Nuisance Filter",
+      "$ref": "../../filters/filters.json",
+      "description": "Filter that is applied to determine if a mob can be a nuisance."
+    },
+    "on_increase_sounds": {
+      "title": "On Increase Sounds",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["condition", "sound"],
+        "properties": {
+          "condition": {
+            "title": "Condition",
+            "type": "string",
+            "description": "The event that will trigger the sound"
+          },
+          "sound": {
+            "title": "Sound",
+            "type": "string",
+            "description": "The sound to play"
+          }
+        }
+      }
+    },
+    "remove_targets_below_angry_threshold": {
+      "title": "Remove Targets Below Angry Threshold",
+      "type": "boolean",
+      "default": true,
+      "description": "Defines if the mob should remove target if it falls below 'angry' threshold."
+    }
+  },
+  "examples": []
+}

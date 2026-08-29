@@ -1,0 +1,25 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.equip_item",
+  "type": "object",
+  "title": "Equip Item",
+  "description": "The entity puts on the desired equipment.",
+  "additionalProperties": false,
+  "properties": {
+    "excluded_items": {
+      "title": "Excluded Items",
+      "type": "array",
+      "description": "List of items that the entity should not equip.",
+      "items": {
+        "$ref": "../../../../general/item/descriptor.json",
+        "description": "Item that the entity should not equip.",
+        "title": "Excluded Items"
+      }
+    },
+    "can_wear_armor": {
+      "title": "Can Wear Armor",
+      "description": "Specifies if equipped armor should be added to the armor slot or hand slot",
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

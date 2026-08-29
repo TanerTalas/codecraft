@@ -1,0 +1,47 @@
+{
+  "$id": "blockception.minecraft.behavior.items.minecraft:enchantable",
+  "title": "Enchantable",
+  "description": "The enchantable component determines what enchantments can be applied to the item.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slot"],
+  "properties": {
+    "slot": {
+      "title": "Slot",
+      "description": "The slot type to be used to determine which enchantment types this item can be enchanted with.",
+      "enum": [
+        "all",
+        "armor_feet",
+        "armor_head",
+        "armor_legs",
+        "armor_torso",
+        "axe",
+        "bow",
+        "carrot_stick",
+        "cosmetic_head",
+        "crossbow",
+        "elytra",
+        "fishing_rod",
+        "flintsteel",
+        "g_armor",
+        "g_digging",
+        "g_tool",
+        "hoe",
+        "melee_spear",
+        "none",
+        "pickaxe",
+        "shears",
+        "shield",
+        "shovel",
+        "spear",
+        "sword"
+      ]
+    },
+    "value": {
+      "title": "Value",
+      "description": "The enchantability of the item.",
+      "type": "number",
+      "minimum": 0
+    }
+  }
+}

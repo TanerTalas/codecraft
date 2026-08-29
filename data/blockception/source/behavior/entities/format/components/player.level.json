@@ -1,0 +1,26 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.player.level",
+  "additionalProperties": false,
+  "type": "object",
+  "title": "Player.level",
+  "description": "Defines the player's level.",
+  "required": [],
+  "properties": {
+    "value": {
+      "type": "integer",
+      "title": "Value",
+      "description": "The initial value of the player level."
+    },
+    "max": {
+      "type": "integer",
+      "title": "Maximum",
+      "description": "The maximum player level value of the entity."
+    }
+  },
+  "examples": [
+    {
+      "value": 0,
+      "max": 24791
+    }
+  ]
+}

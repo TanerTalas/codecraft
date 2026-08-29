@@ -1,0 +1,21 @@
+{
+  "$id": "blockception.minecraft.behavior.spawn_rules.minecraft.distance_filter",
+  "additionalProperties": false,
+  "type": "object",
+  "title": "Distance Filter",
+  "description": "This component allows players to set mobs spawn with certain distance levels.",
+  "properties": {
+    "min": {
+      "type": "integer",
+      "description": "This is the minimum distance level that a mob spawns.",
+      "title": "Min",
+      "minimum": 24
+    },
+    "max": {
+      "type": "integer",
+      "description": "This is the maximum distance level that a mob spawns.",
+      "title": "Max",
+      "default": 128
+    }
+  }
+}

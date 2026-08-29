@@ -1,0 +1,115 @@
+{
+  "$id": "blockception.minecraft.behavior.entities.minecraft.behavior.ranged_attack",
+  "description": "Allows the mob to use ranged attacks like shooting arrows.",
+  "type": "object",
+  "title": "Ranged Attack",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "priority": { "$ref": "types/priority.json" },
+    "speed_multiplier": { "$ref": "types/speed_multiplier.json" },
+    "control_flags": {
+      "$ref": "./types/control_flags.json"
+    },
+    "attack_interval": {
+      "title": "Attack Interval",
+      "$ref": "../../../../general/min_max_float.json",
+      "description": "Reload-time (in seconds), when not using a charged shot. Does not scale with target-distance."
+    },
+    "attack_radius": {
+      "title": "Attack Radius",
+      "type": "number",
+      "default": 0,
+      "exclusiveMinimum": 0,
+      "description": "Minimum distance to target before this entity will attempt to shoot."
+    },
+    "attack_radius_min": {
+      "title": "Attack Radius Min",
+      "type": "number",
+      "default": 0,
+      "exclusiveMinimum": 0,
+      "description": "Minimum distance the target can be for this mob to fire. If the target is closer, this mob will move first before firing"
+    },
+    "burst_interval": {
+      "title": "Burst Interval",
+      "type": "number",
+      "default": 0,
+      "exclusiveMinimum": 0,
+      "description": "Time (in seconds) between each individual shot when firing a burst of shots from a charged up attack."
+    },
+    "burst_shots": {
+      "title": "Burst Shots",
+      "type": "integer",
+      "default": 1,
+      "description": "Number of shots fired every time the attacking entity uses a charged up attack."
+    },
+    "charge_charged_trigger": {
+      "title": "Charge Charged Trigger",
+      "type": "number",
+      "default": 0,
+      "exclusiveMinimum": 0,
+      "description": "Time (in seconds, then add \"charge_shoot_trigger\"), before a charged up attack is done charging. Charge-time decays while target is not in sight."
+    },
+    "charge_shoot_trigger": {
+      "title": "Charge Shoot Trigger",
+      "type": "number",
+      "default": 0,
+      "exclusiveMinimum": 0,
+      "description": "Amount of time (in seconds, then doubled) a charged shot must be charging before reloading burst shots. Charge-time decays while target is not in sight."
+    },
+    "ranged_fov": {
+      "title": "Ranged Fov",
+      "type": "number",
+      "default": 90,
+      "description": "Field of view (in degrees) when using sensing to detect a target for attack."
+    },
+    "set_persistent": {
+      "title": "Set Persistent",
+      "type": "boolean",
+      "default": false,
+      "description": "Allows the actor to be set to persist upon targeting a player."
+    },
+    "swing": {
+      "title": "Swing",
+      "type": "boolean",
+      "default": false,
+      "description": "If a swing animation (using variable.attack_time) exists, this causes the actor to swing their arm(s) upon firing the ranged attack."
+    },
+    "target_in_sight_time": {
+      "title": "Target In Sight Time",
+      "type": "number",
+      "default": 1,
+      "exclusiveMinimum": 0,
+      "description": "Minimum amount of time (in seconds) the attacking entity needs to see the target before moving toward it."
+    },
+    "x_max_rotation": {
+      "title": "X Max Rotation",
+      "type": "number",
+      "default": 30,
+      "minimum": 0,
+      "description": "Maximum rotation (in degrees), on the X-axis, this entity can rotate while trying to look at the target."
+    },
+    "y_max_head_rotation": {
+      "title": "Y Max Head Rotation",
+      "type": "number",
+      "default": 30,
+      "minimum": 0,
+      "description": "Maximum rotation (in degrees), on the Y-axis, this entity can rotate its head while trying to look at the target."
+    }
+  },
+  "examples": [
+    {
+      "attack_interval": 0,
+      "attack_interval_max": 0,
+      "attack_interval_min": 0,
+      "attack_radius": 0,
+      "burst_interval": 0,
+      "burst_shots": 1,
+      "charge_charged_trigger": 0,
+      "charge_shoot_trigger": 0,
+      "ranged_fov": 90,
+      "target_in_sight_time": 0.0,
+      "attack_radius_min": 0.0
+    }
+  ]
+}
