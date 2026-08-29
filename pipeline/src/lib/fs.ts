@@ -14,9 +14,25 @@ export const toJson = (value: unknown): string => `${JSON.stringify(value, null,
 export const sha256 = (content: string | Buffer): string =>
   createHash("sha256").update(content).digest("hex");
 
+/**
+ * Satır sonlarını LF'e sabitler.
+ *
+ * Kaynakların bir kısmı CRLF ile geliyor (Blockception'ın 172 dosyası gibi).
+ * .gitattributes depoda LF zorunlu kılıyor, yani git checkout'ta LF yazar;
+ * pipeline ertesi gün CRLF'i geri yazsa her koşuda sahte diff üretirdi ve
+ * cron boş yere commit atardı. Normalizasyon burada, tek noktada yapılıyor.
+ *
+ * Pipeline sadece metin dosyası yazıyor (JSON, Markdown, .d.ts) — ikili
+ * içerik yok, o yüzden koşulsuz uygulanabilir.
+ */
+export const normalizeEol = (content: string | Buffer): Buffer => {
+  const text = typeof content === "string" ? content : content.toString("utf8");
+  return Buffer.from(text.replace(/\r\n/g, "\n"), "utf8");
+};
+
 /** İçerik aynıysa dosyaya dokunmaz. true = yazıldı. */
 export async function writeIfChanged(path: string, content: string | Buffer): Promise<boolean> {
-  const next = typeof content === "string" ? Buffer.from(content, "utf8") : content;
+  const next = normalizeEol(content);
   try {
     if ((await readFile(path)).equals(next)) return false;
   } catch {
@@ -64,11 +80,14 @@ export async function writeTree(
   return { written: written.sort(), deleted: deleted.sort() };
 }
 
-/** Bir dosya kümesinin içerik özeti. Yol sırasından bağımsız olsun diye sıralanır. */
+/**
+ * Bir dosya kümesinin içerik özeti. Yol sırasından bağımsız olsun diye sıralanır,
+ * diske yazılanla aynı olsun diye satır sonları normalize edilir.
+ */
 export function hashTree(files: ReadonlyMap<string, string | Buffer>): string {
   const hash = createHash("sha256");
   for (const relative of [...files.keys()].sort()) {
-    hash.update(relative).update("\0").update(files.get(relative) ?? "").update("\0");
+    hash.update(relative).update("\0").update(normalizeEol(files.get(relative) ?? "")).update("\0");
   }
   return `sha256:${hash.digest("hex")}`;
 }
