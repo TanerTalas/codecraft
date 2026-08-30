@@ -289,34 +289,41 @@ iki mühendislik sonucu var ve ikisi de koda girdi:
   `min_engine_version` için doğru, `format_version` için değil. Niyeti
   "pazarlama numarasını yazma" idi ama kural gibi okunuyor ve prompt'a öyle
   geçti.
-- [ ] **`format_version` düzeltmesi ölçülmedi — ikinci kapı koşusu belirsiz.**
+- [ ] **`format_version` düzeltmesi HÂLÂ ölçülmedi — üç koşu, üçünde de kota.**
 
-  Düzeltme yapıldı (`context.formatVersions`: şemadan okunan kısıtlar +
-  oyunda yüklendiği ölçülmüş değerler). Ama ölçüm sonuç vermedi:
+  | | 1. koşu | 2. koşu | 3. koşu |
+  |---|---|---|---|
+  | Prompt | eski | düzeltilmiş | sıkıştırılmış |
+  | Ölçülen | 20 | 14 | 16 |
+  | Geçen | 19 | 11 | 14 |
+  | Kotaya takılan | 0 | 6 | 4 |
 
-  | | 1. koşu (eski prompt) | 2. koşu (yeni prompt) |
-  |---|---|---|
-  | Ölçülen | 20 | 14 |
-  | Geçen | 19 | 11 |
-  | Kotaya takılan | 0 | 6 |
+  **Gerileme korkusu büyük ölçüde gürültüymüş.** Düşen vakalar koşudan koşuya
+  yer değiştiriyor:
 
-  **Düzeltmenin hedefi `spawn-rule-01` ikinci koşuda ölçülemedi** — kotaya
-  takıldı. Yani işe yarayıp yaramadığı hâlâ bilinmiyor.
+  | Vaka | 1 | 2 | 3 |
+  |---|---|---|---|
+  | `death-coords-01` | ✓ | ✗ `entityDeath` | ✓ |
+  | `sleep-skip-night-01` | ✓ | ✗ UUID | ✓ |
+  | `kill-counter-01` | ✓ | ✓ | ✗ `worldInitialize` |
+  | `no-fall-damage-01` | ✓ | ✗ `damage_sensor` | ✗ `damage_sensor` |
 
-  Üç vaka geriledi ve üçü de birinci koşuda geçmişti:
-  `death-coords-01` (`entityDeath` diye olay yok), `no-fall-damage-01`
-  (`damage_sensor` şekli), `sleep-skip-night-01` (manifest UUID v4 değil).
+  İkinci koşuda düşen iki vaka üçüncüde geçti, üçüncüde başka bir vaka düştü.
+  Bu, prompt gerilemesinin değil **model belirlenimsizliğinin** imzası
+  (`temperature: 0` Gemini'de tam belirlenimci değil). Vaka başına tek örnekle
+  prompt'u suçlamak yanlış olurdu.
 
-  Üçüncüsü dikkat çekici: o kural prompt'ta **zaten yazılı** ve birinci koşuda
-  uygulanıyordu. Prompt'un uzaması dikkati seyreltmiş olabilir — ama vaka
-  başına tek örnek var ve `temperature: 0` bile tam belirlenimci değil.
-  **İki açıklama ayırt edilemiyor; tahmin yürütülmedi.**
+  Tek ısrarcı vaka `no-fall-damage-01`: iki koşuda aynı `damage_sensor`
+  hatası. Birinci koşuda geçtiği için yine de kesin değil; üçüncü bir düşüş
+  gelirse gerçek bir bilgi boşluğu sayılır.
 
-  Bölüm sıkıştırıldı (15 satır → 3, prompt 3975 → 3731 karakter). Bir sonraki
-  adım tek bir tam koşu: 20 vakanın hepsi ölçülmeden karar verilmeyecek.
+  **Yöntem kusuru:** `spawn-rule-01` listenin sonlarında ve kota hep orada
+  bitiyor — düzeltmenin hedefi olan vaka üç koşuda da modele gitmedi. Sabit
+  sıra yüzünden listenin sonu sistematik olarak aç kalıyor.
 
-  **Kayıtlı kapı sonucu 19/20 geçerliliğini koruyor** — o ölçüm bir önceki
-  prompt'la yapıldı ve o hâliyle doğru. Yeni prompt henüz tam ölçülmedi.
+  **Bir sonraki adım: prompt'a DOKUNMA.** 16 vaka önbellekte ve parmak izleri
+  geçerli; bir sonraki koşu onları bedava oynatıp doğrudan eksik dörde gider
+  (4-8 istek). Prompt değişirse önbellek düşer ve aynı açlık tekrarlanır.
 - [ ] Prompt iyileştirme turları — kapı ölçüldükten sonra. Her tur önbelleği
   geçersiz kılar, yani her turun kendi kota bütçesi var
 
