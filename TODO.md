@@ -274,23 +274,15 @@ iki mühendislik sonucu var ve ikisi de koda girdi:
 - [x] **Kapıyı gerçek modelle ölç — yapıldı, 19/20.** Ayrıntı ⛔ GEÇİŞ KAPISI
   bölümünde.
 
-- [ ] **`format_version` kuralı yanlış — kapı koşusunun bulduğu.**
-  Prompt "format_version her zaman 1.26.xx" diyor ve model buna uydu; ama
-  `format_version` OYUN SÜRÜMÜ DEĞİL, o dosya tipinin kendi şema sürümü.
-  Spawn rules `1.8.0`/`1.10.0`/`1.12.0` kabul ediyor, feature rules
-  `1.13.0`, manifest `2`. Her tip farklı.
+- [x] **`format_version` kuralı düzeltildi ve ölçüldü.**
 
-  Kaynak elimizde: derlenmiş Blockception şemaları her tip için izin verilen
-  `format_version` enum'unu tutuyor. Bağlam katmanı bunu okuyup prompt'a
-  tipe özel yazabilir — tahminle değil, veriyle.
+  Prompt "format_version her zaman 1.26.xx" diyordu; `format_version` oyun
+  sürümü değil, dosya tipinin kendi şema sürümü. Değerler artık veriden
+  geliyor: derlenmiş şemaların kısıtladıkları + oyunda yüklendiği ölçülmüş
+  fixture değerleri (`packages/core/src/context.ts`). `CLAUDE.md`'deki
+  yanıltıcı cümle de düzeltildi — tablo artık beş sürüm biçimi sayıyor.
 
-  **`CLAUDE.md` de bu yüzden yanıltıcı:** "format_version ve
-  min_engine_version alanlarına her zaman 1.26.xx biçimi yazılır" cümlesi
-  `min_engine_version` için doğru, `format_version` için değil. Niyeti
-  "pazarlama numarasını yazma" idi ama kural gibi okunuyor ve prompt'a öyle
-  geçti.
-- [x] **`format_version` düzeltmesi ÖLÇÜLDÜ — işe yarıyor.**
-  `spawn-rule-01` beş koşudur kotaya takılıyordu, `--case=` liste desteği
+  `spawn-rule-01` beş koşudur kotaya takılıyordu; `--case=` liste desteği
   eklenince doğrudan hedeflenip ölçüldü ve **geçti**.
 
 - [x] **Güncel prompt tam ölçüldü: 19/20, kapı açık.**
