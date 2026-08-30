@@ -246,10 +246,48 @@ iki mühendislik sonucu var ve ikisi de koda girdi:
 
 ### Kalan iş
 
-- [ ] **Kapıyı gerçek modelle ölç** — `npm run eval -- --generator=model --gate`.
-  API anahtarı gerekiyor (`GOOGLE_GENERATIVE_AI_API_KEY`), henüz yok.
+- [ ] **Kapıyı gerçek modelle ölç.** Anahtar var ve çalışıyor; engel kota.
   **Bu adım koşulmadı ve atlanmadı; açıkça bekliyor**
-- [ ] Prompt iyileştirme turları — kapı ölçüldükten sonra
+
+  ```
+  npm run eval -- --generator=model --gate --reuse
+  ```
+
+  **Günlük kota tavanı — ölçüldü (30-08-2026):** ücretsiz kademe model başına
+  **günde 20 istek** veriyor (`GenerateRequestsPerDayPerProjectPerModel-FreeTier`,
+  değer 20). 24 vakalık kapı retry'larla 24–48 istek demek, yani tek günde
+  bitmiyor. Kota Pasifik saatiyle gece yarısı sıfırlanıyor.
+
+  Yordam: her gün yukarıdaki komut koşulur. `--reuse` parmak izi tutan
+  vakaları önbellekten oynatır, kalanlar modele gider; kota bitince koşu durur
+  ve ertesi gün kaldığı yerden devam eder. Birkaç günde tamamlanır.
+
+  **Parmak izi = model kimliği + sürüm + istek + sistem prompt'unun tamamı.**
+  Prompt'a dokunulduğu anda bütün önbellek geçersiz olur ve kapı baştan
+  ölçülür. Bu kasıtlı: iyileştirilmiş bir prompt'un skorunu eski çıktılarla
+  ölçmek rapora yalan söyletirdi.
+
+  **Model `gemini-3.6-flash`'ta sabit.** Kapı baştan sona tek modelle
+  ölçülmeli, yoksa sayı bir şey ifade etmez. Model değiştirilirse parmak izi
+  zaten bütün önbelleği düşürür.
+- [ ] Prompt iyileştirme turları — kapı ölçüldükten sonra. Her tur önbelleği
+  geçersiz kılar, yani her turun kendi kota bütçesi var
+
+### Sağlayıcı gerçekleri — ölçüldü (30-08-2026)
+
+Tahmin değil, bu makinede bu anahtarla alınan sonuçlar:
+
+| Model | Durum |
+|---|---|
+| `gemini-3.6-flash` | çalışıyor, ~2,2 sn — **kapı bunda ölçülüyor** |
+| `gemini-3.5-flash` | çalışıyor, ~7 sn |
+| `gemini-3-flash-preview` | çalışıyor, ~1,2 sn |
+| `gemini-3.7-flash` | HTTP 503, aşırı yük |
+| `gemini-pro-latest` | HTTP 429 — **pro modellerde ücretsiz kota yok** |
+| `gemini-2.5-flash`, `gemini-2.5-pro` | HTTP 404, yeni kullanıcılara kapalı |
+
+Model kimliği `codecraft.config.json`'da. Takma ad (`gemini-flash-latest`)
+kullanılmıyor: altındaki model habersiz değişirse ölçüm sessizce kayar.
 - ~~**Vanilla feature indeksi**~~ → **yapılamıyor, kaynak yok.** 30-08-2026'da
   ölçüldü: `Mojang/bedrock-samples` ağacında (22645 giriş, kesilmemiş)
   `behavior_pack/` altında `features/` klasörü **yok** — repo biomes, entities,
