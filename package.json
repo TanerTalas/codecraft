@@ -10,7 +10,8 @@
   "workspaces": [
     "packages/*",
     "pipeline",
-    "evals"
+    "evals",
+    "app"
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
