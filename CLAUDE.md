@@ -121,6 +121,7 @@ Atlanan bir adım varsa açıkça yazılır. Yarım iş, yanlış tamamlanmış 
 - Doğrulamanın yakalayamadıkları: `docs/VALIDATION-LIMITS.md`
 - WebSocket köprüsü ve ölçümü: `docs/WEBSOCKET.md`
 - Komut doğrulama ve kapsamı: `docs/COMMANDS.md`
+- Legal metinler (taslak): `docs/LEGAL.md`
 
 ## Git kuralları
 

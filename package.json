@@ -26,6 +26,7 @@
     "pipeline:notes": "node pipeline/src/release-notes.ts",
     "pipeline:freshness": "node pipeline/src/check-freshness.ts",
     "ws:health": "node pipeline/src/ws-health.ts",
+    "ws:probe": "node pipeline/src/ws-probe.ts",
     "data:version": "node pipeline/src/latest-version.ts",
     "validator:compare": "node packages/validator/scripts/compare-schema-sources.ts",
     "fixtures:pack": "node packages/validator/scripts/build-test-pack.ts"

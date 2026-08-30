@@ -468,10 +468,10 @@ Next.js + Tailwind. Üretim tarayıcıda, doğrulama sunucuda (mimari kural 2).
 
 Ayrıntı: `notlar/kurulum-ve-legal.md`.
 
-- [ ] Gizlilik metni — promptlar üçüncü taraflara gidiyor, işlenme şartları kullanıcının kendi hesap tier'ına bağlı, tek bir garanti cümlesi kurulamaz
-- [ ] Sorumluluk reddi — üretilen çıktı kullanıcının dünyasında veri kaybına yol açabilir
-- [ ] Sunucu kuralları uyarısı — AFK otomasyon çıktılarında görünür not
-- [ ] Minecraft marka kuralları — isimlendirme, resmi bağlantı izlenimi verilmemesi
+- [x] Gizlilik metni taslağı — `docs/LEGAL.md` §1. Anahtarın tarayıcıda kaldığı, isteğin doğrudan sağlayıcıya gittiği ve **üretilen dosyaların doğrulama için sunucuya gittiği** ayrı ayrı yazılı. Ücretsiz kademede eğitim kullanımı uyarısı var
+- [x] Sorumluluk reddi taslağı — `docs/LEGAL.md` §2. "Doğrulandı" rozetinin ne demek OLMADIĞI da yazılı, kanıtı `docs/VALIDATION-LIMITS.md`
+- [x] Sunucu kuralları uyarısı taslağı — `docs/LEGAL.md` §3. Çıktının yanında görünür olacak, dipnot değil
+- [x] Minecraft marka kuralları — `docs/LEGAL.md` §4. Zorunlu feragat biçimi kaynağından doğrulandı (minecraft.net/usage-guidelines). Ad "CodeCraft", kural sağlanıyor; alan adı alınırken tekrar bakılacak
 - [x] `@minecraft/server` paket lisansı kontrol edildi — **MIT**. Paket lisans metnini yayınlamıyor, beyan `package.json` içinde
 - [x] MicrosoftDocs/minecraft-creator repo lisansı kontrol edildi — **CC-BY-4.0**, atıf zorunlu
 - [x] `Mojang/bedrock-samples` lisansı kontrol edildi (30-08-2026) —
