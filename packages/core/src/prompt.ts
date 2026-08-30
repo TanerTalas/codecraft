@@ -39,8 +39,13 @@ export function buildSystemPrompt(context: Context): string {
         "Pazarlama numarası (26.40 gibi) hiçbir dosyaya yazılmaz.",
         `@minecraft/* modül sürümleri oyun sürümünden ayrıdır: ${modules}. ` +
           "manifest dependencies alanına bu sürümler yazılır, oyun sürümü değil.",
-        "Script API 2.x kullanılır. 1.x'in world.events arayüzü kaldırıldı; " +
-          "olaylar world.afterEvents ve world.beforeEvents altındadır.",
+        "Script API 2.x kullanılır. Aşağıdakiler 1.x'te vardı ve **kaldırıldı** " +
+          "— gerçek koşularda modelin ürettiği hâlleriyle ölçüldü:\n" +
+          "  · `world.events` → `world.afterEvents` / `world.beforeEvents`\n" +
+          "  · `dimension.runCommandAsync(...)` → `dimension.runCommand(...)`",
+        "Doğrulama katı null denetimiyle koşuyor. `getBlock()`, `getComponent()` " +
+          "ve `Array.shift()` gibi çağrılar `undefined` dönebilir; sonucu " +
+          "kullanmadan önce kontrol et.",
       ]),
   );
 

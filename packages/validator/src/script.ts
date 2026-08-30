@@ -206,6 +206,26 @@ export async function validateScript(
 
     for (const line of output.split(/\r?\n/)) {
       if (line.trim() === "") continue;
+
+      // tsc ayrıntılı hataları ÇOK SATIRLI basıyor: ilk satır konumu ve kodu
+      // taşır, ardından girintili açıklama satırları gelir.
+      //
+      //   main.js(20,5): error TS2349: This expression is not callable.
+      //     Type 'Boolean' has no call signatures.
+      //
+      // Ayrıştırıcı önce her satırın kendi başına bir tanı olduğunu varsayıyor
+      // ve ikinci satırda istisna fırlatıyordu — CLI'ın ilk gerçek koşusunda
+      // ortaya çıktı. Girintili satır önceki tanının mesajına ekleniyor;
+      // açıklama çoğu zaman asıl bilgiyi taşıyor.
+      if (/^\s/.test(line)) {
+        const previous = errors.at(-1);
+        if (previous !== undefined) {
+          previous.message = `${previous.message} ${line.trim()}`;
+          continue;
+        }
+        throw new Error(`tsc çıktısı çözümlenemedi (öncesinde tanı yok): ${line}`);
+      }
+
       const match = DIAGNOSTIC_RE.exec(line);
       if (match === null) {
         throw new Error(`tsc çıktısı çözümlenemedi: ${line}`);

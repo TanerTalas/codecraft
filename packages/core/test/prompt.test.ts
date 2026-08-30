@@ -78,3 +78,20 @@ test("retry istemi hata metnini taşır", () => {
   assert.match(prompt, /TS2339/);
   assert.match(prompt, /düzelt/i);
 });
+
+test("ölçülmüş 1.x kalıntıları prompt'ta adıyla yazılı", () => {
+  // İkisi de gerçek koşularda modelin ürettiği hâlleriyle görüldü:
+  // world.events (eval mob-timer-01 notu) ve runCommandAsync (CLI'ın ilk
+  // uçtan uca koşusu, retry ikinci denemede bunu soktu).
+  const prompt = buildSystemPrompt(context());
+  assert.match(prompt, /world\.events/);
+  assert.match(prompt, /runCommandAsync/);
+  assert.match(prompt, /afterEvents/);
+});
+
+test("null denetimi uyarısı prompt'ta", () => {
+  // strictNullChecks açık kalıyor çünkü getBlock() gerçekten undefined
+  // dönebiliyor ve kontrolsüz kullanım oyunda çöküyor. Model bunu önceden
+  // bilmeli, retry'da öğrenmek zorunda kalmamalı.
+  assert.match(buildSystemPrompt(context()), /undefined/);
+});

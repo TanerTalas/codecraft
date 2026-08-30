@@ -156,3 +156,19 @@ world.afterEvents.playerBreakBlock.subscribe((event) => {
 `);
   assert.equal(result.ok, false);
 });
+
+test("çok satırlı tsc tanısı ayrıştırılır", async () => {
+  // tsc ayrıntılı hataları iki satır basıyor: konum satırı, sonra girintili
+  // açıklama. Ayrıştırıcı ikincisinde istisna fırlatıyordu ve bu CLI'ın ilk
+  // gerçek koşusunu tamamen düşürdü — doğrulama sonucu bile üretilemedi.
+  const result = await validateScript(`
+import { world } from "@minecraft/server";
+const flag = true;
+world.afterEvents.playerSpawn.subscribe(() => {
+  flag();
+});
+`);
+  assert.equal(result.ok, false);
+  // Açıklama satırı asıl bilgiyi taşıyor, mesaja eklenmeli.
+  assert.match(result.errors.map((e) => e.message).join(" "), /no call signatures/i);
+});
