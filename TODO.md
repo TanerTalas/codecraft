@@ -271,8 +271,29 @@ iki mühendislik sonucu var ve ikisi de koda girdi:
 
 ### Kalan iş
 
-- [ ] **Kapıyı gerçek modelle ölç.** Anahtar var ve çalışıyor; engel kota.
-  **Bu adım koşulmadı ve atlanmadı; açıkça bekliyor**
+- [ ] **Kapıyı gerçek modelle ölç.** İlk koşu yapıldı, **kapı henüz geçilmedi**:
+  20 vakanın 16'sı ölçülebildi, 4'ü günlük kotaya takıldı.
+
+  > **İlk gerçek kapı koşusu — 30-08-2026, `gemini-3.6-flash`:**
+  >
+  > | | |
+  > |---|---|
+  > | Modele ulaşan vaka | 16 |
+  > | Geçen | **16** |
+  > | Kotaya takılan | 4 |
+  > | Kapı ölçütü | 18/20 |
+  >
+  > **Ölçülen her vaka geçti.** Kalan dördü `recipe-vanilla-01`,
+  > `custom-entity-01`, `spawn-rule-01`, `ore-gen-01` — hiçbiri modele
+  > gitmedi, "model düştü" diye sayılmıyor.
+  >
+  > Bu skor kapıyı geçmiş SAYILMAZ. 16 < 18 ve dört vaka ölçülmedi. Kapı,
+  > yirmisi de ölçüldüğünde açılır ya da açılmaz.
+  >
+  > Karşılaştırma için: prova koşusu (`gemini-3.5-flash`, eski prompt ve
+  > validator) 16 ölçülen vakanın 15'ini geçiriyordu. Aradaki farkı bugün
+  > ölçümle yapılan üç prompt düzeltmesi ve validator'ın JavaScript moduna
+  > geçmesi kapattı.
 
   ```
   npm run eval -- --generator=model --gate --reuse --list=core
