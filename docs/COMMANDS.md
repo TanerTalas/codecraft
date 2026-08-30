@@ -103,7 +103,7 @@ probe tekrar koşulur.
 
 `BLOCK_STATE_ARRAY` ayrıştırılıyor ve `data/<sürüm>/blocks.json` indeksine
 karşı doğrulanıyor: durum adı o bloğa ait mi, değer kabul edilen kümede mi.
-`["facing_direction"=99]` yakalanır (0–5), `["uydurma_durum"=1]` yakalanır.
+`["facing_direction":99]` yakalanır (0–5), `["uydurma_durum":1]` yakalanır.
 
 Blok `minecraft:` dışı bir namespace'teyse **sessizce geçilir**: eklenti bloğu
 olabilir ve komut grameri onu bilemez. Aynı ilke enum eşleşmesinde de var —
