@@ -383,6 +383,13 @@ type Pattern = {
   /** Kalıbı arar. Bulursa mesaj döner, bulmazsa null. */
   find: (code: string) => string | null;
   evidence: string;
+  /**
+   * Doğrusunun nasıl yazılacağı. Kalıp burada hem SONRADAN ölçülüyor hem
+   * ÖNCEDEN anlatılıyor: Aşama 3'ün prompt'u bu alandan besleniyor
+   * (TODO.md, "kalıp hem önceden anlatılsın hem sonradan ölçülsün").
+   * Böylece liste tek yerde durur, ikinci bir kopya tutulmaz.
+   */
+  guidance: string;
 };
 
 /**
@@ -415,6 +422,12 @@ const PATTERNS: Pattern[] = [
   {
     name: "welcome-on-player-spawn",
     evidence: `${LIMITS} · D (oyunda ölçüldü: olay tetikleniyor, mesaj kimseye ulaşmıyor)`,
+    guidance:
+      "Oyuncuya gösterilecek mesajı worldLoad aboneliğine yazma: olay " +
+      "tetikleniyor ama o anda dünyada mesajı alacak oyuncu yok. " +
+      "world.afterEvents.playerSpawn kullan ve event.player.sendMessage ile " +
+      "yaz; yalnızca ilk girişte istenen bir mesajsa event.initialSpawn ile " +
+      "ayıkla.",
     find: (code) => {
       WORLD_LOAD.lastIndex = 0;
       for (let match = WORLD_LOAD.exec(code); match !== null; match = WORLD_LOAD.exec(code)) {
@@ -434,6 +447,21 @@ const PATTERNS: Pattern[] = [
 
 /** Bu sürümde tanınan kalıpların adları. */
 export const patternNames = (): string[] => PATTERNS.map((pattern) => pattern.name);
+
+export type PatternGuide = {
+  name: string;
+  guidance: string;
+  evidence: string;
+};
+
+/**
+ * Kalıpların prompt'a girecek hâli — ad, doğrusunun nasıl yazılacağı, kanıt.
+ * `find` dışarı verilmiyor: o doğrulama tarafının işi.
+ *
+ * Üretim katmanı bunu prompt'a koyar, doğrulama katmanı aynı tabloyla ölçer.
+ */
+export const patternGuide = (): PatternGuide[] =>
+  PATTERNS.map(({ name, guidance, evidence }) => ({ name, guidance, evidence }));
 
 export type PatternOptions = {
   /** Bulgulara yazılacak dosya yolu. */

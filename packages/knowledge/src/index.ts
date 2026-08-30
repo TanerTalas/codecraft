@@ -5,6 +5,7 @@
 // (CLAUDE.md, "Yapılmayacaklar").
 
 export { DATA_DIR, ROOT } from "./paths.ts";
+export { comMojangCandidates, findDevPacksDir } from "./game-paths.ts";
 export { listDataVersions, resolveVersion } from "./version.ts";
 export type { DataIndex, DataVersion } from "./version.ts";
 export { KINDS, blockStates, lookup, normalizeId } from "./lookup.ts";

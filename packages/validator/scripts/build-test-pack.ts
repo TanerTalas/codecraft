@@ -15,11 +15,11 @@
  * Fixture'lar olduğu gibi kopyalanır, "yüklensin diye" düzeltilmez — test
  * edilen şey doğrulayıcının onayladığı içerik.
  */
-import { access, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-import { resolveVersion } from "@codecraft/knowledge";
+import { findDevPacksDir, resolveVersion } from "@codecraft/knowledge";
 
 import { validateJson, validateScript } from "../src/index.ts";
 
@@ -31,45 +31,10 @@ const PACK_DIR = "codecraft-test-bp";
 const OUT_DIR = join(ROOT, "test-worlds", PACK_DIR);
 
 /**
- * Oyunun com.mojang klasörü. İki düzen dolaşıyor ve hangisinin kullanıldığı
- * kurulu sürüme bağlı — tahmin edilmiyor, var olan aranıyor:
- *
- *   yeni  %APPDATA%\Minecraft Bedrock\Users\Shared\games\com.mojang
- *         Çok profilli düzen. Dünyalar profil klasöründe ama geliştirme
- *         paketleri Shared altında, profiller arasında ortak.
- *   eski  %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\
- *         LocalState\games\com.mojang
- *
- * 30-08-2026'da 1.26.45 kurulumunda ölçüldü: UWP LocalState altında sadece
- * bootstrapStorage var, gerçek veri yeni konumda.
+ * Oyunun com.mojang klasörü ve development_behavior_packs yolu
+ * @codecraft/knowledge içinde çözülüyor (game-paths.ts). Aşama 3'te CLI de
+ * aynı yolu kullanıyor; mantık tek yerde durur (CLAUDE.md, mimari kural 1).
  */
-const COM_MOJANG_CANDIDATES = [
-  join(process.env["APPDATA"] ?? "", "Minecraft Bedrock", "Users", "Shared", "games", "com.mojang"),
-  join(
-    process.env["LOCALAPPDATA"] ?? "",
-    "Packages",
-    "Microsoft.MinecraftUWP_8wekyb3d8bbwe",
-    "LocalState",
-    "games",
-    "com.mojang",
-  ),
-];
-
-async function findDevPacksDir(): Promise<string> {
-  for (const candidate of COM_MOJANG_CANDIDATES) {
-    try {
-      await access(candidate);
-      return join(candidate, "development_behavior_packs");
-    } catch {
-      // sıradaki düzene bak
-    }
-  }
-  throw new Error(
-    "com.mojang klasörü bulunamadı. Bakılan yerler:\n" +
-      COM_MOJANG_CANDIDATES.map((path) => `  ${path}`).join("\n") +
-      "\nMinecraft en az bir kez açılıp ana menüye ulaşmadıysa bu klasör oluşmaz.",
-  );
-}
 
 /** Fixture -> paket içindeki yol + doğrulanacağı doküman tipi. */
 const FILES: { fixture: string; target: string; type: string }[] = [

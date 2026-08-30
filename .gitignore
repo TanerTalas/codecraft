@@ -6,6 +6,7 @@
 *.pem
 secrets/
 config.local.*
+codecraft.config.local.json
 
 # --- Bagimlilik ve derleme ciktisi ---
 node_modules/
