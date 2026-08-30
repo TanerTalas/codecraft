@@ -47,12 +47,33 @@ export const MODEL_CACHE_DIR = fileURLToPath(new URL("../../output/model/", impo
  * üretilen paket ağacıyla karışmasın ve okuyucu onu dosya sanmasın. */
 const META_FILE = ".codecraft-cache.json";
 
+/** Tek denemenin özeti. Dosya içeriği değil, ne olduğu. */
+type AttemptRecord = {
+  /** 1 tabanlı. 2 varsa retry koşmuş demektir. */
+  number: number;
+  /** Doğrulama geçti mi. */
+  ok: boolean;
+  /** Düştüyse modele geri verilen hata metni. Geçtiyse boş. */
+  report: string;
+};
+
 type CacheMeta = {
   /** Hangi model üretti. */
   model: string;
   /** Model + sistem prompt'u + istek. Biri değişirse önbellek geçersiz. */
   fingerprint: string;
   generatedAt: string;
+  /**
+   * Deneme geçmişi.
+   *
+   * Sonuç dosyaları yalnızca SON denemeyi taşıyor, yani retry'ın koşup
+   * koşmadığı çıktıdan anlaşılmıyordu. Ürünün genel modellerden farkı tam da o
+   * döngü (docs/ROADMAP.md) ve arayüz onu göstermek zorunda (docs/UI.md), o
+   * yüzden burada kayda geçiyor.
+   *
+   * Eski önbellek girdilerinde yok: o koşularda kaydedilmiyordu.
+   */
+  attempts?: AttemptRecord[];
 };
 
 const sha256 = (value: string): string =>
@@ -184,12 +205,20 @@ export async function modelGenerator(options: ModelGeneratorOptions = {}): Promi
 
       // Hız sınırlaması burada değil, callModel içinde: sağlayıcının sınırı
       // İSTEK başına ve retry yapan bir vaka iki istek atıyor.
+      const attempts: AttemptRecord[] = [];
       const result = await generate(testCase.request, {
         config,
         // İmza için zaten kuruldu; ikinci kez kurmak aynı dosyaları okurdu.
         context,
         model: getModel,
         review,
+        onAttempt: (attempt) => {
+          attempts.push({
+            number: attempt.number,
+            ok: attempt.review.ok,
+            report: attempt.review.report,
+          });
+        },
       });
 
       if (result.status === "infeasible") {
@@ -215,6 +244,7 @@ export async function modelGenerator(options: ModelGeneratorOptions = {}): Promi
         model: `${config.provider}/${config.model}`,
         fingerprint,
         generatedAt: new Date().toISOString(),
+        attempts,
       });
       return generation;
     },

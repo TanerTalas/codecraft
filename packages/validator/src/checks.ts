@@ -474,11 +474,20 @@ const ASSET_FIELDS: Record<string, TextureAtlas> = {
 };
 
 /**
- * `minecraft:icon` üç biçimde de yazılabiliyor, üçü de oyunda geçerli:
+ * `minecraft:icon` üç biçimde de KARŞILAŞILIYOR, ama üçü geçerli değil.
  *
- *   "minecraft:icon": "ruby"
- *   "minecraft:icon": { "texture": "ruby" }
- *   "minecraft:icon": { "textures": { "default": "ruby" } }
+ *   "minecraft:icon": "ruby"                            şema kabul ediyor
+ *   "minecraft:icon": { "textures": { "default": … } }  şema kabul ediyor
+ *   "minecraft:icon": { "texture": "ruby" }             şema REDDEDİYOR
+ *
+ * Ölçüldü (30-08-2026, behavior/items/items, format_version 1.21.100):
+ * üçüncüsü "must be string · must have required property 'textures'" veriyor.
+ * Model bu biçimi gerçekten üretti (`ore-gen-01`, ikinci deneme).
+ *
+ * Üçü de OKUNUYOR çünkü bu kontrolün işi doku anahtarını bulmak; biçimin
+ * geçerliliğine şema karar veriyor ve zaten veriyor. Geçersiz biçimdeki bir
+ * anahtarı görmezden gelmek, aynı dosyada iki ayrı hatayı tek tek raporlamak
+ * yerine yalnızca birini göstermek olurdu.
  */
 function iconKeys(value: unknown): string[] {
   if (typeof value === "string") return [value];

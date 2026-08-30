@@ -1,0 +1,353 @@
+{
+  "$aciklama": "Gerçek model çıktıları, künyeleriyle. evals/src/build-examples.ts üretiyor, elle düzenlenmez. Rozetler bugünkü review() ile hesaplandı.",
+  "builtAt": "2026-08-30T18:31:57.424Z",
+  "examples": [
+    {
+      "id": "chain-mining-01",
+      "request": "Kırdığım bloğun aynı türden komşularını da kırsın",
+      "kind": "script",
+      "version": "1.26.40",
+      "provenance": {
+        "model": "google/gemini-3.6-flash",
+        "generatedAt": "2026-08-30T16:04:28.827Z",
+        "attempts": null
+      },
+      "status": "gecti",
+      "files": [
+        {
+          "path": "BP/manifest.json",
+          "content": "{\n  \"format_version\": 2,\n  \"header\": {\n    \"name\": \"Zincirleme Blok Kırma\",\n    \"description\": \"Kırılan bloğun komşu aynı tür bloklarını otomatik kırar.\",\n    \"uuid\": \"a1b2c3d4-e5f6-4a7b-8c9d-0123456789ab\",\n    \"version\": [1, 0, 0],\n    \"min_engine_version\": [1, 26, 40]\n  },\n  \"modules\": [\n    {\n      \"type\": \"script\",\n      \"language\": \"javascript\",\n      \"entry\": \"scripts/main.js\",\n      \"uuid\": \"f47ac10b-58cc-4372-a567-0e02b2c3d4e5\",\n      \"version\": [1, 0, 0]\n    }\n  ],\n  \"dependencies\": [\n    {\n      \"module_name\": \"@minecraft/server\",\n      \"version\": \"2.9.0\"\n    }\n  ]\n}"
+        },
+        {
+          "path": "BP/scripts/main.js",
+          "content": "import { world } from \"@minecraft/server\";\n\nlet isProcessing = false;\nconst MAX_BLOCKS = 64;\n\nworld.afterEvents.playerBreakBlock.subscribe((event) => {\n  if (isProcessing) return;\n\n  const { block, brokenBlockPermutation, dimension } = event;\n  const targetTypeId = brokenBlockPermutation.type.id;\n\n  if (!targetTypeId || targetTypeId === \"minecraft:air\") return;\n\n  isProcessing = true;\n\n  try {\n    const queue = [];\n    const visited = new Set();\n    const startLoc = block.location;\n\n    const key = (x, y, z) => `${x},${y},${z}`;\n    visited.add(key(startLoc.x, startLoc.y, startLoc.z));\n\n    const directions = [\n      { x: 1, y: 0, z: 0 },\n      { x: -1, y: 0, z: 0 },\n      { x: 0, y: 1, z: 0 },\n      { x: 0, y: -1, z: 0 },\n      { x: 0, y: 0, z: 1 },\n      { x: 0, y: 0, z: -1 }\n    ];\n\n    for (const d of directions) {\n      queue.push({ x: startLoc.x + d.x, y: startLoc.y + d.y, z: startLoc.z + d.z });\n    }\n\n    let brokenCount = 0;\n\n    while (queue.length > 0 && brokenCount < MAX_BLOCKS) {\n      const pos = queue.shift();\n      if (!pos) break;\n\n      const posKey = key(pos.x, pos.y, pos.z);\n      if (visited.has(posKey)) continue;\n      visited.add(posKey);\n\n      const targetBlock = dimension.getBlock(pos);\n      if (!targetBlock) continue;\n\n      if (targetBlock.type.id === targetTypeId) {\n        dimension.runCommand(`setblock ${pos.x} ${pos.y} ${pos.z} air [] destroy`);\n        brokenCount++;\n\n        for (const d of directions) {\n          const nextPos = { x: pos.x + d.x, y: pos.y + d.y, z: pos.z + d.z };\n          const nextKey = key(nextPos.x, nextPos.y, nextPos.z);\n          if (!visited.has(nextKey)) {\n            queue.push(nextPos);\n          }\n        }\n      }\n    }\n  } catch (e) {\n  } finally {\n    isProcessing = false;\n  }\n});"
+        }
+      ],
+      "review": {
+        "measured": true,
+        "validation": true,
+        "files": [
+          {
+            "path": "BP/manifest.json",
+            "validator": "json",
+            "ok": true,
+            "detail": "general/manifest",
+            "errors": []
+          },
+          {
+            "path": "BP/scripts/main.js",
+            "validator": "script",
+            "ok": true,
+            "detail": "@minecraft/common@1.3.0, @minecraft/server@2.9.0, @minecraft/server-ui@2.1.0",
+            "errors": []
+          }
+        ],
+        "findings": [],
+        "ok": true,
+        "report": ""
+      },
+      "feasibility": null
+    },
+    {
+      "id": "custom-block-01",
+      "request": "Yakut cevheri diye yeni bir blok ekle",
+      "kind": "json",
+      "version": "1.26.40",
+      "provenance": {
+        "model": "google/gemini-3.6-flash",
+        "generatedAt": "2026-08-30T17:17:15.812Z",
+        "attempts": null
+      },
+      "status": "gecti",
+      "files": [
+        {
+          "path": "BP/blocks/ruby_ore.json",
+          "content": "{\"format_version\":\"1.21.100\",\"minecraft:block\":{\"description\":{\"identifier\":\"custom:ruby_ore\"},\"components\":{\"minecraft:destructible_by_mining\":{\"seconds_to_destroy\":3.0},\"minecraft:friction\":0.6,\"minecraft:light_dampening\":15,\"minecraft:material_instances\":{\"*\":{\"texture\":\"emerald_ore\",\"render_method\":\"opaque\"}}}}}"
+        },
+        {
+          "path": "BP/manifest.json",
+          "content": "{\"format_version\":2,\"header\":{\"name\":\"Yakut Cevheri Paketi\",\"description\":\"Oyuna yeni Yakut Cevheri bloğu ekler.\",\"uuid\":\"a5e8c9d1-3b4f-4e12-8c9d-1a2b3c4d5e6f\",\"version\":[1,0,0],\"min_engine_version\":[1,26,40]},\"modules\":[{\"type\":\"data\",\"uuid\":\"b6f9d0e2-4c5a-4f23-9d0e-2b3c4d5e6f7a\",\"version\":[1,0,0]}]}"
+        }
+      ],
+      "review": {
+        "measured": true,
+        "validation": true,
+        "files": [
+          {
+            "path": "BP/blocks/ruby_ore.json",
+            "validator": "json",
+            "ok": true,
+            "detail": "behavior/blocks/blocks",
+            "errors": []
+          },
+          {
+            "path": "BP/manifest.json",
+            "validator": "json",
+            "ok": true,
+            "detail": "general/manifest",
+            "errors": []
+          }
+        ],
+        "findings": [],
+        "ok": true,
+        "report": ""
+      },
+      "feasibility": null
+    },
+    {
+      "id": "custom-item-01",
+      "request": "Yakut diye yeni bir eşya ekle",
+      "kind": "json",
+      "version": "1.26.40",
+      "provenance": {
+        "model": "google/gemini-3.6-flash",
+        "generatedAt": "2026-08-30T17:17:56.760Z",
+        "attempts": null
+      },
+      "status": "gecti",
+      "files": [
+        {
+          "path": "BP/items/yakut.json",
+          "content": "{\n  \"format_version\": \"1.21.100\",\n  \"minecraft:item\": {\n    \"description\": {\n      \"identifier\": \"custom:yakut\",\n      \"menu_category\": {\n        \"category\": \"items\"\n      }\n    },\n    \"components\": {\n      \"minecraft:icon\": {\n        \"textures\": {\n          \"default\": \"emerald\"\n        }\n      },\n      \"minecraft:display_name\": {\n        \"value\": \"Yakut\"\n      }\n    }\n  }\n}"
+        },
+        {
+          "path": "BP/manifest.json",
+          "content": "{\n  \"format_version\": 2,\n  \"header\": {\n    \"name\": \"Yakut Eşyası Paketi\",\n    \"description\": \"Oyuna Yakut eşyasını ekler.\",\n    \"uuid\": \"d531a87e-9080-413c-83ab-2187fa9f3421\",\n    \"version\": [1, 0, 0],\n    \"min_engine_version\": [1, 26, 40]\n  },\n  \"modules\": [\n    {\n      \"type\": \"resources\",\n      \"uuid\": \"4b8f36c1-231a-428e-a9d0-1a2b3c4d5e6f\",\n      \"version\": [1, 0, 0]\n    }\n  ]\n}"
+        }
+      ],
+      "review": {
+        "measured": true,
+        "validation": true,
+        "files": [
+          {
+            "path": "BP/items/yakut.json",
+            "validator": "json",
+            "ok": true,
+            "detail": "behavior/items/items",
+            "errors": []
+          },
+          {
+            "path": "BP/manifest.json",
+            "validator": "json",
+            "ok": true,
+            "detail": "general/manifest",
+            "errors": []
+          }
+        ],
+        "findings": [],
+        "ok": true,
+        "report": ""
+      },
+      "feasibility": null
+    },
+    {
+      "id": "no-fall-damage-01",
+      "request": "Düşerken hasar almayayım",
+      "kind": "script",
+      "version": "1.26.40",
+      "provenance": {
+        "model": "google/gemini-3.6-flash",
+        "generatedAt": "2026-08-30T16:07:14.173Z",
+        "attempts": null
+      },
+      "status": "gecti",
+      "files": [
+        {
+          "path": "BP/manifest.json",
+          "content": "{\n  \"format_version\": 2,\n  \"header\": {\n    \"name\": \"No Fall Damage\",\n    \"description\": \"Oyuncuların düşme hasarı almasını engeller.\",\n    \"uuid\": \"f47ac10b-58cc-4372-a567-0e02b2c3d4e5\",\n    \"version\": [1, 0, 0],\n    \"min_engine_version\": [1, 26, 40]\n  },\n  \"modules\": [\n    {\n      \"type\": \"script\",\n      \"language\": \"javascript\",\n      \"uuid\": \"c9bf9e57-1685-4c89-bafb-ff5af830be8a\",\n      \"entry\": \"scripts/main.js\",\n      \"version\": [1, 0, 0]\n    }\n  ],\n  \"dependencies\": [\n    {\n      \"module_name\": \"@minecraft/server\",\n      \"version\": \"2.9.0\"\n    }\n  ]\n}"
+        },
+        {
+          "path": "BP/scripts/main.js",
+          "content": "import { world, EntityDamageCause } from \"@minecraft/server\";\n\nworld.beforeEvents.entityHurt.subscribe((event) => {\n  if (event.hurtEntity.typeId === \"minecraft:player\" && event.damageSource.cause === EntityDamageCause.fall) {\n    event.cancel = true;\n  }\n});"
+        }
+      ],
+      "review": {
+        "measured": true,
+        "validation": true,
+        "files": [
+          {
+            "path": "BP/manifest.json",
+            "validator": "json",
+            "ok": true,
+            "detail": "general/manifest",
+            "errors": []
+          },
+          {
+            "path": "BP/scripts/main.js",
+            "validator": "script",
+            "ok": true,
+            "detail": "@minecraft/common@1.3.0, @minecraft/server@2.9.0, @minecraft/server-ui@2.1.0",
+            "errors": []
+          }
+        ],
+        "findings": [],
+        "ok": true,
+        "report": ""
+      },
+      "feasibility": null
+    },
+    {
+      "id": "recipe-vanilla-01",
+      "request": "Elmas bloğunu dokuz elmasa geri dönüştürebileyim",
+      "kind": "json",
+      "version": "1.26.40",
+      "provenance": {
+        "model": "google/gemini-3.6-flash",
+        "generatedAt": "2026-08-30T16:24:09.574Z",
+        "attempts": null
+      },
+      "status": "gecti",
+      "files": [
+        {
+          "path": "BP/manifest.json",
+          "content": "{\n  \"format_version\": 2,\n  \"header\": {\n    \"name\": \"Elmas Bloğu Dönüştürme Paketi\",\n    \"description\": \"Elmas bloğunu tekrar 9 elmasa dönüştüren tarif paketi.\",\n    \"uuid\": \"d3b07384-d113-4e4a-9b51-248386f912e1\",\n    \"version\": [1, 0, 0],\n    \"min_engine_version\": [1, 26, 40]\n  },\n  \"modules\": [\n    {\n      \"type\": \"data\",\n      \"uuid\": \"e84c29d0-2f9a-4c28-a3f5-1c849100d89f\",\n      \"version\": [1, 0, 0]\n    }\n  ]\n}"
+        },
+        {
+          "path": "BP/recipes/diamond_from_block.json",
+          "content": "{\n  \"format_version\": \"1.21.100\",\n  \"minecraft:recipe_shapeless\": {\n    \"description\": {\n      \"identifier\": \"custom:diamond_from_block\"\n    },\n    \"tags\": [\n      \"crafting_table\"\n    ],\n    \"ingredients\": [\n      {\n        \"item\": \"minecraft:diamond_block\"\n      }\n    ],\n    \"result\": {\n      \"item\": \"minecraft:diamond\",\n      \"count\": 9\n    }\n  }\n}"
+        }
+      ],
+      "review": {
+        "measured": true,
+        "validation": true,
+        "files": [
+          {
+            "path": "BP/manifest.json",
+            "validator": "json",
+            "ok": true,
+            "detail": "general/manifest",
+            "errors": []
+          },
+          {
+            "path": "BP/recipes/diamond_from_block.json",
+            "validator": "json",
+            "ok": true,
+            "detail": "behavior/recipes/recipes",
+            "errors": []
+          }
+        ],
+        "findings": [],
+        "ok": true,
+        "report": ""
+      },
+      "feasibility": null
+    },
+    {
+      "id": "ore-gen-01",
+      "request": "Yakut cevheri yer altında doğal olarak oluşsun",
+      "kind": "json",
+      "version": "1.26.40",
+      "provenance": {
+        "model": "google/gemini-3.6-flash",
+        "generatedAt": "2026-08-30T18:30:01.811Z",
+        "attempts": [
+          {
+            "number": 1,
+            "ok": false,
+            "report": "BP/features/ruby_ore_feature.json (json, behavior/features/features):\n  - /minecraft:ore_feature :: must NOT have additional properties\nBP/items/ruby.json [asset]:\n  - doku anahtarı \"redstone\" hiçbir vanilla atlasında yok. Kaynak paketi üretilmiyor (v1 kapsamı behavior pack), o yüzden var olan bir vanilla anahtarı kullanılmalı. Yakın anahtarlar: redstone_dust\n    kanıt: docs/VALIDATION-LIMITS.md · C (\"Missing referenced asset\")"
+          },
+          {
+            "number": 2,
+            "ok": false,
+            "report": "BP/items/ruby.json (json, behavior/items/items):\n  - /minecraft:item/components/minecraft:icon :: must be string\n  - /minecraft:item/components/minecraft:icon :: must have required property 'textures'\n  - /minecraft:item/components/minecraft:icon :: must NOT have additional properties\n  - /minecraft:item/components/minecraft:icon :: must match exactly one schema in oneOf\nBP/features/ruby_ore_feature.json (json, behavior/features/features):\n  - /minecraft:ore_feature :: must NOT have additional properties"
+          }
+        ]
+      },
+      "status": "dustu",
+      "files": [
+        {
+          "path": "BP/blocks/ruby_ore.json",
+          "content": "{\n  \"format_version\": \"1.21.100\",\n  \"minecraft:block\": {\n    \"description\": {\n      \"identifier\": \"codecraft:ruby_ore\"\n    },\n    \"components\": {\n      \"minecraft:destructible_by_mining\": {\n        \"seconds_to_destroy\": 3.0\n      },\n      \"minecraft:friction\": 0.6,\n      \"minecraft:light_dampening\": 15,\n      \"minecraft:material_instances\": {\n        \"*\": {\n          \"texture\": \"diamond_ore\",\n          \"render_method\": \"opaque\"\n        }\n      }\n    }\n  }\n}"
+        },
+        {
+          "path": "BP/feature_rules/ruby_ore_feature.json",
+          "content": "{\n  \"format_version\": \"1.13.0\",\n  \"minecraft:feature_rules\": {\n    \"description\": {\n      \"identifier\": \"codecraft:ruby_ore_feature\",\n      \"places_feature\": \"codecraft:ruby_ore_feature\"\n    },\n    \"conditions\": {\n      \"placement_pass\": \"underground_pass\",\n      \"minecraft:biome_filter\": []\n    },\n    \"distribution\": {\n      \"iterations\": 8,\n      \"coordinate_eval_order\": \"zyx\",\n      \"x\": {\n        \"distribution\": \"uniform\",\n        \"extent\": [0, 16]\n      },\n      \"y\": {\n        \"distribution\": \"uniform\",\n        \"extent\": [-64, 32]\n      },\n      \"z\": {\n        \"distribution\": \"uniform\",\n        \"extent\": [0, 16]\n      }\n    }\n  }\n}"
+        },
+        {
+          "path": "BP/features/ruby_ore_feature.json",
+          "content": "{\n  \"format_version\": \"1.13.0\",\n  \"minecraft:ore_feature\": {\n    \"description\": {\n      \"identifier\": \"codecraft:ruby_ore_feature\"\n    },\n    \"count\": 8,\n    \"places_block\": \"codecraft:ruby_ore\",\n    \"may_replace\": [\n      {\n        \"name\": \"minecraft:stone\"\n      },\n      {\n        \"name\": \"minecraft:deepslate\"\n      }\n    ]\n  }\n}"
+        },
+        {
+          "path": "BP/items/ruby.json",
+          "content": "{\n  \"format_version\": \"1.21.100\",\n  \"minecraft:item\": {\n    \"description\": {\n      \"identifier\": \"codecraft:ruby\"\n    },\n    \"components\": {\n      \"minecraft:icon\": {\n        \"texture\": \"redstone_dust\"\n      }\n    }\n  }\n}"
+        },
+        {
+          "path": "BP/manifest.json",
+          "content": "{\n  \"format_version\": 2,\n  \"header\": {\n    \"name\": \"Ruby Ore Pack\",\n    \"description\": \"Adds ruby ore generation underground.\",\n    \"uuid\": \"d3b07384-2193-4e81-a712-9c1234567801\",\n    \"version\": [1, 0, 0],\n    \"min_engine_version\": [1, 26, 40]\n  },\n  \"modules\": [\n    {\n      \"type\": \"data\",\n      \"uuid\": \"d3b07384-2193-4e81-b813-9c1234567802\",\n      \"version\": [1, 0, 0]\n    }\n  ]\n}"
+        }
+      ],
+      "review": {
+        "measured": true,
+        "validation": false,
+        "files": [
+          {
+            "path": "BP/blocks/ruby_ore.json",
+            "validator": "json",
+            "ok": true,
+            "detail": "behavior/blocks/blocks",
+            "errors": []
+          },
+          {
+            "path": "BP/features/ruby_ore_feature.json",
+            "validator": "json",
+            "ok": false,
+            "detail": "behavior/features/features",
+            "errors": [
+              "/minecraft:ore_feature :: must NOT have additional properties"
+            ]
+          },
+          {
+            "path": "BP/feature_rules/ruby_ore_feature.json",
+            "validator": "json",
+            "ok": true,
+            "detail": "behavior/feature_rules/feature_rules",
+            "errors": []
+          },
+          {
+            "path": "BP/items/ruby.json",
+            "validator": "json",
+            "ok": false,
+            "detail": "behavior/items/items",
+            "errors": [
+              "/minecraft:item/components/minecraft:icon :: must be string",
+              "/minecraft:item/components/minecraft:icon :: must have required property 'textures'",
+              "/minecraft:item/components/minecraft:icon :: must NOT have additional properties",
+              "/minecraft:item/components/minecraft:icon :: must match exactly one schema in oneOf"
+            ]
+          },
+          {
+            "path": "BP/manifest.json",
+            "validator": "json",
+            "ok": true,
+            "detail": "general/manifest",
+            "errors": []
+          }
+        ],
+        "findings": [],
+        "ok": false,
+        "report": "BP/features/ruby_ore_feature.json (json, behavior/features/features):\n  - /minecraft:ore_feature :: must NOT have additional properties\nBP/items/ruby.json (json, behavior/items/items):\n  - /minecraft:item/components/minecraft:icon :: must be string\n  - /minecraft:item/components/minecraft:icon :: must have required property 'textures'\n  - /minecraft:item/components/minecraft:icon :: must NOT have additional properties\n  - /minecraft:item/components/minecraft:icon :: must match exactly one schema in oneOf"
+      },
+      "feasibility": null
+    },
+    {
+      "id": "yapilamaz-girdi-simulasyonu",
+      "request": "Fareme basılı tutmuş gibi otomatik kazsın",
+      "kind": "yapilamaz",
+      "version": "1.26.40",
+      "provenance": {
+        "model": null,
+        "generatedAt": null,
+        "attempts": null
+      },
+      "status": "yapilamaz",
+      "files": [],
+      "review": null,
+      "feasibility": {
+        "category": "input-simulation",
+        "reason": "@minecraft/server oyuncu girdisini simüle edemez. Girdiyi okuyabilir (playerButtonInput) ve kısıtlayabilir (PlayerInputPermissions), ama üretemez — yani \"basılı tutmuş gibi\" davranış script'le kurulamaz.",
+        "evidence": "@minecraft/server 2.9.0 index.d.ts: SimulatedPlayer/simulateUse/sendKey yok. SimulatedPlayer yalnızca @minecraft/server-gametest içinde ve o modül data/<sürüm>/script-types/ altında bulunmuyor.",
+        "alternative": "İki yol var: (1) istenen sonucu doğrudan yapan bir behavior pack — örneğin \"basılı tutup kazmak\" yerine kırılan bloğun komşularını da kıran zincirleme kazma; (2) oyunun dışından çalışan bir otomasyon script'i (Python)."
+      }
+    }
+  ]
+}

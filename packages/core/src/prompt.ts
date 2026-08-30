@@ -111,6 +111,9 @@ export function buildSystemPrompt(context: Context): string {
         "Anahtar adı kimlikten TÜRETİLEMEZ. Ölçüldü: item kimliklerinin yalnızca " +
           "%13'ünün, blok kimliklerinin %40'ının atlasta aynı adla karşılığı var. " +
           '"codecraft:ruby" için "ruby" yazma — o anahtar yok.',
+        '`minecraft:icon` iki biçimde yazılabilir: düz metin ("diamond") ya da ' +
+          '{ "textures": { "default": "diamond" } }. ' +
+          '{ "texture": ... } biçimi ŞEMA TARAFINDAN REDDEDİLİYOR — ölçüldü.',
         "Yeni bir item ya da blok için var olan bir vanilla dokusunu ödünç al " +
           '(örneğin ikon "diamond", blok yüzeyi "diamond_ore"). Özel görsel ' +
           "kullanıcının kendi kaynak paketini yazmasını gerektirir; bunu notlarda söyle.",

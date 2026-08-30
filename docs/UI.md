@@ -225,6 +225,16 @@ göstermeli. İkisi de statik ekran görüntüsüyle anlatılamayan davranışla
 
 Her detay sayfasında "Bunu kendin dene" çağrısı → `/`.
 
+**Veri hazır:** `app/src/examples/examples.json`. `npm run examples:build` üretiyor,
+elle düzenlenmiyor. Her kayıtta istek, üretilen dosyalar, doğrulama sonucu,
+künye (model + tarih) ve varsa deneme geçmişi duruyor. Bugün yedi örnek var:
+beşi geçen, biri düşen (tekrar deneme akışını gösteren), biri yapılabilirlik
+engeli.
+
+`provenance.attempts` alanı `null` ise **"tekrar denenmedi" demek değil** —
+o koşuda kaydedilmemiş demek. Arayüz ikisini karıştırmamalı; rozetin
+"ölçülemedi" hâliyle aynı mantık.
+
 ---
 
 ## 3. Legal sayfalar
