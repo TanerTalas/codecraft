@@ -189,12 +189,9 @@ server.on("connection", (socket: WebSocket) => {
     report();
     // Kapanış duyurulmadan yapılırsa oyun "Could not connect to the server"
     // gösteriyor ve başarılı koşu başarısız sanılıyor.
-    console.log(
-      '
-Ölçüm bitti, sunucu kapanıyor. Oyunda "Could not connect to the server"
-' +
-        "görmen NORMAL — bağlantıyı biz kapattık.",
-    );
+    console.log("");
+    console.log('Ölçüm bitti, sunucu kapanıyor. Oyunda "Could not connect to');
+    console.log('the server" görmen NORMAL — bağlantıyı biz kapattık.');
     socket.close();
     server.close();
   }, LISTEN_MS);
