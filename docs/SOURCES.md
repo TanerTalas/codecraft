@@ -19,9 +19,8 @@ Bu verileri **yeniden yayınlamak** ile onlardan **türetilmiş indeks üretmek*
 
 ### EULA kararı: Mojang şemaları neden birebir commit ediliyor
 
-`metadata/json_schemas/` içeriği EULA kapsamında ve repoda `LICENSE` dosyası yok
-(HTTP 404, doğrulandı). Yine de `data/<sürüm>/schemas/` altına birebir
-kopyalanıyor. Karar bilinçli ve gerekçesi şu:
+`metadata/json_schemas/` içeriği EULA kapsamında. Yine de `data/<sürüm>/schemas/`
+altına birebir kopyalanıyor. Karar bilinçli ve gerekçesi şu:
 
 - Klonlayan herkeste hazır olur; doğrulama ağ erişimi gerektirmez. Aşama 4'te
   sunucu tarafı doğrulama (mimari kural 2) her dağıtımda 1313 dosya indirmek
@@ -29,6 +28,18 @@ kopyalanıyor. Karar bilinçli ve gerekçesi şu:
 - Geçmiş sürümler git'te birikir. `main` ilerlediğinde eski şemalar tag'den
   geri alınabilir ama tag adlandırması tutarsız (aşağıya bak), yani güvenilir
   bir geri dönüş yolu değil.
+
+**Lisans durumu (30-08-2026'da yeniden ölçüldü).** Daha önce "repoda `LICENSE`
+yok (HTTP 404)" yazıyordu ve EULA *varsayılıyordu*. Artık varsayım değil:
+`LICENSE.md` mevcut (HTTP 200) ve metni şu:
+
+> (c) Mojang AB. All rights reserved.
+>
+> By downloading the files in this repository, you agree to the Minecraft End
+> User License Agreement and that these files are subject to its terms.
+
+Yani "tüm hakları saklı" + EULA, açıkça yazılı. Varsayımımız doğruymuş ama
+kaynak artık kesin — ve bu, aşağıdaki uyarıyı zayıflatmıyor, **güçlendiriyor**.
 
 **Repo public yapılırsa bu karar yeniden değerlendirilmeli** — git geçmişinden
 temizlemek zahmetlidir. Alternatif: şemaları `pipeline/raw/` içinde tutup

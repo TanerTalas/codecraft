@@ -250,9 +250,14 @@ iki mühendislik sonucu var ve ikisi de koda girdi:
   API anahtarı gerekiyor (`GOOGLE_GENERATIVE_AI_API_KEY`), henüz yok.
   **Bu adım koşulmadı ve atlanmadı; açıkça bekliyor**
 - [ ] Prompt iyileştirme turları — kapı ölçüldükten sonra
-- [ ] **Vanilla feature indeksi** (opsiyonel). `places_feature` bugün yalnızca
-  `minecraft:` dışı namespace'lerde kesin sonuç veriyor. Kapıyı etkilemiyor
-  (uyarı vakayı düşürmez), o yüzden en sonda
+- ~~**Vanilla feature indeksi**~~ → **yapılamıyor, kaynak yok.** 30-08-2026'da
+  ölçüldü: `Mojang/bedrock-samples` ağacında (22645 giriş, kesilmemiş)
+  `behavior_pack/` altında `features/` klasörü **yok** — repo biomes, entities,
+  items, loot_tables, recipes, shapes, spawn_rules, trading içeriyor. Vanilla
+  yerleştirme feature'ları bu kaynakta yayınlanmıyor
+  - Sonuç: `minecraft:` namespace'li `places_feature` **uyarı olarak kalıyor**.
+    Bilinmeyene "geçti" denmiyor ama uydurma hata da üretilmiyor
+  - Başka bir kaynak bulunursa yeniden açılır. Tahminle indeks üretilmeyecek
 
 ### WebSocket sağlık kontrolü (Aşama 1'den taşındı)
 
@@ -364,7 +369,12 @@ Ayrıntı: `notlar/kurulum-ve-legal.md`.
 - [ ] Minecraft marka kuralları — isimlendirme, resmi bağlantı izlenimi verilmemesi
 - [x] `@minecraft/server` paket lisansı kontrol edildi — **MIT**. Paket lisans metnini yayınlamıyor, beyan `package.json` içinde
 - [x] MicrosoftDocs/minecraft-creator repo lisansı kontrol edildi — **CC-BY-4.0**, atıf zorunlu
-- [ ] `Mojang/bedrock-samples` — repoda `LICENSE` yok (404), EULA varsayılıyor. Şemalar birebir commit ediliyor; repo public yapılmadan önce yeniden değerlendirilecek (`docs/SOURCES.md`)
+- [x] `Mojang/bedrock-samples` lisansı kontrol edildi (30-08-2026) —
+  `LICENSE.md` **var** (önceki not 404 diyordu): "(c) Mojang AB. All rights
+  reserved" + Minecraft EULA. Varsayım doğruymuş, artık yazılı kaynağı da var
+- [ ] Şemaların birebir commit edilmesi kararı — repo public yapılmadan önce
+  yeniden değerlendirilecek. Lisans netleştiği için bu madde artık daha
+  kritik, daha az (`docs/SOURCES.md`)
 
 **Karar alınmış:** v1'de hiç kişisel veri toplanmayacak, hesap sistemi kurulmayacak. Bu `CLAUDE.md` içinde mimari kısıt olarak yazılı — çocuk verisi (KVKK/GDPR/COPPA) riskini baştan keser.
 
