@@ -4,5 +4,5 @@
   "maxOutputTokens": 8192,
   "temperature": 0,
   "maxRetries": 1,
-  "requestDelayMs": 4000
+  "requestDelayMs": 13000
 }

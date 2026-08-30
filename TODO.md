@@ -253,10 +253,15 @@ iki mühendislik sonucu var ve ikisi de koda girdi:
   npm run eval -- --generator=model --gate --reuse --list=core
   ```
 
-  **Günlük kota tavanı — ölçüldü (30-08-2026):** ücretsiz kademe model başına
-  **günde 20 istek** veriyor (`GenerateRequestsPerDayPerProjectPerModel-FreeTier`,
-  değer 20). 24 vakalık kapı retry'larla 24–48 istek demek, yani tek günde
-  bitmiyor. Kota Pasifik saatiyle gece yarısı sıfırlanıyor.
+  **Kota tavanı — AI Studio kota panosundan okundu (30-08-2026):** ücretsiz
+  kademe model başına **dakikada 5**, **günde 20** istek ve dakikada 250K token
+  veriyor. 24 vakalık kapı retry'larla 24–48 istek demek, yani tek günde
+  bitmiyor. Günlük kota Pasifik saatiyle gece yarısı sıfırlanıyor.
+
+  Dakikalık sınır önce **yanlış okundu**: API hata metnindeki `limit: 20`
+  günlük sınır (`GenerateRequestsPerDayPerProjectPerModel-FreeTier`), dakikalık
+  değil. `requestDelayMs` 4000 iken dakikada 15 istek ediyordu — tavanın üç
+  katı. 13000'e çıkarıldı, dakikada ~4,6 istek.
 
   `--list=core` ek listeyi atlar: o 4 vaka kapıya sayılmıyor ama istek
   harcıyordu, yani günlük bütçenin beşte biri sayılmayan vakalara gidiyordu.

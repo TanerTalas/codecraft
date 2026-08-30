@@ -74,8 +74,14 @@ export type Config = {
    * İki model isteği arasındaki en az süre (ms).
    *
    * VAKA başına değil İSTEK başına uygulanır — sağlayıcının sınırı da öyle.
-   * Ölçüldü (30-08-2026, Gemini ücretsiz kademe): dakikada 20 istek. 4000 ms
-   * dakikada ~15 istek demek, güvenli pay bırakıyor.
+   *
+   * Ölçüldü (30-08-2026, AI Studio kota panosu, Gemini ücretsiz kademe):
+   * dakikada **5** istek, günde **20** istek, model başına.
+   *
+   * Dakikalık sınır önce yanlış okundu (API hata metnindeki "limit: 20" günlük
+   * sınırdı, dakikalık değil) ve 4000 ms yazılmıştı — dakikada 15 istek, yani
+   * tavanın üç katı. 13000 ms dakikada ~4,6 istek demek, 5'in altında pay
+   * bırakıyor.
    */
   requestDelayMs: number;
 };
@@ -85,7 +91,7 @@ const DEFAULTS: Omit<Config, "model"> = {
   maxOutputTokens: 8192,
   temperature: 0,
   maxRetries: 3,
-  requestDelayMs: 4000,
+  requestDelayMs: 13000,
 };
 
 /** Yapılandırmada durmaması gereken alan adları. */
