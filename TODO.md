@@ -266,8 +266,14 @@ resmi changelog yok. CI'da koşamaz — çalışan bir oyun istemcisi gerekiyor.
 
 Doğrulamadan **önce** çalışır, LLM gerektirmez, kalıp eşlemesiyle yapılır. Hem token tasarrufu sağlar hem en sık hatayı baştan keser.
 
-- [ ] Platformun izin vermediği kategorileri tanı: girdi simülasyonu, dosya sistemi erişimi, ağ isteği
-- [ ] Yakalandığında doğrudan alternatif öner (örn. "fareye basılı tutmuş gibi kazsın" → zincirleme kazma veya dışarıdan çalışan script)
+- [x] Platformun izin vermediği kategorileri tanı: girdi simülasyonu, dosya
+  sistemi erişimi, ağ isteği — `packages/core/src/feasibility.ts`
+- [x] Yakalandığında doğrudan alternatif öner — gerekçe, kanıt ve alternatif
+  birlikte basılıyor. Model **hiç kurulmuyor**, o yüzden anahtar bile
+  gerekmiyor; "model çağrılmaz" iddiası testle sabit
+  - Her kuralın dayanağı `.d.ts` üzerinde taranıyor: `SimulatedPlayer`,
+    `readFile`, `XMLHttpRequest` gerçekten yok. Mojang birini eklerse test
+    kırmızıya döner ve kural yeniden ölçülür
 
 ### Doğrulamanın yakalayamadıkları (gerçek oyun testinden)
 
