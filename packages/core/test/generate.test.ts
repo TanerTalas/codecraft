@@ -136,13 +136,19 @@ test("retry de düşerse tam iki deneme yapılır ve sonuç düşük döner", as
   assert.equal(result.ok, false);
 });
 
-test("yapılabilirlik engellerse model hiç çağrılmaz", async () => {
+test("yapılabilirlik engellerse model hiç kurulmaz", async () => {
   const { model, prompts } = scriptedModel([{ kind: "script", files: [FILE] }]);
   let reviewed = false;
+  let built = 0;
 
   const result = await generate("Fareme basılı tutmuş gibi otomatik kazsın", {
     config: CONFIG,
-    model,
+    // Fabrika biçimi: model kurulmadığı sürece API anahtarı da gerekmez.
+    // CLI anahtarsız çalışabilsin diye önemli.
+    model: () => {
+      built += 1;
+      return model;
+    },
     review: async () => {
       reviewed = true;
       return passing();
@@ -150,6 +156,7 @@ test("yapılabilirlik engellerse model hiç çağrılmaz", async () => {
   });
 
   assert.equal(result.status, "infeasible");
+  assert.equal(built, 0, "model kuruldu — anahtar gereksiz yere istenirdi");
   assert.deepEqual(prompts, []);
   assert.equal(reviewed, false);
 });

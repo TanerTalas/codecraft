@@ -49,7 +49,14 @@ export type GenerateResult =
 
 export type GenerateOptions = ContextOptions & {
   config: Config;
-  model: LanguageModel;
+  /**
+   * Model ya da onu kuran fonksiyon.
+   *
+   * Fonksiyon biçimi yapılabilirlik kapısı için: engellenen bir istekte model
+   * hiç kurulmuyor, dolayısıyla API anahtarı bile gerekmiyor. "Model
+   * çağrılmaz" iddiası ancak böyle gerçek oluyor.
+   */
+  model: LanguageModel | (() => LanguageModel);
   review: ReviewFn;
   /** Test ve eval için: her denemeden sonra çağrılır. */
   onAttempt?: (attempt: Attempt) => void;
@@ -64,6 +71,8 @@ export async function generate(
   const feasibility = checkFeasibility(request);
   if (feasibility.blocked) return { status: "infeasible", feasibility };
 
+  const model = typeof options.model === "function" ? options.model() : options.model;
+
   const context = await buildContext(request, { version: options.version });
   const system = buildSystemPrompt(context);
 
@@ -73,7 +82,7 @@ export async function generate(
   // Tam iki tur: ilk deneme + tek retry.
   for (let number = 1; number <= 2; number += 1) {
     const generation = await callModel({
-      model: options.model,
+      model,
       config: options.config,
       system,
       prompt,

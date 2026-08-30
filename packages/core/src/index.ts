@@ -9,6 +9,8 @@
 export { API_KEY_ENV, CONFIG_FILE, LOCAL_CONFIG_FILE, loadConfig, requireApiKey } from "./config.ts";
 export type { Config, ProviderName } from "./config.ts";
 
+export { UserError } from "./errors.ts";
+
 export { buildContext } from "./context.ts";
 export type { Context, ContextOptions, IdentityNote } from "./context.ts";
 

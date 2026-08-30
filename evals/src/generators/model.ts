@@ -42,7 +42,9 @@ async function writeCache(testCase: EvalCase, generation: Generation): Promise<v
 
 export async function modelGenerator(): Promise<Generator> {
   const config: Config = await loadConfig();
-  const model = createModel(config);
+  // Tembel: yapılabilirlik engelleyen vakalar anahtar gerektirmez.
+  let model: ReturnType<typeof createModel> | null = null;
+  const getModel = (): ReturnType<typeof createModel> => (model ??= createModel(config));
   let first = true;
 
   return {
@@ -60,7 +62,7 @@ export async function modelGenerator(): Promise<Generator> {
 
       const result = await generate(testCase.request, {
         config,
-        model,
+        model: getModel,
         review,
         version: testCase.version,
       });

@@ -13,6 +13,8 @@ import { join } from "node:path";
 
 import { ROOT } from "@codecraft/knowledge";
 
+import { UserError } from "./errors.ts";
+
 export const CONFIG_FILE = "codecraft.config.json";
 export const LOCAL_CONFIG_FILE = "codecraft.config.local.json";
 
@@ -103,7 +105,7 @@ function optionalNumber(raw: Record<string, unknown>, key: string, fallback: num
 export async function loadConfig(root: string = ROOT): Promise<Config> {
   const base = await readJsonIfExists(join(root, CONFIG_FILE));
   if (base === null) {
-    throw new Error(
+    throw new UserError(
       `${CONFIG_FILE} bulunamadı (${root}). Örnek için depodaki dosyaya bak; ` +
         "model kimliğini `npm run codecraft -- --models` ile listeleyip yaz.",
     );
@@ -118,7 +120,7 @@ export async function loadConfig(root: string = ROOT): Promise<Config> {
   // takılıyordu (testte yakalandı). Aranan şey sır adı, sır kelimesi değil.
   for (const key of Object.keys(raw)) {
     if (SECRET_KEY_RE.test(key)) {
-      throw new Error(
+      throw new UserError(
         `${CONFIG_FILE}: "${key}" alanı burada duramaz. Anahtar yalnızca ortam ` +
           "değişkeninden okunur ve bu dosya commit ediliyor.",
       );
@@ -127,7 +129,7 @@ export async function loadConfig(root: string = ROOT): Promise<Config> {
 
   const provider = (raw["provider"] ?? DEFAULTS.provider) as string;
   if (!(provider in API_KEY_ENV)) {
-    throw new Error(
+    throw new UserError(
       `${CONFIG_FILE}: bilinmeyen sağlayıcı "${provider}". ` +
         `Tanınanlar: ${Object.keys(API_KEY_ENV).join(", ")}`,
     );
@@ -151,7 +153,7 @@ export function requireApiKey(provider: ProviderName, env = process.env): string
   const name = API_KEY_ENV[provider];
   const value = env[name];
   if (value === undefined || value.trim() === "") {
-    throw new Error(
+    throw new UserError(
       `${name} tanımlı değil. Google AI Studio'dan (aistudio.google.com) ` +
         `ücretsiz bir anahtar alıp şunu çalıştır:\n` +
         `  setx ${name} "..."\n` +

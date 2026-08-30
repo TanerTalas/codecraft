@@ -16,10 +16,11 @@ import { createGoogle } from "@ai-sdk/google";
 import { APICallError, generateText, Output, type LanguageModel } from "ai";
 
 import { requireApiKey, type Config } from "./config.ts";
+import { UserError } from "./errors.ts";
 import { generationSchema, type Generation } from "./output.ts";
 
 /** Sağlayıcı ve anahtar limitinden kaynaklanan başarısızlık. */
-export class RateLimitError extends Error {
+export class RateLimitError extends UserError {
   constructor(message: string, options?: { cause?: unknown }) {
     super(message, options);
     this.name = "RateLimitError";
@@ -101,7 +102,7 @@ export async function listModels(config: Config, env = process.env): Promise<str
     { headers: { "x-goog-api-key": key } },
   );
   if (!response.ok) {
-    throw new Error(
+    throw new UserError(
       `Model listesi alınamadı: HTTP ${response.status}. Anahtar geçerli mi?`,
     );
   }

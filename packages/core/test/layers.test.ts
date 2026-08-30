@@ -17,6 +17,7 @@ const SRC = fileURLToPath(new URL("../src/", import.meta.url));
 
 /** Tarayıcıda da koşacak modüller. */
 const PURE = [
+  "errors.ts",
   "feasibility.ts",
   "generate.ts",
   "model.ts",

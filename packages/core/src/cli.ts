@@ -13,8 +13,9 @@ import { join } from "node:path";
 import { ROOT } from "@codecraft/knowledge";
 
 import { loadConfig } from "./config.ts";
+import { UserError } from "./errors.ts";
 import { generate } from "./generate.ts";
-import { createModel, listModels, RateLimitError } from "./model.ts";
+import { createModel, listModels } from "./model.ts";
 import { installPack, writePack } from "./pack.ts";
 import { review } from "./review.ts";
 
@@ -43,9 +44,9 @@ function parseArgs(argv: readonly string[]): Options {
     else if (arg.startsWith("--")) {
       // Bilinmeyen bayrak sessizce yok sayılmaz: --instal yazan biri paketin
       // kurulduğunu sanırdı (evals/src/run.ts'deki aynı ilke).
-      throw new Error(`Bilinmeyen argüman: "${arg}"`);
+      throw new UserError(`Bilinmeyen argüman: "${arg}"`);
     } else if (options.request === null) options.request = arg;
-    else throw new Error(`Fazladan argüman: "${arg}". İstek tek bir metin olmalı.`);
+    else throw new UserError(`Fazladan argüman: "${arg}". İstek tek bir metin olmalı.`);
   }
 
   return options;
@@ -93,7 +94,8 @@ async function main(): Promise<void> {
 
   const result = await generate(options.request, {
     config,
-    model: createModel(config),
+    // Tembel: yapılabilirlik engellerse anahtar hiç istenmez.
+    model: () => createModel(config),
     review,
     version: options.version,
     onAttempt: (attempt) => {
@@ -153,8 +155,9 @@ async function main(): Promise<void> {
 try {
   await main();
 } catch (error) {
-  // Limit hatası bir kod hatası değil: yığın izi basmak yanıltıcı olur.
-  if (error instanceof RateLimitError) {
+  // Beklenen, eyleme dönük hatalar sade basılır: yığın izi talimatı gömer.
+  // Geri kalan her şey olduğu gibi yükselir ki gerçek kusurlar saklanmasın.
+  if (error instanceof UserError) {
     console.error(error.message);
     process.exitCode = 1;
   } else {
