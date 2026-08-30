@@ -293,38 +293,32 @@ iki mühendislik sonucu var ve ikisi de koda girdi:
   `spawn-rule-01` beş koşudur kotaya takılıyordu, `--case=` liste desteği
   eklenince doğrudan hedeflenip ölçüldü ve **geçti**.
 
-- [ ] **Güncel prompt 17/20 — kapı bir vaka eksik.**
+- [ ] **Güncel prompt: ölçülen 15 vakanın 15'i geçti, 5 vaka kotadan eksik.**
 
-  | | Kayıtlı kapı (1. koşu) | Güncel prompt (tam ölçüm) |
-  |---|---|---|
-  | Prompt | düzeltmeden önce | düzeltilmiş + sıkıştırılmış |
-  | Ölçülen | 20 | 20 |
-  | Geçen | **19** | **17** |
-  | Düşen | `spawn-rule-01` | `no-fall-damage-01`, `kill-counter-01`, `ore-gen-01` |
+  ```
+  npm run eval -- --generator=model --reuse --case=custom-item-01,recipe-ruby-01,recipe-vanilla-01,custom-entity-01,ore-gen-01
+  npm run eval -- --generator=model --gate --reuse --list=core
+  ```
 
-  **İki sayıyı doğrudan karşılaştırmak yanıltıcı olur.** Ölçülen koşuların
-  geçme oranları %79, %88, %88, %95 arasında gezindi ve vaka başına tek örnek
-  var; 17 ile 19 arasındaki fark bu bandın içinde. Düzeltmenin skoru düşürdüğü
-  **kanıtlanmadı**, sadece bu koşuda daha düşük çıktı.
+  Eksik beşin **üçü geçerse kapı açılır** (18/20). Beşi de daha önce en az bir
+  kez geçmişti; `ore-gen-01` hariç.
 
-  Düşen üç vaka ve durumları:
+  | Koşu | Prompt | Ölçülen | Geçen | Oran |
+  |---|---|---|---|---|
+  | 1 | düzeltme öncesi | 20 | 19 | %95 |
+  | 4 | düzeltilmiş | 20 | 17 | %85 |
+  | 5 | + `worldInitialize` | 15 | **15** | **%100** |
 
-  - `kill-counter-01` — `worldInitialize` kaldırılmış bir 1.x olayı; 2.x'te
-    `worldLoad`. Prompt'ta zaten `world.events` ve `runCommandAsync` listeli,
-    bu üçüncüsü. **Tek satırlık, kanıtlı düzeltme.**
-  - `ore-gen-01` — `minecraft:ore_feature` içinde hem üst düzey
-    `places_block` hem `replace_rules` var, şema ikisini kabul etmiyor.
-    Şema ayrıntısı; tek satırla anlatılmıyor.
-  - `no-fall-damage-01` — `damage_sensor` şekli, **iki ölçümde de aynı hata**.
-    Israrcı olduğu için gerçek bir bilgi boşluğu sayılabilir.
+  `worldInitialize` satırının hedefi `kill-counter-01` geçti.
 
-  **Kayıtlı 19/20 geçerliliğini koruyor** ve geçiş kapısı açık kalıyor: o ölçüm
-  bir önceki prompt'la yapıldı, o hâliyle doğru. Buradaki iş kapıyı yeniden
-  açmak değil, prompt'u iyileştirmek.
+  **Ve bir teşhisim çürüdü:** `no-fall-damage-01` iki koşuda aynı
+  `damage_sensor` hatasıyla düşmüş, "ısrarcı olduğu için gerçek bir bilgi
+  boşluğu sayılabilir" diye not düşmüştüm. Bu koşuda geçti — yine gürültüymüş.
+  O teşhise göre prompt'a kural yazsaydım olmayan bir soruna kural eklemiş
+  olacaktım.
 
-  Her prompt değişikliği parmak izini düşürüyor ve tam yeniden ölçüm 20 istek
-  gerektiriyor — kota dar olduğu için değişiklikler tek tek değil, toplu
-  yapılmalı.
+  Ders tekrar ediyor: **vaka başına tek örnek hiçbir şey kanıtlamıyor.** İki
+  örnek de yetmiyor. Bir vakaya kural yazmadan önce üç bağımsız düşüş aranmalı.
 - [ ] Prompt iyileştirme turları — kapı ölçüldükten sonra. Her tur önbelleği
   geçersiz kılar, yani her turun kendi kota bütçesi var
 
