@@ -34,20 +34,22 @@ const OUTPUT_DIR = fileURLToPath(new URL("../output/", import.meta.url));
  *   model     gerçek üretim döngüsü, istek harcar
  *   cached    son model koşusunun önbelleği, istek harcamaz
  */
-const GENERATORS: Record<string, () => Generator | Promise<Generator>> = {
-  recorded: recordedGenerator,
-  model: modelGenerator,
-  cached: cachedGenerator,
+const GENERATORS: Record<string, (options: Options) => Generator | Promise<Generator>> = {
+  recorded: () => recordedGenerator(),
+  model: (options) => modelGenerator({ reuse: options.reuse }),
+  cached: () => cachedGenerator(),
 };
 
-type Options = { generator: string; gate: boolean; only: string | null };
+type Options = { generator: string; gate: boolean; only: string | null; reuse: boolean };
 
 function parseArgs(argv: readonly string[]): Options {
-  const options: Options = { generator: "recorded", gate: false, only: null };
+  const options: Options = { generator: "recorded", gate: false, only: null, reuse: false };
 
   for (const arg of argv) {
     if (arg === "--gate") {
       options.gate = true;
+    } else if (arg === "--reuse") {
+      options.reuse = true;
     } else if (arg.startsWith("--generator=")) {
       options.generator = arg.slice("--generator=".length);
     } else if (arg.startsWith("--case=")) {
@@ -123,7 +125,7 @@ async function main(): Promise<void> {
       `Bilinmeyen üretici: "${options.generator}". Tanınanlar: ${Object.keys(GENERATORS).join(", ")}`,
     );
   }
-  const generator = await factory();
+  const generator = await factory(options);
 
   const cases = await loadCases();
   const pick = (list: EvalCase[]): EvalCase[] =>
