@@ -400,9 +400,16 @@ döngüsüne** bağlamak — ölçmek değil, düzeltmek.
 - [x] **Bilinen kalıplar prompt'a giriyor.** `checks.ts`'deki `Pattern` tipine
   `guidance` alanı eklendi ve `patternGuide()` ile dışa açıldı. Prompt aynı
   tablodan besleniyor, ikinci bir liste tutulmuyor
-- [ ] **Asset referansı kararı.** `minecraft:icon` kaynak paketi olmayınca
-  içerik hatası veriyor. Ya minimum kaynak paketi de üretilir ya kullanıcıya
-  açıkça söylenir (Aşama 4)
+- [ ] **Asset referansı.** `minecraft:icon` kaynak paketi olmayınca içerik
+  hatası veriyor. **Karar verildi (30-08-2026): vanilla doku indeksi.** Kaynak
+  paketi üretilmiyor, v1 kapsamı değişmiyor; model yalnızca var olan bir
+  vanilla doku anahtarına işaret edebiliyor ve `checkAssets` bunu ölçüyor.
+  Uygulaması Aşama 4'te
+  - Kaynak doğrulandı (GitHub contents API, `Mojang/bedrock-samples@main`):
+    `resource_pack/textures/item_texture.json` ve `terrain_texture.json` var,
+    yani indeks makine okunur bir kaynaktan türetilebiliyor
+  - Kararın dürüst yarısı atlanmıyor: vanilla anahtarı içerik hatasını kaldırır
+    ama **özel görsel vermez**. Arayüz bunu açıkça söyleyecek
 
 **Bitiş kriteri:** CLI uçtan uca çalışıyor. Prompt burada onlarca istekle iyileştirilir — tarayıcıda yapmak çok yavaş.
 
@@ -486,6 +493,68 @@ Kayıtlı üreticiyle bugünkü skor 20'de 15 ve bu **model başarımı değil**
 
 Next.js + Tailwind. Üretim tarayıcıda, doğrulama sunucuda (mimari kural 2).
 
+### Adım 0 — Planın dayandığı iki varsayım (ölçüldü, 30-08-2026)
+
+Aşama 4'ün tamamı bu ikisine dayanıyordu ve ikisi de tahmindi. İkisi de artık
+ölçüldü ve **ikisi de yeşil** — plan değişmiyor.
+
+- [x] **Tarayıcıdan Gemini çağrılabiliyor mu (CORS).** Mimari kural 2
+  "anahtar sunucuya hiç uğramaz" diyor; bu ancak sağlayıcı CORS'a izin
+  veriyorsa mümkün. `generativelanguage.googleapis.com`, `Origin:
+  http://localhost:3000` ile:
+
+  | Ne | Sonuç |
+  |---|---|
+  | `OPTIONS …:generateContent` (preflight, `POST`) | `200`, `Access-Control-Allow-Origin` origin'i yansıtıyor |
+  | İzin verilen başlıklar | `content-type, x-goog-api-key` |
+  | `GET /v1beta/models` (gerçek çağrı, gerçek anahtar) | `200`, 50 model, ACAO var |
+
+  Kritik ayrıntı: `@ai-sdk/google` anahtarı **`x-goog-api-key`** başlığıyla
+  gönderiyor (`node_modules/@ai-sdk/google/dist/index.js`) — preflight'ın izin
+  verdiği başlığın aynısı. `Authorization: Bearer` olsaydı preflight düşerdi.
+  Yani proxy gerekmiyor, kural 2 esnetilmiyor.
+
+- [x] **Next `@codecraft/core`'u derleyebiliyor mu.** Core ham TypeScript
+  yayınlanıyor ve göreli import'larda `.ts` uzantısı zorunlu
+  (`allowImportingTsExtensions`, derleme adımı yok).
+
+  Ölçüm: Next **16.3.3** (Turbopack), `transpilePackages: ["@codecraft/core"]`,
+  `next build` → `✓ Compiled successfully`. Core için **ayrı bir derleme adımı
+  gerekmiyor**. Ayrıca istemci paketlerinde `node:fs|path|os|child_process`
+  aranıp bulunamadı; barrel'ın tamamı (`checkFeasibility`, `buildSystemPrompt`,
+  `callModel`, `normalize`, `generationSchema`) pakete girmiş, ağaç budaması
+  ölçümü boşa çıkarmamış.
+
+### Adım 1 — Katman ayrımı (tamamlandı)
+
+- [x] **`generate()` bağlamı parametre olarak alıyor.** `review` ile aynı
+  dikiş: `context: Context | (() => Promise<Context>)`. `generate.ts` artık
+  `context.ts`'i yalnızca **tip** olarak import ediyor
+- [x] **`src/browser.ts`** — tarayıcı yüzeyinin tek giriş noktası,
+  `@codecraft/core/browser` alt yoluyla dışa açık
+- [x] **`src/provider.ts`** — `config.ts`'in saf parçaları (`Config`,
+  `ProviderName`, `API_KEY_ENV`, `requireApiKey`, `Env`) oraya taşındı
+- [x] **`layers.test.ts` geçişli grafiği yürüyor**, tek dosyaya bakmıyor
+
+> **Önceki iddia yanlıştı ve testin kendisi yüzündendi.** TODO'da
+> "üretim yolundaki modüllerde `node:` import'u yok, Aşama 4 baştan refactor
+> olmayacak" yazıyordu. Test yalnızca modülün **kendi** import satırlarına
+> bakıyordu, o yüzden iki sızıntıyı görmüyordu:
+>
+> ```
+> generate.ts -> context.ts -> @codecraft/knowledge -> node:fs
+> model.ts    -> config.ts  -> node:fs
+> ```
+>
+> İkisi de ölçüldü: eski hâlde yeni test kırmızı, düzeltmeden sonra yeşil.
+> Yani refactor "baştan" olmadı ama sıfır da değildi.
+>
+> `npm test` 162/162, `npm run typecheck` exit 0,
+> `npm run eval -- --generator=cached --list=all` **19/20** (değişmedi).
+
+### Kalan iş
+
+- [ ] Sunucu uçları: `POST /api/context`, `POST /api/review`, `GET /api/config`
 - [ ] Kalıcı sürüm seçici
 - [ ] Sohbet alanı
 - [ ] Kod bloğu ve kopyala butonu
@@ -493,8 +562,22 @@ Next.js + Tailwind. Üretim tarayıcıda, doğrulama sunucuda (mimari kural 2).
 - [ ] BYOK anahtar girişi — anahtar tarayıcıda kalır, sunucuya hiç uğramaz
 - [ ] Anahtar girildiğinde test çağrısı yap, model listesini çek, menüyü doldur, hata gelirse net mesaj göster
 - [ ] Eylül 2026 Gemini geçişi: eski standart anahtarlar reddedilecek, doğrulama akışı bunu yakalayacak şekilde kurulmalı
-- [ ] Varsayılan mod: kendi anahtarımla, günde 5 mesaj gibi sıkı kota. İlk ekranda anahtar isteme — kullanıcıların çoğu ürünü görmeden kaybedilir
-- [ ] Hosting: Vercel veya Cloudflare, ücretsiz kademe
+- [ ] Hosting: **Vercel, Node runtime** — karar verildi. Doğrulama `tsc`
+  çalıştırıyor ve `data/` altındaki 1313 şemayı dosya olarak okuyor; Workers
+  ikisini de olduğu gibi koşturamaz, validator yeniden yazılmak zorunda kalırdı
+  - Deploy'a gelindiğinde durulacak: hesap ve repo bağlantısı gerekiyor
+  - `next.config` içinde `outputFileTracingIncludes` ile `data/**` ve
+    `node_modules/typescript/**` fonksiyon paketine alınmalı — ikisi de dinamik
+    yolla okunuyor, Next kendiliğinden bulmaz
+  - `/api/review` için `maxDuration` yükseltilmeli; `tsc` bir alt süreç
+
+**Aşama 4'e alınmayanlar (karar, 30-08-2026):**
+
+- ~~Varsayılan mod: kendi anahtarımla günde 5 mesaj~~ → **ertelendi.** İki kuralı
+  birden zorluyor: anahtar sunucuda durmak zorunda (mimari kural 2 "anahtar
+  sunucuya hiç uğramaz" diyor) ve kota sayacı veritabanısız tutulmak zorunda
+  ("Yapılmayacaklar"). Aşama 4 sadece BYOK ile çıkıyor; bu madde ayrı ele
+  alınacak
 
 ---
 
