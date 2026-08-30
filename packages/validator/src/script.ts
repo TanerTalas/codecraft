@@ -12,12 +12,13 @@
  * (docs/SOURCES.md).
  */
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
-import { resolveVersion } from "@codecraft/knowledge";
+import { ROOT, resolveVersion } from "@codecraft/knowledge";
 
 /** Kararlı modül sürümü mü, beta mı. index.json ikisini de kaydediyor. */
 export type ScriptChannel = "stable" | "beta";
@@ -90,9 +91,33 @@ const DIAGNOSTIC_RE = /^(.+?)\((\d+),(\d+)\): error (TS\d+): (.*)$/;
 
 const require_ = createRequire(import.meta.url);
 
-/** typescript paketinin bin/tsc dosyası. Kök node_modules'tan çözülür. */
+/**
+ * typescript paketinin bin/tsc dosyası.
+ *
+ * ÖNCE repo kökündeki node_modules'a bakılıyor, SONRA `require.resolve`'a.
+ * Sıra bu şekilde çünkü ikincisi paketleyicide kırılıyor: Aşama 4'te ölçüldü,
+ * Turbopack `require.resolve`'u kendi çalışma zamanına çeviriyor ve dosya yolu
+ * yerine sayısal bir modül kimliği döndürüyor. Belirtisi şuydu:
+ *
+ *   TypeError: The "path" argument must be of type string. Received type number
+ *
+ * npm workspaces typescript'i zaten köke kaldırıyor, yani ilk yol normal
+ * kurulumda hep tutuyor. `require.resolve` kaldırılmadı: farklı bir paket
+ * yöneticisinde (kaldırma yapmayan) tek çalışan yol o.
+ */
 function tscBin(): string {
-  return join(dirname(require_.resolve("typescript/package.json")), "bin", "tsc");
+  const hoisted = join(ROOT, "node_modules", "typescript", "bin", "tsc");
+  if (existsSync(hoisted)) return hoisted;
+
+  const resolved = require_.resolve("typescript/package.json");
+  if (typeof resolved !== "string") {
+    throw new Error(
+      "typescript paketi bulunamadı: require.resolve dosya yolu yerine " +
+        `${typeof resolved} döndürdü. Paketleyici araya girmiş olabilir; ` +
+        `beklenen yol ${hoisted}`,
+    );
+  }
+  return join(dirname(resolved), "bin", "tsc");
 }
 
 /**

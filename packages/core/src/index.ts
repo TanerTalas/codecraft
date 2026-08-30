@@ -19,7 +19,20 @@ export { defaultEnv } from "./provider.ts";
 
 export { UserError } from "./errors.ts";
 
+export {
+  contextRequestSchema,
+  fetchConfig,
+  remoteContext,
+  remoteReview,
+  reviewRequestSchema,
+} from "./api.ts";
+export type { ConfigResponse, ContextRequest, ReviewRequest } from "./api.ts";
+
+
 export { buildContext } from "./context.ts";
+// Sürüm listesi web'in sürüm seçicisi için gerekiyor. Kabuk data/ katmanına
+// doğrudan bağlanmasın diye buradan geçiyor (mimari kural 1).
+export { listDataVersions } from "@codecraft/knowledge";
 export type { Context, ContextOptions, IdentityNote } from "./context.ts";
 
 export { ABSENT_APIS, checkFeasibility, feasibilityRules } from "./feasibility.ts";

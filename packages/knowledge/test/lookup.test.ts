@@ -6,9 +6,19 @@
  * doğru okumak.
  */
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import test from "node:test";
 
-import { blockStates, listDataVersions, lookup, normalizeId, resolveVersion } from "../src/index.ts";
+import {
+  DATA_DIR,
+  ROOT,
+  blockStates,
+  listDataVersions,
+  lookup,
+  normalizeId,
+  resolveVersion,
+} from "../src/index.ts";
 
 test("sürüm çözümleme: istek verilmezse en yeni sürüm seçilir", async () => {
   const versions = await listDataVersions();
@@ -90,4 +100,24 @@ test("blockStates: durumlar ve alabildikleri değerler", async () => {
 test("blockStates: durumsuz blok boş nesne, olmayan blok null", async () => {
   assert.deepEqual(await blockStates("minecraft:stone"), {});
   assert.equal(await blockStates("minecraft:ruby_block"), null);
+});
+
+/**
+ * Kök çözümü Aşama 4'te paketleyici yüzünden değişti (paths.ts'teki gerekçe).
+ * Yeni hâli yukarı doğru arama yaptığı için sessizce yanlış bir dizine
+ * yerleşebilir; bu test onu bağlıyor.
+ */
+test("ROOT gerçekten repo kökü: data/ ve codecraft.config.json orada", () => {
+  assert.ok(existsSync(join(ROOT, "data")), `${ROOT} altında data/ yok`);
+  assert.ok(
+    existsSync(join(ROOT, "codecraft.config.json")),
+    `${ROOT} altında codecraft.config.json yok`,
+  );
+  assert.equal(DATA_DIR, join(ROOT, "data"));
+});
+
+test("CODECRAFT_ROOT verilmezse arama bu depoyu buluyor", async () => {
+  // Sürüm klasörü ROOT üzerinden çözülüyor; yanlış kökte bu boş dönerdi.
+  const versions = await listDataVersions();
+  assert.ok(versions.length > 0, "data/ altında sürüm klasörü bulunamadı");
 });

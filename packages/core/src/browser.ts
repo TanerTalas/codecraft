@@ -13,6 +13,16 @@
 
 export { UserError } from "./errors.ts";
 
+export {
+  contextRequestSchema,
+  fetchConfig,
+  remoteContext,
+  remoteReview,
+  reviewRequestSchema,
+} from "./api.ts";
+export type { ConfigResponse, ContextRequest, ReviewRequest } from "./api.ts";
+
+
 export { ABSENT_APIS, checkFeasibility, feasibilityRules } from "./feasibility.ts";
 export type { Category, FeasibilityResult, FeasibilityRule } from "./feasibility.ts";
 
