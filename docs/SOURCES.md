@@ -48,6 +48,15 @@ düşük — bu karar da o anda birlikte gözden geçirilmeli.
     `v1.26.40.05` sıfır dolgulu, `v1.26.30.5` değil. Sürüm numarasından tag adı
     türetilemez, liste çekip eşleştirmek gerekir. Pipeline yine `main` dalına bakar.
 - **Sürüm tespiti `version.json` ile yapılır.** Repo kökündeki 2 KB'lık bu dosya `latest.version` alanını verir (`1.26.40.5`). Repoyu klonlamaya gerek yok.
+- **"Veri güncel" ile "kurulu oyunla aynı sürüm" aynı şey değil.** `version.json`
+  ara hotfix sürümlerini yayınlamıyor: 1.26 serisinde sadece `.0/.10/.20/.30/.40`
+  kayıtlı. 30-08-2026'da ölçüldü — kurulu oyun **1.26.45** iken upstream hâlâ
+  `1.26.40.5` diyordu. `npm run pipeline:freshness` bunu bayatlama saymaz ve
+  saymamalı: `data/` bedrock-samples ile eşleşiyorsa görevini yapmış olur.
+  Pratikte sorun çıkarmaz, çünkü `min_engine_version` bir alt sınırdır ve
+  `[1, 26, 40]` 1.26.45'te sorunsuz yüklenir (gerçek oyun testiyle doğrulandı,
+  `docs/VALIDATION-LIMITS.md`). Ama şema ve tip tanımları hotfix'te değişmiş
+  bir şeyi bilemez.
 - bedrock-samples reposu 358 MB — tarball indirilmez, dosyalar tek tek `raw` üzerinden çekilir. Blockception 8 MB olduğu için tarball tercih edilir (1 istek, 1140 dosya).
 - Blockception: sürüm etiketleri geride kalabiliyor, `main` dalına bakılır.
 - Sürüm notu dosyaları üç parçalı adlandırılır: oyun `1.26.40.5` → `Update1.26.40.md`. Dokümanlar oyunun gerisinde kalabiliyor; dosya yoksa pipeline durmaz, uyarı basar.
