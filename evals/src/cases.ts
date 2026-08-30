@@ -24,7 +24,14 @@ const KINDS: readonly EvalKind[] = ["script", "json", "command", "python"];
 
 /** "identity" · "filename" · "commandIdentity" · "pattern:<tanınan ad>" */
 function assertCheckName(name: string, caseId: string): void {
-  if (name === "identity" || name === "filename" || name === "commandIdentity") return;
+  if (
+    name === "identity" ||
+    name === "filename" ||
+    name === "commandIdentity" ||
+    name === "commandSyntax"
+  ) {
+    return;
+  }
 
   if (name.startsWith("pattern:")) {
     const pattern = name.slice("pattern:".length);
@@ -34,8 +41,10 @@ function assertCheckName(name: string, caseId: string): void {
     );
   }
 
-  throw new Error(`${caseId}: bilinmeyen kontrol "${name}". ` +
-      "Tanınanlar: identity, filename, commandIdentity, pattern:<ad>");
+  throw new Error(
+    `${caseId}: bilinmeyen kontrol "${name}". ` +
+      "Tanınanlar: identity, filename, commandIdentity, commandSyntax, pattern:<ad>",
+  );
 }
 
 function assertCase(value: unknown, list: string, index: number): EvalCase {

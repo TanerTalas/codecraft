@@ -12,6 +12,7 @@ Bu verileri **yeniden yayınlamak** ile onlardan **türetilmiş indeks üretmek*
 |---|---|---|---|
 | `Mojang/bedrock-samples` → `vanilladata_modules` | Blok, entity, item tanımları | Minecraft EULA | **Türetilmiş indeks** (id listeleri, blok durumları) |
 | `Mojang/bedrock-samples` → `metadata/json_schemas/` | Mojang'ın kendi JSON şemaları | Minecraft EULA | **Birebir kopya** — bilinçli karar, aşağıya bak |
+| `Mojang/bedrock-samples` → `metadata/command_modules/` | Komut grameri: 83 komut, 270 aşırı yükleme, 225 enum | Minecraft EULA | **Türetilmiş indeks** (açıklama metinleri atılır) |
 | `Blockception/Minecraft-bedrock-json-schemas` → `source/` | Şemaların yazım kaynağı | BSD-3-Clause, izin verici | Birebir kopya + `LICENSE` |
 | `Blockception/…` → kök klasörler | **Doğrulamanın kullandığı** derlenmiş şemalar | BSD-3-Clause | Birebir kopya + türetilmiş `schema-map.json` |
 | `@minecraft/common`, `@minecraft/server`, `@minecraft/server-ui` (npm) | Script tip tanımları | **MIT** (doğrulandı: `npm view @minecraft/server license`) | Birebir `index.d.ts` + `package.json` |

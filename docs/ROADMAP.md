@@ -118,8 +118,9 @@ kötü" demek değil; hangi vakaların hangi sebeple düştüğü ayrıştırıl
 
 Sayının anlamlı olması için kapıya sayılan 20 vaka bugün otomatik ölçülebilen
 tiplerden oluşur: `script` (tsc) ve `json` (ajv). Komut ve Python çıktılarının
-doğrulayıcısı yok — komut sözdizimi doğrulayıcısı v1 kapsamı dışında
-(`CLAUDE.md`) ve altyapıda Python çalıştırılmıyor. O vakalar `extra` listesinde
+doğrulayıcısı yok — altyapıda Python çalıştırılmıyor.
+Komut tarafı Aşama 3'te kazanıldı (`docs/COMMANDS.md`) ama kapı listesi
+sabit kaldı: ölçüt değiştirilmiyor. O vakalar `extra` listesinde
 durur, ölçülür ama sayılmaz. Erteleme gerekçeleri `TODO.md` Aşama 2.5 bölümünde.
 
 Ölçüt `npm run eval -- --gate`: kapı sağlanmazsa `exit 1`.

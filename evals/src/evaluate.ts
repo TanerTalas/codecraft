@@ -10,6 +10,7 @@ import {
   checkFileNames,
   checkIdentities,
   checkPatterns,
+  validateCommand,
   type Finding,
   type PackFile,
 } from "@codecraft/validator";
@@ -48,9 +49,30 @@ async function runChecks(
       findings.push(...checkFileNames(files).findings);
       continue;
     }
+    if (name === "commandSyntax") {
+      // Mojang'ın makine okunur komut tanımına karşı sözdizimi doğrulaması.
+      for (const file of files) {
+        if (!file.path.endsWith(".txt")) continue;
+        for (const [i, raw] of file.content.split(/\r?\n/).entries()) {
+          const line = raw.trim();
+          if (line === "" || line.startsWith("#")) continue;
+          const result = await validateCommand(line, { version });
+          for (const error of result.errors) {
+            findings.push({
+              check: "commandSyntax",
+              severity: "error",
+              path: file.path,
+              message: `satır ${i + 1}: ${error.message}`,
+              evidence: "Mojang komut tanımı (bedrock-samples metadata/command_modules)",
+            });
+          }
+        }
+      }
+      continue;
+    }
     if (name === "commandIdentity") {
-      // Komut sözdizimi değil, komut metnindeki kimlikler doğrulanıyor
-      // (CLAUDE.md: komut sözdizimi doğrulayıcısı v1'de yok).
+      // Sözdiziminden ayrı bir eksen: gramer doğru olsa da referans verilen
+      // kimlik var olmayabilir. İkisi ayrı kontrol, ayrı raporlanıyor.
       for (const file of files) {
         if (!file.path.endsWith(".txt")) continue;
         findings.push(
@@ -79,9 +101,9 @@ export async function evaluateCase(
 ): Promise<CaseResult> {
   const files: FileResult[] = await validateFiles(generation.files, testCase.version);
 
-  // Bir dosya doğrulayıcıdan geçmediyse bile istenen bir kontrol koştuysa vaka
-  // ölçülmüştür: komut vakaları tam olarak bu durumda — sözdizimi
-  // doğrulanamıyor ama kimlikler doğrulanabiliyor.
+  // Bir dosya ajv/tsc'den geçmediyse bile istenen bir kontrol koştuysa vaka
+  // ölçülmüştür: komut vakaları tam olarak bu durumda — .txt için şema ya da
+  // derleyici yok, ama sözdizimi ve kimlikler doğrulanıyor.
   const measured =
     files.some((file) => file.validator !== "atlandı") || testCase.expect.checks.length > 0;
   const validation = measured && files.every((file) => file.ok);

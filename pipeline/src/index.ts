@@ -12,6 +12,7 @@
 import { join } from "node:path";
 
 import { collectVanillaData } from "./bedrock-samples.ts";
+import { COMMANDS_FILE, collectCommands } from "./commands.ts";
 import { collectMojangSchemas } from "./schemas-mojang.ts";
 import {
   BLOCKCEPTION_DIR,
@@ -42,6 +43,12 @@ export async function runPipeline(): Promise<void> {
   const vanilla = await collectVanillaData(version);
   console.log(`  vanilladata      ${vanilla.changed.length} dosya güncellendi`);
 
+  const commands = await collectCommands(version);
+  console.log(
+    `  komutlar         ${commands.commands} komut, ${commands.overloads} aşırı yükleme, ` +
+      `${commands.enums} enum`,
+  );
+
   const mojang = await collectMojangSchemas(version);
   console.log(`  mojang şemaları  ${mojang.files} dosya, ${mojang.written.length} güncellendi`);
 
@@ -67,6 +74,15 @@ export async function runPipeline(): Promise<void> {
     sources: {
       bedrockSamples: { repo: BEDROCK_SAMPLES_REPO, ref: BEDROCK_SAMPLES_REF },
       mojangSchemas: { path: "schemas", index: "schemas-index.json", files: mojang.files },
+      commands: {
+        file: COMMANDS_FILE,
+        commands: commands.commands,
+        overloads: commands.overloads,
+        enums: commands.enums,
+        // Enum tablosunda karşılığı olmayan tipler. Doğrulayıcının elle
+        // ayrıştırdığı küme bu; Mojang yeni bir tip eklerse burada görünür.
+        structuralTypes: commands.structuralTypes,
+      },
       blockception: {
         repo: BLOCKCEPTION_REPO,
         ref: BLOCKCEPTION_REF,

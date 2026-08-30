@@ -81,7 +81,7 @@ app/                  # Next.js
 | Kendi JSON şemalarını yazmak | Blockception zaten yazmış, BSD-3-Clause |
 | Model ID'lerini koda gömmek | Yapılandırmadan oku, ekosistem sık değişiyor |
 | Ücretli API, tier veya hosting kullanmak | Bütçe yok. Ücretsiz kademe bir kısıt değil, gereksinim — istek limiti de tasarıma girer |
-| Komut sözdizimi doğrulayıcısı (v1'de) | En zahmetli parça, v1 onsuz da anlamlı |
+| ~~Komut sözdizimi doğrulayıcısı (v1'de)~~ | **Kaldırıldı, 30-08-2026.** Gerekçesi "makine okunur resmi kaynak yok" idi ve yanlıştı: `bedrock-samples` içinde `metadata/command_modules/mojang-commands.json` var (83 komut, 270 aşırı yükleme, 225 enum). Yapıldı — `packages/validator/src/command.ts` |
 
 ## Takıldığında dur ve sor
 
@@ -120,6 +120,7 @@ Atlanan bir adım varsa açıkça yazılır. Yarım iş, yanlış tamamlanmış 
 - Aşamalar ve geçiş kapısı: `docs/ROADMAP.md`
 - Doğrulamanın yakalayamadıkları: `docs/VALIDATION-LIMITS.md`
 - WebSocket köprüsü ve ölçümü: `docs/WEBSOCKET.md`
+- Komut doğrulama ve kapsamı: `docs/COMMANDS.md`
 
 ## Git kuralları
 

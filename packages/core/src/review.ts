@@ -14,6 +14,7 @@ import {
   checkFileNames,
   checkIdentities,
   checkPatterns,
+  validateCommand,
   validateJson,
   validateScript,
   type Finding,
@@ -126,6 +127,38 @@ function declaredIdentifiers(files: readonly PackFile[]): string[] {
   return ids;
 }
 
+/**
+ * Komut metnindeki her satırı Mojang'ın komut tanımına karşı doğrular.
+ *
+ * Boş satırlar ve `#` ile başlayanlar atlanıyor: `.mcfunction` dosyalarında
+ * yorum böyle yazılıyor ve aynı biçimi kabul etmek makul.
+ */
+async function commandSyntaxFindings(file: PackFile, version: string): Promise<Finding[]> {
+  const findings: Finding[] = [];
+
+  for (const [i, raw] of file.content.split(/\r?\n/).entries()) {
+    const line = raw.trim();
+    if (line === "" || line.startsWith("#")) continue;
+
+    const result = await validateCommand(line, { version });
+    if (result.ok) continue;
+
+    for (const error of result.errors) {
+      findings.push({
+        check: "commandSyntax",
+        severity: "error",
+        path: file.path,
+        message: `satır ${i + 1}: ${error.message}`,
+        evidence:
+          "Mojang komut tanımı (bedrock-samples metadata/command_modules)" +
+          (result.usage.length > 0 ? `. Kullanım: ${result.usage.join(" | ")}` : ""),
+      });
+    }
+  }
+
+  return findings;
+}
+
 export type Review = {
   /** En az bir dosya ajv ya da tsc ile ölçülebildi mi. */
   measured: boolean;
@@ -157,9 +190,10 @@ export async function review(files: readonly PackFile[], version: string): Promi
       findings.push(...checkPatterns(file.content, { path: file.path }).findings);
       continue;
     }
-    // Komut çıktısı answer.txt'ye yazılıyor (output.ts LAYOUT). Sözdizimi
-    // doğrulanmıyor — v1 kapsamı dışında — ama içindeki kimlikler doğrulanıyor.
+    // Komut çıktısı answer.txt'ye yazılıyor (output.ts LAYOUT). İki kontrol
+    // koşuyor: sözdizimi (Mojang'ın komut tanımına karşı) ve kimlikler.
     if (file.path.endsWith(".txt")) {
+      findings.push(...(await commandSyntaxFindings(file, version)));
       findings.push(
         ...(
           await checkCommandIdentities(file.content, {

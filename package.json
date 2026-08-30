@@ -19,6 +19,7 @@
     "codecraft": "node packages/core/src/cli.ts",
     "pipeline": "node pipeline/src/index.ts",
     "pipeline:bedrock": "node pipeline/src/bedrock-samples.ts",
+    "pipeline:commands": "node pipeline/src/commands.ts",
     "pipeline:schemas": "node pipeline/src/schemas-mojang.ts",
     "pipeline:blockception": "node pipeline/src/schemas-blockception.ts",
     "pipeline:types": "node pipeline/src/script-types.ts",

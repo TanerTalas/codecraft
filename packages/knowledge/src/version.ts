@@ -33,6 +33,20 @@ export type DataIndex = {
       modules: Record<string, { stable: string | null; beta: string | null }>;
     };
     mojangSchemas: { path: string; index: string; files: number };
+    /**
+     * Mojang'ın makine okunur komut tanımından türetilen indeks.
+     *
+     * Opsiyonel: pipeline bu adımı kazanmadan önce üretilmiş sürüm klasörleri
+     * hâlâ okunabilmeli, yoksa eski veriyle çalışan her şey kırılırdı.
+     */
+    commands?: {
+      file: string;
+      commands: number;
+      overloads: number;
+      enums: number;
+      /** Enum tablosunda karşılığı olmayan, elle ayrıştırılan tipler. */
+      structuralTypes: string[];
+    };
   };
 };
 

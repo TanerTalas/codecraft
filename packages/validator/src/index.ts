@@ -12,6 +12,17 @@ export type { JsonError, JsonErrorKind, JsonResult } from "./json.ts";
 export { validateScript } from "./script.ts";
 export type { ScriptChannel, ScriptDiagnostic, ScriptOptions, ScriptResult } from "./script.ts";
 export { listTypes, resolveType } from "./schema-map.ts";
+export { CHECKED_TYPES, loadCommandIndex, tokenize, validateCommand } from "./command.ts";
+export type {
+  CommandDef,
+  CommandError,
+  CommandErrorKind,
+  CommandIndex,
+  CommandOptions,
+  CommandOverload,
+  CommandParam,
+  CommandResult,
+} from "./command.ts";
 export type { ResolvedType, SchemaMapEntry } from "./schema-map.ts";
 
 // Asama 2.5 — semanin ve tsc'nin yapisal olarak yakalayamadigi kontroller.

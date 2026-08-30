@@ -176,6 +176,31 @@ Aşama 3 boyunca ana çalışma yüzeyi burası olacak.
 Kapıya sayılan 20 vaka yalnızca bugün ölçülebilen tiplerden oluşuyor
 (`script`, `json`). Komut ve Python vakaları `extra` listesinde duruyor.
 
+- [x] **Komut sözdizimi doğrulayıcısı — yapıldı (30-08-2026).**
+  `packages/validator/src/command.ts`, `npm run pipeline:commands`.
+
+  `CLAUDE.md` bunu "Yapılmayacaklar" tablosuna koymuştu ve gerekçesi
+  **yanlıştı**: "Bedrock komut grameri için makine okunur resmi kaynak yok"
+  deniyordu, oysa `bedrock-samples` içinde
+  `metadata/command_modules/mojang-commands.json` duruyor — zaten çektiğimiz
+  deponun zaten kullandığımız klasöründe. Madde kaldırıldı.
+
+  | | |
+  |---|---|
+  | Komut | 83 |
+  | Aşırı yükleme | 270 |
+  | Parametre tipi | 248 — **225'i enum tablosundan kesin doğrulanıyor** |
+  | Elle ayrıştırılan yapısal tip | 13 (koordinat, seçici, tam sayı, aralık, işleç, zaman eki) |
+  | Henüz denetlenmeyen | 10 — kabul ediliyor, uydurma hata üretilmiyor |
+
+  **İlke: emin olmadığına hata deme.** Denetlenmeyen tipler testte tek tek
+  listeli (`packages/validator/test/command.test.ts`); liste küçüldükçe test
+  güncellenir, Mojang yeni tip eklerse test kırmızıya döner.
+
+  **Bilinen boşluk:** seçici harfi (`@z` gibi) doğrulanmıyor — geçerli
+  harflerin listesi Mojang'ın tanımında yok ve elle liste yazmak bu projenin
+  kaçındığı şey. Testte kayıtlı.
+
 - [x] **Komut kimlik kontrolü — Aşama 3'te yapıldı.**
   `checkCommandIdentities` (`packages/validator/src/checks.ts`) komut
   metnindeki kimlikleri doğruluyor. Sözdizimi hâlâ doğrulanmıyor — grameri
