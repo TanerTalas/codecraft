@@ -83,16 +83,24 @@ kırmızıya döner ve karar zorlanır — sessizce kabul edilmez.
 
 ## Bilinen boşluklar
 
-- **Seçici harfi doğrulanmıyor.** `@z` geçerli bir seçici değil ama geçerli
-  harflerin listesi Mojang'ın makine okunur tanımında yok. Elle liste yazmak
-  bu projenin kaçındığı şey. Yalnızca yapı denetleniyor: `@` sonrası tek harf
-  ve köşeli parantez dengeli kapanmalı.
-  - Ölçülebilir: `npm run ws:health` ile oyuna `/give @z ...` gönderilip cevabı
-    okunabilir (`docs/WEBSOCKET.md`). Ölçülürse liste kaynaklı hâle gelir.
 - **Seçici filtre anahtarları doğrulanmıyor** (`type=`, `r=`, `scores=`).
-  Aynı sebep: tanımda yoklar.
+  Mojang'ın tanımında yoklar.
+- **Blok durumu sözdizimi AÇIK SORU.** Aşağıya bak.
 
-## Kapatılan boşluk: blok durumları
+## Kapatılan boşluk: seçici harfleri
+
+Geçerli harflerin listesi Mojang'ın makine okunur tanımında yok. Elle yazmak
+yerine **oyuna soruldu** (`npm run ws:probe`, Bedrock 1.26.x, 30-08-2026):
+
+| Seçici | Sonuç |
+|---|---|
+| `@s` `@p` `@a` `@e` `@r` `@n` | kabul (statusCode 0) |
+| `@z` `@x` `@q` | `Syntax error: Unexpected "@z"` |
+
+`SELECTOR_LETTERS` bu ölçümden geliyor. Yeni bir sürümde harf eklenirse aynı
+probe tekrar koşulur.
+
+## Kapatılan boşluk: blok durumu DEĞERLERİ
 
 `BLOCK_STATE_ARRAY` ayrıştırılıyor ve `data/<sürüm>/blocks.json` indeksine
 karşı doğrulanıyor: durum adı o bloğa ait mi, değer kabul edilen kümede mi.
@@ -102,6 +110,33 @@ Blok `minecraft:` dışı bir namespace'teyse **sessizce geçilir**: eklenti blo
 olabilir ve komut grameri onu bilemez. Aynı ilke enum eşleşmesinde de var —
 `/setblock ~ ~ ~ codecraft:ruby_ore` reddedilmiyor. Bu ölçülerek eklendi:
 başta kullanıcının kendi bloğu "geçersiz" görünüyordu.
+
+Ayrıca **eski veri değeri biçimi** (`minecraft:glass 0`) kabul ediliyor —
+gerekçe aşağıdaki ölçüm bölümünde.
+
+## AÇIK SORU: blok durumu sözdiziminin kendisi
+
+Ölçüm iki biçimi de **reddetti** (30-08-2026):
+
+```
+testforblock ~ ~-1 ~ minecraft:acacia_button ["facing_direction"=0]
+  → Syntax error: Unexpected "=": at "direction">>=<<0]"
+
+testforblock ~ ~-1 ~ minecraft:acacia_button [facing_direction=0]
+  → Syntax error: Unexpected "facing_direction": at "a_button [>>facing_direction<<=0]"
+```
+
+Değer geçerliydi (`facing_direction` 0–5 alıyor), yani reddedilen şey **değer
+değil biçim**. Tırnaklı ad `[` sonrasında kabul ediliyor ama ardından gelen
+`=` reddediliyor; tırnaksız ad hiç kabul edilmiyor.
+
+Yani doğrulayıcının bugün beklediği biçim (`["ad"=değer]`) oyunun kabul ettiği
+biçim **olmayabilir**. Bu bir yanlış negatif riski: oyunun reddedeceği bir
+şeyi geçiriyor olabiliriz.
+
+**Kapatılana kadar bu bölüm duruyor.** Sonraki probe turu ayıracak: ayraç `:`
+mi, durumlar blok adına bitişik mi (`minecraft:acacia_button["ad"=0]`), yoksa
+`testforblock` bu parametreyi gerçekte hiç desteklemiyor mu.
 
 ## İlk gün ne yakaladı — ve ne yanlış yakaladı
 

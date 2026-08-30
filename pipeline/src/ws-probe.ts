@@ -67,52 +67,53 @@ const SYNTAX_ERROR_STATUS = -2147483648;
  * bizim varsayımımız — ölçüm onu çürütürse doğrulayıcı düzeltilir, ölçüm değil.
  */
 const PROBES: Probe[] = [
-  // --- 1. tur teyidi: seçici harfleri (ölçüldü, doğrulayıcıya girdi) ---
-  { question: "seçici @s", command: "testfor @s", expect: "parses" },
-  { question: "seçici @z (geçersiz)", command: "testfor @z", expect: "syntax-error" },
+  // Temel: bağlantının ve ayrıştırıcının çalıştığını doğrular.
+  { question: "temel (testfor @s)", command: "testfor @s", expect: "parses" },
 
-  // --- AÇIK SORU 1: fill'in eski <data> argümanı ---
-  // 1. turda ikisi de -2147352576 ("0 blocks filled") döndü, yani ikisi de
-  // AYRIŞTIRILDI. Doğrulayıcı ise eski biçimi reddediyor — yanlış pozitif
-  // şüphesi. Ayrıştırılamayan bir değerle karşılaştırarak kesinleştiriyoruz.
+  // --- AÇIK SORU: blok durumu sözdiziminin gerçek biçimi ---
+  //
+  // 2. turda İKİ biçim de reddedildi ve değer geçerliydi, yani reddedilen
+  // biçimin kendisi:
+  //
+  //   ["facing_direction"=0]   → Unexpected "="
+  //   [facing_direction=0]     → Unexpected "facing_direction"
+  //
+  // Tırnaklı ad "[" sonrasında kabul ediliyor, ardındaki "=" edilmiyor.
+  // Aday biçimler tek tek deneniyor. Hepsi düşerse sonuç da bir sonuçtur:
+  // testforblock bu parametreyi gerçekte desteklemiyor demektir.
   {
-    question: "fill eski <data> (0)",
-    command: "fill ~ ~ ~ ~ ~ ~ minecraft:air 0 replace",
+    question: "ayraç iki nokta",
+    command: 'testforblock ~ ~-1 ~ minecraft:acacia_button ["facing_direction":0]',
     expect: "parses",
   },
   {
-    question: "fill saçma değer (BOGUS)",
-    command: "fill ~ ~ ~ ~ ~ ~ minecraft:air BOGUS replace",
-    expect: "syntax-error",
-  },
-  {
-    question: "fill data'sız (modern biçim)",
-    command: "fill ~ ~ ~ ~ ~ ~ minecraft:air replace",
-    expect: "parses",
-  },
-
-  // --- AÇIK SORU 2: blok durumu sözdizimi ---
-  // 1. turda ["facing_direction"=99] "Syntax error: Unexpected =" verdi.
-  // Değer aralık dışıydı ama hata SÖZDİZİMİ hatasıydı — biçimin kendisi mi
-  // reddedildi, değer mi? Geçerli bir değerle ayırt ediliyor.
-  {
-    question: "blok durumu, GEÇERLİ değer",
-    command: 'testforblock ~ ~-1 ~ minecraft:acacia_button ["facing_direction"=0]',
+    question: "blok adına bitişik",
+    command: 'testforblock ~ ~-1 ~ minecraft:acacia_button["facing_direction"=0]',
     expect: "parses",
   },
   {
-    question: "blok durumu, tırnaksız ad",
-    command: "testforblock ~ ~-1 ~ minecraft:acacia_button [facing_direction=0]",
+    question: "yalnızca ad, değersiz",
+    command: 'testforblock ~ ~-1 ~ minecraft:acacia_button ["facing_direction"]',
     expect: "parses",
   },
   {
-    question: "blok durumu, aralık dışı değer",
-    command: 'testforblock ~ ~-1 ~ minecraft:acacia_button ["facing_direction"=99]',
-    expect: "syntax-error",
+    question: "boş dizi",
+    command: "testforblock ~ ~-1 ~ minecraft:acacia_button []",
+    expect: "parses",
   },
   {
-    question: "testforblock durumsuz (temel)",
-    command: "testforblock ~ ~-1 ~ minecraft:air",
+    question: "eski veri değeri (int)",
+    command: "testforblock ~ ~-1 ~ minecraft:acacia_button 0",
+    expect: "parses",
+  },
+  {
+    question: "durum: bool blok (open_bit)",
+    command: 'testforblock ~ ~-1 ~ minecraft:acacia_door ["open_bit"=true]',
+    expect: "parses",
+  },
+  {
+    question: "durum: string (cardinal_direction)",
+    command: 'testforblock ~ ~-1 ~ minecraft:acacia_door ["minecraft:cardinal_direction"="north"]',
     expect: "parses",
   },
 ];
