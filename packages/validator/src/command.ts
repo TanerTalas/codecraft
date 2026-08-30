@@ -189,6 +189,14 @@ const INT_RE = /^[+-]?\d+$/;
 const COORD_RE = /^[~^][+-]?(?:\d+\.?\d*|\.\d+)?$|^[+-]?(?:\d+\.?\d*|\.\d+)$/;
 /** `1..5`, `..5`, `3..`, `4` */
 const RANGE_RE = /^(?:\d+\.\.\d*|\.\.\d+|[+-]?\d+)$/;
+
+/**
+ * Eklenti kimliği biçimi: `codecraft:ruby_ore`. Başka hiçbir şey.
+ *
+ * Dar tutulması şart. Önceki hâli "iki nokta içeriyorsa kabul et" idi ve
+ * `["uydurma_durum":1]` de iki nokta içerdiği için enum sanılıyordu.
+ */
+const CUSTOM_IDENTIFIER_RE = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 /**
  * Geçerli hedef seçici harfleri — **oyundan ölçüldü**, elle yazılmadı.
  *
@@ -333,27 +341,66 @@ const unquote = (value: string): string =>
 
 export type BlockStatePair = { key: string; value: string };
 
+/** Biçim tanınmadığında sebebini söyleyen sonuç. */
+export type BlockStateParse =
+  | { ok: true; pairs: BlockStatePair[] }
+  | { ok: false; reason: string };
+
 /**
- * `["facing_direction"=3,"open_bit"=true]` → çiftler.
- * Biçim tanınmazsa null döner ve çağıran "ayrıştıramadım" der, hata uydurmaz.
+ * `["facing_direction":3,"open_bit":true]` → çiftler.
+ *
+ * **Ayraç iki nokta, eşittir değil.** Bu oyundan ölçüldü (30-08-2026,
+ * `npm run ws:probe`) ve doğrulayıcının ilk hâlini çürüttü:
+ *
+ *   ["facing_direction":0]   ayrıştı
+ *   ["facing_direction"=0]   Syntax error: Unexpected "="
+ *   ["facing_direction"]     Syntax error: Unexpected "]"   (değer zorunlu)
+ *   [facing_direction:0]     ad tırnaksız kabul edilmiyor
+ *   []                       ayrıştı
+ *
+ * Önce `=` bekleniyordu; o hâl her iki yönde de yanlıştı — oyunun reddettiği
+ * biçimi geçiriyor, kabul ettiğini reddediyordu.
  */
-export function parseBlockStates(text: string): BlockStatePair[] | null {
+export function parseBlockStates(text: string): BlockStateParse {
   const trimmed = text.trim();
-  if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) return null;
+  if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) {
+    return { ok: false, reason: 'blok durumu ["ad":değer] biçiminde olmalı' };
+  }
 
   const inner = trimmed.slice(1, -1).trim();
-  if (inner === "") return [];
+  if (inner === "") return { ok: true, pairs: [] };
 
   const pairs: BlockStatePair[] = [];
-  for (const part of splitTop(inner)) {
-    const eq = part.indexOf("=");
-    if (eq === -1) return null;
+  for (const raw of splitTop(inner)) {
+    const part = raw.trim();
+
+    // Ad tırnak içinde ve KENDİSİ iki nokta içerebiliyor
+    // ("minecraft:cardinal_direction"), o yüzden ayraç kapanış tırnağından
+    // sonra aranıyor — baştan aramak adı ikiye bölerdi.
+    if (!part.startsWith('"')) {
+      return { ok: false, reason: `durum adı tırnak içinde olmalı: ${part}` };
+    }
+    const closing = part.indexOf('"', 1);
+    if (closing === -1) {
+      return { ok: false, reason: `durum adının tırnağı kapanmamış: ${part}` };
+    }
+
+    const rest = part.slice(closing + 1).trim();
+    if (!rest.startsWith(":")) {
+      return {
+        ok: false,
+        reason: rest.startsWith("=")
+          ? 'ayraç iki nokta olmalı, eşittir değil: ["ad":değer]'
+          : 'her durum bir değer almalı: ["ad":değer]',
+      };
+    }
+
     pairs.push({
-      key: unquote(part.slice(0, eq).trim()),
-      value: unquote(part.slice(eq + 1).trim()),
+      key: part.slice(1, closing),
+      value: unquote(rest.slice(1).trim()),
     });
   }
-  return pairs;
+  return { ok: true, pairs };
 }
 
 /**
@@ -382,8 +429,9 @@ async function checkBlockStates(
   // yanlış pozitifti ve ölçüm onu çürüttü.
   if (INT_RE.test(raw.trim())) return null;
 
-  const pairs = parseBlockStates(raw);
-  if (pairs === null) return 'blok durumu biçimi tanınmadı — ["ad"=değer] bekleniyor';
+  const parsed = parseBlockStates(raw);
+  if (!parsed.ok) return parsed.reason;
+  const pairs = parsed.pairs;
   if (pairs.length === 0 || blockId === null) return null;
 
   const states = await blockStates(normalizeId(blockId), version);
@@ -454,7 +502,12 @@ function matchesEnum(values: readonly string[], value: string): boolean {
   //
   // Ölçülerek eklendi: `/setblock ~ ~ ~ codecraft:ruby_ore` reddediliyordu,
   // yani kullanıcının kendi bloğu "geçersiz" görünüyordu.
-  return value.includes(":");
+  //
+  // Kalıp DAR olmalı. İlk hâli "iki nokta içeriyorsa kabul et" diyordu ve
+  // `["uydurma_durum":1]` de iki nokta içerdiği için enum sanılıp yanlış aşırı
+  // yüklemeye uyuyordu — blok durumu denetimi böylece hiç koşmuyordu. Testler
+  // yakaladı.
+  return CUSTOM_IDENTIFIER_RE.test(value);
 }
 
 /** Tek bir aşırı yüklemeyi dener. */

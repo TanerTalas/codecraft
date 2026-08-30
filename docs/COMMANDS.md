@@ -85,7 +85,6 @@ kırmızıya döner ve karar zorlanır — sessizce kabul edilmez.
 
 - **Seçici filtre anahtarları doğrulanmıyor** (`type=`, `r=`, `scores=`).
   Mojang'ın tanımında yoklar.
-- **Blok durumu sözdizimi AÇIK SORU.** Aşağıya bak.
 
 ## Kapatılan boşluk: seçici harfleri
 
@@ -114,29 +113,27 @@ başta kullanıcının kendi bloğu "geçersiz" görünüyordu.
 Ayrıca **eski veri değeri biçimi** (`minecraft:glass 0`) kabul ediliyor —
 gerekçe aşağıdaki ölçüm bölümünde.
 
-## AÇIK SORU: blok durumu sözdiziminin kendisi
+## Kapatılan boşluk: blok durumu SÖZDİZİMİ
 
-Ölçüm iki biçimi de **reddetti** (30-08-2026):
+Ayraç **iki nokta**, eşittir değil. Oyundan ölçüldü (30-08-2026):
 
-```
-testforblock ~ ~-1 ~ minecraft:acacia_button ["facing_direction"=0]
-  → Syntax error: Unexpected "=": at "direction">>=<<0]"
+| Biçim | Sonuç |
+|---|---|
+| `["facing_direction":0]` | **ayrıştı** |
+| `["facing_direction"=0]` | `Syntax error: Unexpected "="` |
+| `[facing_direction:0]` | `Syntax error: Unexpected "facing_direction"` — ad tırnaksız olamaz |
+| `["facing_direction"]` | `Syntax error: Unexpected "]"` — değer zorunlu |
+| `[]` | ayrıştı |
+| `0` | ayrıştı — eski veri değeri |
 
-testforblock ~ ~-1 ~ minecraft:acacia_button [facing_direction=0]
-  → Syntax error: Unexpected "facing_direction": at "a_button [>>facing_direction<<=0]"
-```
+Doğrulayıcının ilk hâli `=` bekliyordu ve **her iki yönde de yanlıştı**:
+oyunun reddettiği biçimi geçiriyor, kabul ettiğini reddediyordu. Bu bir yanlış
+negatif ve yanlış pozitifin aynı anda bulunması demekti; ikisini de ölçüm
+düzeltti.
 
-Değer geçerliydi (`facing_direction` 0–5 alıyor), yani reddedilen şey **değer
-değil biçim**. Tırnaklı ad `[` sonrasında kabul ediliyor ama ardından gelen
-`=` reddediliyor; tırnaksız ad hiç kabul edilmiyor.
-
-Yani doğrulayıcının bugün beklediği biçim (`["ad"=değer]`) oyunun kabul ettiği
-biçim **olmayabilir**. Bu bir yanlış negatif riski: oyunun reddedeceği bir
-şeyi geçiriyor olabiliriz.
-
-**Kapatılana kadar bu bölüm duruyor.** Sonraki probe turu ayıracak: ayraç `:`
-mi, durumlar blok adına bitişik mi (`minecraft:acacia_button["ad"=0]`), yoksa
-`testforblock` bu parametreyi gerçekte hiç desteklemiyor mu.
+Durum adının kendisi iki nokta içerebiliyor (`"minecraft:cardinal_direction"`),
+o yüzden ayraç kapanış tırnağından sonra aranıyor — baştan aramak adı ikiye
+bölerdi.
 
 ## İlk gün ne yakaladı — ve ne yanlış yakaladı
 
@@ -176,7 +173,7 @@ Durum kodlarının ayrımı da bu turda öğrenildi ve kendi başına önemli:
 
 ## Testler
 
-`packages/validator/test/command.test.ts` — 24 test, iki yön de ölçülüyor:
+`packages/validator/test/command.test.ts` — 28 test, iki yön de ölçülüyor:
 geçerli komutlar geçmeli, bozuk komutlar düşmeli, ve kapsam sınırı (hangi
 tipler denetlenmiyor) sabitlenmiş. Eval tarafında `command-give-01` ve
 `command-fill-01` vakaları `commandSyntax` kontrolünü istiyor; negatif kontrol

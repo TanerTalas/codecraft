@@ -194,23 +194,57 @@ test("oyuncu adı seçici yerine kullanılabilir", async () => {
 // Blok durumları
 // --------------------------------------------------------------------------
 
-test("blok durumu ayrıştırma", () => {
-  assert.deepEqual(parseBlockStates('["open_bit"=true]'), [{ key: "open_bit", value: "true" }]);
-  assert.deepEqual(parseBlockStates("[]"), []);
-  assert.deepEqual(parseBlockStates('["a"=1,"b"="x"]'), [
+test("blok durumu ayrıştırma — ayraç iki nokta", () => {
+  // Ayraç oyundan ölçüldü: ":" ayrışıyor, "=" sözdizimi hatası veriyor.
+  const one = parseBlockStates('["open_bit":true]');
+  assert.equal(one.ok, true);
+  assert.deepEqual(one.ok && one.pairs, [{ key: "open_bit", value: "true" }]);
+
+  const empty = parseBlockStates("[]");
+  assert.equal(empty.ok, true);
+  assert.deepEqual(empty.ok && empty.pairs, []);
+
+  // Durum adının KENDİSİ iki nokta içerebiliyor; ayraç kapanış tırnağından
+  // sonra aranmalı, yoksa ad ikiye bölünür.
+  const namespaced = parseBlockStates('["minecraft:cardinal_direction":"north"]');
+  assert.equal(namespaced.ok, true);
+  assert.deepEqual(namespaced.ok && namespaced.pairs, [
+    { key: "minecraft:cardinal_direction", value: "north" },
+  ]);
+
+  const two = parseBlockStates('["a":1,"b":"x"]');
+  assert.deepEqual(two.ok && two.pairs, [
     { key: "a", value: "1" },
     { key: "b", value: "x" },
   ]);
-  // Biçim tanınmazsa null: çağıran "ayrıştıramadım" der, hata uydurmaz.
-  assert.equal(parseBlockStates("acik"), null);
-  assert.equal(parseBlockStates('["esitlik yok"]'), null);
+});
+
+test("eşittir ayracı reddedilir ve doğrusu söylenir", () => {
+  // Oyunda ölçüldü: ["facing_direction"=0] → Syntax error: Unexpected "="
+  // Doğrulayıcının ilk hâli tam tersini yapıyordu.
+  const result = parseBlockStates('["facing_direction"=0]');
+  assert.equal(result.ok, false);
+  assert.match(result.ok === false ? result.reason : "", /iki nokta/);
+});
+
+test("tırnaksız durum adı reddedilir", () => {
+  // Ölçüldü: [facing_direction=0] → Syntax error: Unexpected "facing_direction"
+  const result = parseBlockStates("[facing_direction:0]");
+  assert.equal(result.ok, false);
+  assert.match(result.ok === false ? result.reason : "", /tırnak/);
+});
+
+test("değersiz durum reddedilir", () => {
+  // Ölçüldü: ["facing_direction"] → Syntax error: Unexpected "]"
+  const result = parseBlockStates('["facing_direction"]');
+  assert.equal(result.ok, false);
 });
 
 test("geçerli blok durumları geçer", async () => {
   for (const line of [
-    '/setblock ~ ~ ~ minecraft:acacia_button ["facing_direction"=3]',
-    '/setblock ~ ~ ~ minecraft:acacia_door ["open_bit"=true]',
-    '/setblock ~ ~ ~ minecraft:acacia_door ["minecraft:cardinal_direction"="north"]',
+    '/setblock ~ ~ ~ minecraft:acacia_button ["facing_direction":3]',
+    '/setblock ~ ~ ~ minecraft:acacia_door ["open_bit":true]',
+    '/setblock ~ ~ ~ minecraft:acacia_door ["minecraft:cardinal_direction":"north"]',
     "/setblock ~ ~ ~ minecraft:stone []",
   ]) {
     const result = await check(line);
@@ -219,14 +253,14 @@ test("geçerli blok durumları geçer", async () => {
 });
 
 test("uydurulmuş durum adı yakalanır", async () => {
-  const result = await check('/setblock ~ ~ ~ minecraft:acacia_button ["uydurma_durum"=1]');
+  const result = await check('/setblock ~ ~ ~ minecraft:acacia_button ["uydurma_durum":1]');
   assert.equal(result.ok, false);
   assert.match(result.errors[0]?.message ?? "", /durumu değil/);
 });
 
 test("aralık dışı durum değeri yakalanır", async () => {
   // facing_direction 0..5; 99 kabul edilmemeli.
-  const result = await check('/setblock ~ ~ ~ minecraft:acacia_button ["facing_direction"=99]');
+  const result = await check('/setblock ~ ~ ~ minecraft:acacia_button ["facing_direction":99]');
   assert.equal(result.ok, false);
   assert.match(result.errors[0]?.message ?? "", /geçerli değil/);
 });
@@ -273,4 +307,17 @@ test("eski veri değeri biçimi KABUL edilir — oyunda ölçüldü", async () =
   // Sınır: gevşetme yalnızca tam sayıyı kapsıyor, her şeyi değil.
   const bogus = await check("/fill ~-5 ~ ~-5 ~5 ~4 ~5 minecraft:glass BOGUS hollow");
   assert.equal(bogus.ok, false);
+});
+
+test("eklenti kimliği kalıbı dar — köşeli parantez enum sanılmaz", async () => {
+  // Gevşetmenin ilk hâli "iki nokta içeriyorsa kabul et" diyordu. Blok durumu
+  // dizisi de iki nokta içeriyor, o yüzden enum sanılıp yanlış aşırı yüklemeye
+  // uyuyordu ve durum denetimi hiç koşmuyordu. Testler yakaladı.
+  const bad = await check('/setblock ~ ~ ~ minecraft:acacia_button ["uydurma_durum":1]');
+  assert.equal(bad.ok, false, "blok durumu denetimi koşmadı");
+  assert.match(bad.errors[0]?.message ?? "", /durumu değil/);
+
+  // Gerçek eklenti kimliği hâlâ kabul edilmeli.
+  const custom = await check("/setblock ~ ~ ~ codecraft:ruby_ore");
+  assert.equal(custom.ok, true, custom.errors[0]?.message ?? "");
 });
