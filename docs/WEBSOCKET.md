@@ -74,6 +74,26 @@ Bu şekil belgelenmiş bir sözleşme değil, topluluk kullanımından geliyordu
 yukarıdaki koşu onu doğruladı. Kod bu yüzden gevşek okuyor: beklenmeyen bir
 mesaj sessizce yutulmuyor, "çözümlenemeyen" olarak raporlanıyor.
 
+## Ölçülen aksaklık: bozuk kapatma çerçevesi
+
+**Bedrock, bağlantıyı kapatırken spec dışı bir kapatma çerçevesi gönderiyor:
+status kodu `0`.** RFC 6455 bunu yasaklıyor ve `ws` paketi `RangeError:
+Invalid WebSocket frame: invalid status code 0` ile reddediyor.
+
+Sonucu şu: soket üzerinde `error` işleyicisi yoksa **Node süreci çöker.**
+30-08-2026'da tam olarak bu oldu — `ws-probe.ts` bağlandı, oyun kapattı, işlem
+işlenmemiş `error` olayında öldü ve o ana kadarki bütün ölçüm kayboldu.
+
+Bu yola bağlanan her script'te iki işleyici zorunlu:
+
+```ts
+socket.on("error", ...);   // çökmeyi engeller
+socket.on("close", ...);   // kısmi sonucu korur
+```
+
+İkisi de `ws-health.ts` ve `ws-probe.ts` içinde var. Yeni bir script yazılırsa
+aynısı gerekir.
+
 ## Kırıldığında ne yapılacak
 
 `npm run ws:health` şunlardan birini derse protokol değişmiş olabilir:

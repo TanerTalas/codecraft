@@ -95,6 +95,8 @@ type Outcome = { probe: Probe; ok: boolean; status: number | null; text: string 
 async function run(): Promise<void> {
   const server = new WebSocketServer({ port: PORT });
   const results: Outcome[] = [];
+  /** Bağlantı koptuysa sebebi. Dolduğunda ölçüm durur ve kısmi sonuç basılır. */
+  let dropped: string | null = null;
 
   const socket = await new Promise<WebSocket>((resolve, reject) => {
     const timer = setTimeout(() => {
@@ -114,9 +116,27 @@ async function run(): Promise<void> {
     server.on("error", reject);
   });
 
+  /**
+   * Soket hatası süreci ÖLDÜRMEMELİ.
+   *
+   * Bedrock bağlantıyı kapatırken spec dışı bir kapatma çerçevesi gönderiyor
+   * (status kodu 0; RFC 6455 bunu yasaklıyor) ve `ws` bunu `RangeError` ile
+   * reddediyor. İşleyici olmadan Node işlenmemiş 'error' olayında çöküyor —
+   * ilk gerçek koşuda tam olarak bu oldu ve bütün ölçüm kayboldu.
+   *
+   * Şimdi kopma kaydediliyor, o ana kadarki sonuçlar korunuyor.
+   */
+  socket.on("error", (error) => {
+    dropped = error.message;
+  });
+  socket.on("close", (code) => {
+    dropped ??= `oyun bağlantıyı kapattı (kod ${code})`;
+  });
+
   console.log("bağlantı kuruldu, ölçüm başlıyor\n");
 
   for (const probe of PROBES) {
+    if (dropped !== null) break;
     const outcome = await new Promise<Outcome>((resolve) => {
       const timer = setTimeout(
         () => resolve({ probe, ok: false, status: null, text: "cevap gelmedi" }),
@@ -156,9 +176,29 @@ async function run(): Promise<void> {
   }
 
   console.log("\n--- özet ---");
+
+  if (dropped !== null) {
+    console.log(`Bağlantı ölçüm bitmeden koptu: ${dropped}`);
+    console.log(`${results.length}/${PROBES.length} soru ölçülebildi.\n`);
+  }
+
+  if (results.length === 0) {
+    console.log(
+      "Hiçbir ölçüm alınamadı. Oyunda dünya açık kaldı mı, /connect yazıldıktan\n" +
+        "sonra dünyadan çıkılmadı mı kontrol et.",
+    );
+    process.exitCode = 1;
+    socket.close();
+    server.close();
+    return;
+  }
+
   const surprises = results.filter((r) => r.ok !== (r.probe.expect === "ok"));
   if (surprises.length === 0) {
-    console.log("Bütün ölçümler beklentiyle uyuştu. Doğrulayıcı oyunla aynı fikirde.");
+    console.log(
+      `Ölçülen ${results.length} sorunun hepsi beklentiyle uyuştu — ` +
+        "doğrulayıcı oyunla aynı fikirde.",
+    );
   } else {
     console.log(`${surprises.length} ölçüm beklentiyi ÇÜRÜTTÜ — doğrulayıcı düzeltilmeli:\n`);
     for (const s of surprises) {
