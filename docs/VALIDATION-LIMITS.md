@@ -135,12 +135,29 @@ adıyla verilmeli.
 
 ## Özet
 
-| Sınıf | Şema yakalar mı | Nerede çözülür |
-|---|---|---|
-| A · kimlik referansı | Hayır, ama çözülebilir | Aşama 3 — `lookup` ile ikinci kontrol |
-| B · dosya adı kuralı | **Yapısal olarak hayır** | Aşama 3 — üretim tarafı |
-| C · asset referansı | Hayır | Aşama 4 — kapsam kararı veya uyarı |
-| D · geçerli ama yanlış | **Yapısal olarak hayır** | Aşama 2.5 eval + Aşama 3 kalıplar |
+| Sınıf | Şema yakalar mı | Bugün ne ölçüyor | Nerede çözülür |
+|---|---|---|---|
+| A · kimlik referansı | Hayır, ama çözülebilir | `checkIdentities` | Aşama 3 — üretim döngüsüne bağlanacak |
+| B · dosya adı kuralı | **Yapısal olarak hayır** | `checkFileNames` | Aşama 3 — üretim tarafı dosya adını içerikten türetecek |
+| C · asset referansı | Hayır | — | Aşama 4 — kapsam kararı veya uyarı |
+| D · geçerli ama yanlış | **Yapısal olarak hayır** | `checkPatterns` | Aşama 3 — kalıplar prompt'a girecek |
+
+Üç kontrol de `packages/validator/src/checks.ts` içinde, saf fonksiyon, model
+çağrısı yok. Aşama 2.5'te yazıldılar ve eval seti onları koşuyor: `expect.checks`
+alanı hangi kontrolün hangi vakada isteneceğini söylüyor
+(`evals/cases/cases.json`).
+
+İki sınır kayda geçmeli:
+
+- **Vanilla feature'lar doğrulanamıyor.** `data/<sürüm>/features.json` yapı
+  (structure) feature'larını tutuyor (17 kayıt), `ore`/`scatter` gibi
+  yerleştirme feature'larını değil. `minecraft:` namespace'li bir
+  `places_feature` bu yüzden uyarı üretiyor, hata değil — bilinmeyene "geçti"
+  denmiyor ama uydurma hata da üretilmiyor. Kapatmak için pipeline'ın
+  bedrock-samples `features/` klasöründen indeks çıkarması gerekir.
+- **`checkFileNames` yalnızca feature rule kuralını biliyor.** Başka dosya
+  tipleri için benzer kurallar olabilir ama ölçülmedi. Ölçülmemiş kural
+  kodlanmıyor.
 
 Aşama 2'nin sonucu bu tabloyla birlikte okunmalı: 20 fixture'ın hepsi doğru
 sonuç veriyor, ama "doğrulamadan geçti" ile "oyunda çalışıyor" aynı şey değil.

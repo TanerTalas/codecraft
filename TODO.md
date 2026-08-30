@@ -141,24 +141,71 @@ Bu aşama LLM'den önce geliyor: validator çalışmazsa ürün de çalışmaz. 
 
 Aşama 3 boyunca ana çalışma yüzeyi burası olacak.
 
-- [ ] `evals/` içine 20 gerçek istek. Şema:
+- [x] Şemanın yakalayamadığı üç kontrol — `packages/validator/src/checks.ts`
+  - `checkIdentities` (A), `checkFileNames` (B), `checkPatterns` (D)
+  - Saf fonksiyon, model çağrısı yok. Aşama 3 aynılarını üretim döngüsüne
+    bağlayacak, mantık ikinci kez yazılmayacak
+- [x] `evals/cases/cases.json` içine 20 gerçek istek. Alan adları İngilizce,
+  içerik Türkçe — `cases.json` fixture düzeninin aynısı (`core` / `extra`):
   ```json
   {
     "id": "chain-mining-01",
-    "istek": "Kırdığım bloğun aynı türden komşularını da kırsın",
-    "sürüm": "1.26.40",
-    "tip": "script",
-    "beklenen": "validator_geçer"
+    "request": "Kırdığım bloğun aynı türden komşularını da kırsın",
+    "version": "1.26.40",
+    "kind": "script",
+    "expect": { "validation": "pass", "checks": [] }
   }
   ```
-- [ ] `npm run eval` runner — 20 isteği modele gönderir, çıktıları validator'dan geçirir, tablo basar
-- [ ] HTML rapor. Tasarım yok, sadece tablo: istek / üretilen çıktı / doğrulama sonucu / hata mesajı
-- [ ] Rapor `evals/output/` altına yazılır, git'e girmez (model cevapları ve istek metinleri içerir)
-- [ ] **"Geçerli ama amaçlanmayan" vakaları da olmalı.** Doğrulamadan geçen ama
+- [x] Takılabilir üretici arayüzü — model katmanı olmadan ölçüm yapılabilsin
+  - `evals/recorded/` elle yazılmış çıktılar; **model çıktısı değil** ve rapor
+    bunu her koşuda yazıyor
+  - Aşama 3 `--generator=model` ekleyecek, runner değişmeyecek
+- [x] `npm run eval` runner — çıktıları validator'dan ve istenen kontrollerden
+  geçirir, tablo basar. `--case=<id>` tek vaka, `--gate` kapı sağlanmazsa `exit 1`
+- [x] HTML rapor. Tasarım yok, sadece tablo: istek / üretilen çıktı / doğrulama
+  sonucu / hata mesajı. Yanına makine okunur `report.json`
+- [x] Rapor `evals/output/` altına yazılır, git'e girmez (model cevapları ve istek metinleri içerir)
+- [x] **"Geçerli ama amaçlanmayan" vakaları da olmalı.** Doğrulamadan geçen ama
   oyunda istediğini yapmayan çıktı sınıfı ölçüldü (`docs/VALIDATION-LIMITS.md`).
   Eval setinde karşılığı yoksa "validator geçer" ölçütü yanıltıcı olur
+  - Üç vaka D sınıfını, üç vaka A sınıfını, bir vaka B sınıfını hedefliyor;
+    testler bu alt sınırları ölçüyor
 
-**Bitiş kriteri:** `npm run eval` koşuyor ve okunabilir bir tablo basıyor.
+### Komut ve Python doğrulayıcısı — ertelendi
+
+Kapıya sayılan 20 vaka yalnızca bugün ölçülebilen tiplerden oluşuyor
+(`script`, `json`). Komut ve Python vakaları `extra` listesinde duruyor.
+
+- [ ] **Komut kimlik kontrolü — Aşama 3.** Komut sözdizimi doğrulayıcısı v1'de
+  yok (`CLAUDE.md`), çünkü Bedrock komut grameri için makine okunur resmi
+  kaynak yok. Ama komut metnindeki kimlikler (`/give @s codecraft:ruby`)
+  `checkIdentities` ile kontrol edilebilir — bu sözdizimi doğrulaması değil,
+  var olan kontrolün komut metnine uygulanması. Modelin en sık hatasını keser
+- [ ] **Python doğrulayıcısı — Aşama 3'ten sonra ölç, sonra karar ver.**
+  `CLAUDE.md` "altyapıda Python çalıştırılmıyor" diyor; en ucuz doğrulama bile
+  (`py_compile`) bu kuralı esnetir, o yüzden sormadan yapılmaz. Seçenekler:
+  (1) doğrulama yok, çıktı "test edilmedi" notuyla verilir — bugünkü hâl,
+  (2) sözdizimi kontrolü, (3) `mypy`/`pyright` ile tip kontrolü.
+  Aşama 3 koştuktan sonra "model kaç Python vakasında uydurulmuş API üretti"
+  ölçülür; sayı yüksekse (3), düşükse (1) kalır. Tahminle altyapı kurulmaz
+
+**Bitiş kriteri:** `npm run eval` koşuyor ve okunabilir bir tablo basıyor. ✅
+
+> Doğrulandı (30-08-2026): `npm run eval` 24 vakayı koşuyor (20 çekirdek +
+> 4 ek), tablo ve `evals/output/report.html` üretiliyor. `npm test` 77/77,
+> `npm run typecheck` exit 0.
+>
+> **Bugünkü skor 20'de 15.** Beş vaka bilerek düşüyor ve her biri ayrı bir
+> sınıfı gösteriyor: ajv (`custom-item-01`), tsc (`mob-timer-01`), kimlik
+> (`recipe-ruby-01`), dosya adı (`ore-gen-01`), kalıp (`welcome-message-01`).
+> Hepsi geçseydi runner'ın hata dalları hiç koşmazdı. `npm run eval -- --gate`
+> bu yüzden bugün `exit 1` veriyor — kapının gerçekten kapı olduğunun kanıtı.
+>
+> **Negatif kontrol var:** geçen bir kayıtlı çıktı bozulduğunda vakası
+> kırmızıya dönüyor (`evals/test/evaluate.test.ts`).
+>
+> **Bu skor model başarımı değil.** Çıktılar elle yazıldı. Gerçek ölçüm Aşama
+> 3'te `--generator=model` ile alınacak; geçiş kapısı o sayıya bakar.
 
 ---
 
@@ -192,16 +239,23 @@ Doğrulamadan **önce** çalışır, LLM gerektirmez, kalıp eşlemesiyle yapıl
 Ölçüm ve kanıt: `docs/VALIDATION-LIMITS.md`. Dördü de şemadan ve `tsc`'den
 geçip oyunda hata üretti.
 
-- [ ] **Kimlik referansı kontrolü.** Şema `result.item` biçimini doğruluyor ama
-  işaret ettiği item'ın var olduğuna bakmıyor. `lookup` vanilla kimlikleri
-  zaten çözüyor; paketin kendi tanımladığı kimlikler için de aynı kontrol kurulmalı
-- [ ] **Dosya adı içerikten türetilmeli.** Oyun feature rule dosya adının
-  identifier'ın namespace'siz hâline eşit olmasını şart koşuyor. Şema yapısal
-  olarak göremez — üretim tarafının işi
-- [ ] **Bilinen kalıplar prompt'a girmeli.** `worldLoad`'da `world.sendMessage`
-  hatasız çalışıp kimseye ulaşmıyor; karşılama mesajı `playerSpawn` ile
-  yazılmalı. "Geçerli ama amaçlanmayan" sınıfı ne derleyici ne şema tarafından
-  yakalanabilir
+Kontrol fonksiyonları Aşama 2.5'te yazıldı (`packages/validator/src/checks.ts`)
+ve eval seti onları koşuyor. Burada kalan iş, aynı fonksiyonları **üretim
+döngüsüne** bağlamak — ölçmek değil, düzeltmek.
+
+- [ ] **Kimlik referansı kontrolü.** `checkIdentities` yazıldı. Üretim
+  döngüsünde doğrulamadan sonra koşacak ve bulguları retry'ın hata metnine
+  girecek
+- [ ] **Dosya adı içerikten türetilmeli.** `checkFileNames` kuralı ölçüyor ama
+  düzeltmiyor. Üretim tarafı feature rule dosya adını identifier'dan türetmeli
+  — doğrulama katmanının değil, üretim katmanının işi
+- [ ] **Bilinen kalıplar prompt'a girmeli.** `checkPatterns` tablosu kalıpları
+  adıyla tutuyor (`welcome-on-player-spawn`). Prompt aynı tablodan beslenmeli:
+  kalıp hem önceden anlatılsın hem sonradan ölçülsün
+- [ ] **Vanilla feature indeksi.** `places_feature` bugün yalnızca `minecraft:`
+  dışı namespace'lerde kesin sonuç veriyor; `features.json` yapı feature'larını
+  tutuyor, yerleştirme feature'larını değil. Pipeline bedrock-samples
+  `features/` klasöründen indeks çıkarırsa uyarı hataya döner
 - [ ] **Asset referansı kararı.** `minecraft:icon` kaynak paketi olmayınca
   içerik hatası veriyor. Ya minimum kaynak paketi de üretilir ya kullanıcıya
   açıkça söylenir (Aşama 4)
@@ -212,9 +266,17 @@ geçip oyunda hata üretti.
 
 ## ⛔ GEÇİŞ KAPISI
 
-- [ ] **Eval seti 20'de 18 doğrulamadan geçiyor**
+- [ ] **Eval seti 20'de 18 doğrulamadan geçiyor** — `npm run eval -- --gate`,
+  gerçek model üreticisiyle
 
 Bu sayıya ulaşmadan arayüze geçilmez. Kapıya ulaşılmadığında ne üzerinde çalışılacağı da belli olur, çünkü hangi vakaların patladığı görülür.
+
+Kapı ölçülebilir tiplerle sınırlı: `core` listesinde yalnızca `script` ve `json`
+var. Komut ve Python vakaları `extra` listesinde ölçülür ama sayılmaz —
+gerekçeler Aşama 2.5 bölümünde.
+
+Kayıtlı üreticiyle bugünkü skor 20'de 15 ve bu **model başarımı değil**, tezgâh
+ölçümü. Kapı gerçek model çıktısına bakar.
 
 ---
 

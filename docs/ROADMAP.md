@@ -33,27 +33,51 @@ LLM yok, arayüz yok. Sadece saf fonksiyonlar:
 
 **Test:** Bilerek doğru on dosya, bilerek bozuk on dosya. Hepsi doğru sonuç veriyorsa hazır.
 
+Gerçek oyun testinden sonra üç kontrol daha eklendi — şemanın ve `tsc`'nin
+yapısal olarak yakalayamadığı sınıflar için (`docs/VALIDATION-LIMITS.md`):
+
+- `checkIdentities(dosyalar, sürüm)` — referans verilen kimlik gerçekten var mı
+- `checkFileNames(dosyalar)` — dosya adı ile identifier arasındaki kural
+- `checkPatterns(kod)` — geçerli ama amaçlanmayan kod kalıpları
+
+Üçü de saf fonksiyon. Eval runner'ı ve Aşama 3'ün üretim döngüsü aynı
+fonksiyonları çağırır, mantık tek yerde durur.
+
 Bu aşama LLM'den önce geliyor çünkü validator çalışmazsa ürün de çalışmaz. En riskli parçayı en ucuz şekilde test etmiş oluyorsun.
 
 ---
 
 ## Aşama 2.5: Eval altyapısı
 
-`evals/` klasörü, içinde 20 gerçek istek ve beklenen sonuçları.
+`evals/cases/cases.json`, içinde 20 gerçek istek ve beklenen sonuçları. Alan
+adları İngilizce, içerik Türkçe — `packages/validator/test/fixtures/cases.json`
+ile aynı düzen: `core` ölçüt, `extra` ölçüm.
 
 ```json
 {
   "id": "chain-mining-01",
-  "istek": "Kırdığım bloğun aynı türden komşularını da kırsın",
-  "sürüm": "1.26.40",
-  "tip": "script",
-  "beklenen": "validator_geçer"
+  "request": "Kırdığım bloğun aynı türden komşularını da kırsın",
+  "version": "1.26.40",
+  "kind": "script",
+  "expect": { "validation": "pass", "checks": [] }
 }
 ```
 
-`npm run eval` ile koşan bir runner yaz. Yirmi isteği modele gönderir, çıktıları validator'dan geçirir, tablo basar.
+`expect.checks` şemanın ve tsc'nin yakalayamadığı ek kontrolleri seçer:
+`identity`, `filename`, `pattern:<ad>`. Sadece "validator geçti" ölçütü
+"geçerli ama amaçlanmayan" sınıfını görünmez bırakırdı
+(`docs/VALIDATION-LIMITS.md` D), o yüzden üç vaka doğrudan onu hedefliyor.
 
-Runner'a basit bir HTML rapor çıktısı ekle. Tasarım yok, sadece tablo: istek, üretilen çıktı, doğrulama sonucu, hata mesajı. Aşama 3 boyunca ana çalışma yüzeyi bu olacak.
+`npm run eval` ile koşan bir runner. Vakaları bir **üreticiye** gönderir,
+çıktıları validator'dan geçirir, tablo basar. Üretici takılabilir: 2.5'te elle
+yazılmış kayıt (`evals/recorded/`), Aşama 3'te model. Böylece tezgâh model
+katmanı yazılmadan ölçülebilir oluyor. Raporun ve terminalin başlığında
+çıktının nereden geldiği yazar — kayıtlı çıktı model sonucu gibi görünmez.
+
+Runner'a basit bir HTML rapor çıktısı ekle. Tasarım yok, sadece tablo: istek,
+üretilen çıktı, doğrulama sonucu, hata mesajı. Yanına makine okunur bir JSON
+rapor da yazılır, iki koşu arasındaki fark alınabilsin diye. Aşama 3 boyunca
+ana çalışma yüzeyi bu olacak.
 
 ---
 
@@ -81,6 +105,14 @@ CLI ile başlamanın sebebi: çekirdek döngüyü arayüz yazmadan test edebilme
 **20'de 18 doğrulamadan geçiyor.**
 
 Bu sayıya ulaşmadan arayüze geçilmez.
+
+Sayının anlamlı olması için kapıya sayılan 20 vaka bugün otomatik ölçülebilen
+tiplerden oluşur: `script` (tsc) ve `json` (ajv). Komut ve Python çıktılarının
+doğrulayıcısı yok — komut sözdizimi doğrulayıcısı v1 kapsamı dışında
+(`CLAUDE.md`) ve altyapıda Python çalıştırılmıyor. O vakalar `extra` listesinde
+durur, ölçülür ama sayılmaz. Erteleme gerekçeleri `TODO.md` Aşama 2.5 bölümünde.
+
+Ölçüt `npm run eval -- --gate`: kapı sağlanmazsa `exit 1`.
 
 Claude Code'un "her şey çalışıyor" demesini bekleme, o cümleyi bu teste dönüştür. Bir ajan ancak tanımlı bir ölçüte göre "tamamlandı" diyebilir. Ölçüt yoksa yarım çalışan bir şey için de aynı cümleyi kurar.
 
