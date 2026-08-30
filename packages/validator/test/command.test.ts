@@ -251,13 +251,26 @@ test("uydurulmuş vanilla kimliği hâlâ reddedilir", async () => {
   assert.equal(result.ok, false);
 });
 
-test("kaldırılmış eski veri değeri sözdizimi reddedilir", async () => {
-  // fill'in dört aşırı yüklemesinin hiçbiri blok adından sonra tam sayı
-  // kabul etmiyor — eski `<data>` argümanı kaldırılmış.
+test("eski veri değeri biçimi KABUL edilir — oyunda ölçüldü", async () => {
+  // Mojang'ın yayımladığı tanımda bu biçim YOK: hiçbir fill aşırı yüklemesi
+  // blok adından sonra INT almıyor. Doğrulayıcı bu yüzden önce reddediyordu
+  // ve elle yazılmış bir eval fixture'ını "hatalı" sanıp değiştirdim.
   //
-  // Bu vaka, doğrulayıcının ilk gününde ELLE YAZILMIŞ bir eval fixture'ındaki
-  // hatayı yakalamasıyla ortaya çıktı. Yani kendi test verimiz yanlıştı ve
-  // ölçüm onu düzeltti.
-  const result = await check("/fill ~-5 ~ ~-5 ~5 ~3 ~5 minecraft:glass 0 hollow");
-  assert.equal(result.ok, false);
+  // Oyun tersini söyledi (30-08-2026, npm run ws:probe):
+  //
+  //   fill ... minecraft:air 0 replace       ayrıştı        (-2147352576)
+  //   fill ... minecraft:air BOGUS replace   sözdizimi hatası (-2147483648)
+  //
+  // Kontrol grubu belirleyici: sayı ayrışıyor, saçma değer ayrışmıyor. Gerçek
+  // ayrıştırıcı geriye dönük uyumluluğu koruyor, yayımlanan tanım anlatmıyor.
+  // Yayımlanan tanım tek başına yeterli değil; ölçüm onun üstünde.
+  const legacy = await check("/fill ~-5 ~ ~-5 ~5 ~4 ~5 minecraft:glass 0 hollow");
+  assert.equal(legacy.ok, true, legacy.errors[0]?.message ?? "");
+
+  const modern = await check("/fill ~-5 ~ ~-5 ~5 ~4 ~5 minecraft:glass hollow");
+  assert.equal(modern.ok, true, modern.errors[0]?.message ?? "");
+
+  // Sınır: gevşetme yalnızca tam sayıyı kapsıyor, her şeyi değil.
+  const bogus = await check("/fill ~-5 ~ ~-5 ~5 ~4 ~5 minecraft:glass BOGUS hollow");
+  assert.equal(bogus.ok, false);
 });

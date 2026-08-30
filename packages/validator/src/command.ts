@@ -371,6 +371,17 @@ async function checkBlockStates(
   blockId: string | null,
   version: string | undefined,
 ): Promise<string | null> {
+  // Eski veri değeri biçimi — OYUNDA ÖLÇÜLDÜ (30-08-2026, ws:probe):
+  //
+  //   fill ~ ~ ~ ~ ~ ~ minecraft:air 0 replace       → ayrıştı
+  //   fill ~ ~ ~ ~ ~ ~ minecraft:air BOGUS replace   → sözdizimi hatası
+  //
+  // Mojang'ın yayımladığı tanımda bu biçim yok (hiçbir aşırı yüklemede blok
+  // adından sonra INT parametresi geçmiyor) ama gerçek ayrıştırıcı geriye
+  // dönük uyumluluk için kabul ediyor. Doğrulayıcı önce reddediyordu; bu bir
+  // yanlış pozitifti ve ölçüm onu çürüttü.
+  if (INT_RE.test(raw.trim())) return null;
+
   const pairs = parseBlockStates(raw);
   if (pairs === null) return 'blok durumu biçimi tanınmadı — ["ad"=değer] bekleniyor';
   if (pairs.length === 0 || blockId === null) return null;

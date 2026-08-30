@@ -103,22 +103,45 @@ olabilir ve komut grameri onu bilemez. Aynı ilke enum eşleşmesinde de var —
 `/setblock ~ ~ ~ codecraft:ruby_ore` reddedilmiyor. Bu ölçülerek eklendi:
 başta kullanıcının kendi bloğu "geçersiz" görünüyordu.
 
-## İlk gün ne yakaladı
+## İlk gün ne yakaladı — ve ne yanlış yakaladı
 
-Doğrulayıcı yazılır yazılmaz **kendi elle yazdığımız eval fixture'ındaki bir
-hatayı** buldu:
+Doğrulayıcı yazılır yazılmaz elle yazılmış bir eval fixture'ına itiraz etti:
 
 ```
 /fill ~-5 ~ ~-5 ~5 ~4 ~5 minecraft:glass 0 hollow
 ```
 
-`fill`'in dört aşırı yüklemesinin hiçbiri blok adından sonra tam sayı kabul
-etmiyor — eski `<data>` argümanı kaldırılmış. Fixture düzeltildi ve vaka teste
-çevrildi. Yani elle yazılmış "doğru" örnek yanlıştı; ölçüm onu düzeltti.
+Mojang'ın yayımladığı tanımda hiçbir `fill` aşırı yüklemesi blok adından sonra
+tam sayı almıyor, yani eski `<data>` argümanı kaldırılmış görünüyordu. Fixture
+"düzeltildi".
+
+**Sonra oyuna soruldu ve tersi çıktı** (`npm run ws:probe`):
+
+| Komut | Sonuç |
+|---|---|
+| `fill ... minecraft:air 0 replace` | **ayrıştı** (-2147352576) |
+| `fill ... minecraft:air BOGUS replace` | sözdizimi hatası (-2147483648) |
+| `fill ... minecraft:air replace` | ayrıştı |
+
+Kontrol grubu belirleyici: sayı ayrışıyor, saçma değer ayrışmıyor. Gerçek
+ayrıştırıcı geriye dönük uyumluluğu koruyor; yayımlanan tanım bunu anlatmıyor.
+
+Fixture geri alındı, doğrulayıcı tam sayıyı kabul ediyor, ve ders teste
+yazıldı: **yayımlanan tanım tek başına yeterli değil, ölçüm onun üstünde.**
+
+Durum kodlarının ayrımı da bu turda öğrenildi ve kendi başına önemli:
+
+| Kod | Anlam |
+|---|---|
+| `-2147483648` | Ayrıştırılamadı — sözdizimi hatası |
+| `-2147352576` | Ayrıştırıldı, çalıştı, sonuç boş |
+| `0` | Ayrıştırıldı, başarılı |
+
+İlk turda "negatif = hata" varsayılmıştı ve yanlış sonuca götürdü.
 
 ## Testler
 
-`packages/validator/test/command.test.ts` — 23 test, iki yön de ölçülüyor:
+`packages/validator/test/command.test.ts` — 24 test, iki yön de ölçülüyor:
 geçerli komutlar geçmeli, bozuk komutlar düşmeli, ve kapsam sınırı (hangi
 tipler denetlenmiyor) sabitlenmiş. Eval tarafında `command-give-01` ve
 `command-fill-01` vakaları `commandSyntax` kontrolünü istiyor; negatif kontrol
