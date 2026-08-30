@@ -15,6 +15,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "node --test \"packages/*/test/**/*.test.ts\" \"evals/test/**/*.test.ts\"",
+    "eval": "node evals/src/run.ts",
     "pipeline": "node pipeline/src/index.ts",
     "pipeline:bedrock": "node pipeline/src/bedrock-samples.ts",
     "pipeline:schemas": "node pipeline/src/schemas-mojang.ts",

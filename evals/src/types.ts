@@ -82,7 +82,12 @@ export type FileResult = {
 export type CaseResult = {
   case: EvalCase;
   files: FileResult[];
-  /** Bütün dosyalar ajv/tsc'den geçti mi. */
+  /**
+   * En az bir dosya ajv ya da tsc ile ölçülebildi mi. command/python
+   * çıktılarında false — "düştü" ile "ölçülemedi" karışmasın.
+   */
+  measured: boolean;
+  /** Ölçülebilen bütün dosyalar geçti mi. */
   validation: boolean;
   /** İstenen ek kontrollerin sonucu. */
   checks: { ok: boolean; findings: Finding[] };
@@ -99,7 +104,9 @@ export type RunResult = {
   generator: { name: string; provenance: string };
   /** ISO 8601, raporun başlığında. */
   startedAt: string;
-  results: CaseResult[];
-  /** Geçiş kapısının saydığı liste: core. */
+  /** Geçiş kapısının saydığı liste. */
+  core: CaseResult[];
+  /** Ölçüm listesi — kapıya sayılmaz. */
+  extra: CaseResult[];
   gate: { total: number; passed: number; required: number };
 };
