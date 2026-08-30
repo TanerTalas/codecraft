@@ -19,7 +19,7 @@ import {
   createModel,
   generate,
   loadConfig,
-  RateLimitError,
+  CapacityError,
   review,
   type Config,
 } from "@codecraft/core";
@@ -28,9 +28,6 @@ import { recordedGenerator } from "./recorded.ts";
 import type { EvalCase, Generation, Generator } from "../types.ts";
 
 export const MODEL_CACHE_DIR = fileURLToPath(new URL("../../output/model/", import.meta.url));
-
-const sleep = (ms: number): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, ms));
 
 async function writeCache(testCase: EvalCase, generation: Generation): Promise<void> {
   for (const file of generation.files) {
@@ -45,7 +42,6 @@ export async function modelGenerator(): Promise<Generator> {
   // Tembel: yapılabilirlik engelleyen vakalar anahtar gerektirmez.
   let model: ReturnType<typeof createModel> | null = null;
   const getModel = (): ReturnType<typeof createModel> => (model ??= createModel(config));
-  let first = true;
 
   return {
     name: "model",
@@ -54,12 +50,9 @@ export async function modelGenerator(): Promise<Generator> {
       "(yapılabilirlik → prompt → model → doğrulama → tek retry)",
 
     async generate(testCase: EvalCase): Promise<Generation> {
-      // Vakalar arası bekleme: ücretsiz kademede dakikalık istek sınırı var.
-      // SDK'nın geri çekilmesi limite GİRDİKTEN sonra devreye giriyor, bu ise
-      // limite hiç girmemek için. İlk vakadan önce beklemek anlamsız.
-      if (!first) await sleep(config.requestDelayMs);
-      first = false;
-
+      // Hız sınırlaması burada değil, callModel içinde: sağlayıcının sınırı
+      // İSTEK başına ve retry yapan bir vaka iki istek atıyor. Vaka başına
+      // beklemek ilk kapı koşusunda kotayı deldi (dakikada 20 istek).
       const result = await generate(testCase.request, {
         config,
         model: getModel,
@@ -101,4 +94,4 @@ export function cachedGenerator(): Generator {
   );
 }
 
-export { RateLimitError };
+export { CapacityError };

@@ -12,7 +12,7 @@ import { APICallError } from "ai";
 import { MockLanguageModelV4 } from "ai/test";
 
 import type { Config } from "../src/config.ts";
-import { callModel, isRateLimit, RateLimitError } from "../src/model.ts";
+import { callModel, isCapacityError, CapacityError } from "../src/model.ts";
 import { textResponse } from "./helpers.ts";
 
 const CONFIG: Config = {
@@ -32,19 +32,22 @@ const apiError = (statusCode: number): APICallError =>
     statusCode,
   });
 
-test("429 limit olarak tanınır", () => {
-  assert.equal(isRateLimit(apiError(429)), true);
+test("429 ve 503 kapasite hatası olarak tanınır", () => {
+  assert.equal(isCapacityError(apiError(429)), true);
   // SDK denemeleri tükettiğinde hatayı sarmalayarak fırlatıyor.
-  assert.equal(isRateLimit(new Error("tükendi", { cause: apiError(429) })), true);
+  assert.equal(isCapacityError(new Error("tükendi", { cause: apiError(429) })), true);
+  // 503 ilk gerçek koşuda çıktı: gemini-3.7-flash "high demand" döndürdü.
+  assert.equal(isCapacityError(apiError(503)), true);
 });
 
 test("diğer hatalar limit sayılmaz", () => {
-  assert.equal(isRateLimit(apiError(400)), false);
-  assert.equal(isRateLimit(apiError(500)), false);
-  assert.equal(isRateLimit(new Error("düz hata")), false);
+  assert.equal(isCapacityError(apiError(400)), false);
+  assert.equal(isCapacityError(apiError(500)), false);
+  assert.equal(isCapacityError(apiError(400)), false);
+  assert.equal(isCapacityError(new Error("düz hata")), false);
 });
 
-test("limit hatası RateLimitError'a çevrilir ve ne yapılacağını söyler", async () => {
+test("limit hatası CapacityError'a çevrilir ve ne yapılacağını söyler", async () => {
   const model = new MockLanguageModelV4({
     doGenerate: async () => {
       throw apiError(429);
@@ -54,8 +57,9 @@ test("limit hatası RateLimitError'a çevrilir ve ne yapılacağını söyler", 
   await assert.rejects(
     callModel({ model, config: CONFIG, system: "s", prompt: "p" }),
     (error: Error) => {
-      assert.ok(error instanceof RateLimitError);
+      assert.ok(error instanceof CapacityError);
       assert.match(error.message, /429/);
+      assert.match(error.message, /503/);
       assert.match(error.message, /requestDelayMs/);
       return true;
     },
@@ -72,7 +76,7 @@ test("limit dışı hata olduğu gibi yükselir", async () => {
   await assert.rejects(
     callModel({ model, config: CONFIG, system: "s", prompt: "p" }),
     (error: Error) => {
-      assert.equal(error instanceof RateLimitError, false);
+      assert.equal(error instanceof CapacityError, false);
       return true;
     },
   );
@@ -86,4 +90,23 @@ test("sözleşmeye uymayan çıktı sessizce boş geçmez", async () => {
   // files boş: şema en az bir dosya istiyor, çünkü boş çıktı "hata yok" gibi
   // görünür ve vaka yanlışlıkla geçmiş sayılabilirdi.
   await assert.rejects(callModel({ model, config: CONFIG, system: "s", prompt: "p" }));
+});
+
+test("RetryError'ın sardığı kota hatası da tanınır", () => {
+  // AI SDK denemeleri tükettiğinde RetryError fırlatıyor ve asıl sebebi
+  // `cause` ile değil `lastError` / `errors` ile taşıyor. İlk gerçek kapı
+  // koşusunda kota hatası bu yüzden "model düştü" diye raporlandı.
+  const inner = apiError(429);
+  const retry = Object.assign(new Error("Failed after 2 attempts"), {
+    lastError: inner,
+    errors: [inner, inner],
+  });
+  assert.equal(isCapacityError(retry), true);
+
+  // Sarılan hata kapasite dışıysa hâlâ model hatası sayılır.
+  const other = Object.assign(new Error("Failed after 2 attempts"), {
+    lastError: apiError(400),
+    errors: [apiError(400)],
+  });
+  assert.equal(isCapacityError(other), false);
 });

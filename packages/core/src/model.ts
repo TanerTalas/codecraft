@@ -19,20 +19,56 @@ import { requireApiKey, type Config } from "./config.ts";
 import { UserError } from "./errors.ts";
 import { generationSchema, type Generation } from "./output.ts";
 
-/** Sağlayıcı ve anahtar limitinden kaynaklanan başarısızlık. */
-export class RateLimitError extends UserError {
+/**
+ * Çağrının hiç yapılamamasından doğan başarısızlık — kota ya da kapasite.
+ *
+ * Model kalitesiyle ilgisi yok ve bu ayrım ölçüm için kritik: bunu "model
+ * yanlış çıktı üretti" diye saymak kapı skorunu yalanlar.
+ */
+export class CapacityError extends UserError {
   constructor(message: string, options?: { cause?: unknown }) {
     super(message, options);
-    this.name = "RateLimitError";
+    this.name = "CapacityError";
   }
 }
 
-/** Hata zincirinde 429 var mı. SDK denemeleri tükettiğinde sarmalayarak fırlatıyor. */
-export function isRateLimit(error: unknown): boolean {
-  for (let current: unknown = error, depth = 0; current != null && depth < 8; depth += 1) {
-    if (APICallError.isInstance(current) && current.statusCode === 429) return true;
-    current = (current as { cause?: unknown }).cause;
+/**
+ * Sağlayıcının kapasite/kota durumları. İkisi de ölçülerek eklendi
+ * (30-08-2026, Gemini ücretsiz kademe):
+ *
+ *   429  "You exceeded your current quota"  — pro modellerde ücretsiz kota yok
+ *   503  "This model is currently experiencing high demand" — gemini-3.7-flash
+ *
+ * 503 başta listede yoktu ve ilk gerçek koşuda vakayı "model düştü" diye
+ * raporladı. Tahminle değil, o koşuyla eklendi.
+ */
+const CAPACITY_STATUS = new Set([429, 503]);
+
+/**
+ * Hata ağacında kapasite/kota durumu var mı.
+ *
+ * `cause` zinciri tek başına yetmiyor: SDK denemeleri tükettiğinde `RetryError`
+ * fırlatıyor ve o hata asıl sebebi `cause` ile değil `lastError` / `errors`
+ * alanlarıyla taşıyor. Bunu ilk gerçek kapı koşusu gösterdi — kota hatası
+ * "model düştü" diye raporlanmıştı. Bu yüzden düz bir zincir değil, sınırlı
+ * derinlikte bir ağaç geziliyor.
+ */
+export function isCapacityError(error: unknown): boolean {
+  const queue: unknown[] = [error];
+
+  for (let i = 0; i < queue.length && i < 32; i += 1) {
+    const current = queue[i];
+    if (current == null) continue;
+
+    if (APICallError.isInstance(current) && CAPACITY_STATUS.has(current.statusCode ?? 0)) {
+      return true;
+    }
+
+    const node = current as { cause?: unknown; lastError?: unknown; errors?: unknown };
+    queue.push(node.cause, node.lastError);
+    if (Array.isArray(node.errors)) queue.push(...node.errors);
   }
+
   return false;
 }
 
@@ -58,9 +94,33 @@ export type GenerateOptions = {
   prompt: string;
 };
 
+/**
+ * Son isteğin zamanı. Modül düzeyinde: sınır sağlayıcı hesabına ait, o hesapla
+ * kaç ayrı çağıran olduğuna değil.
+ */
+let lastRequestAt = 0;
+
+/**
+ * İki istek arasında en az `minIntervalMs` geçmesini bekler.
+ *
+ * VAKA başına değil İSTEK başına: sağlayıcının sınırı da öyle. İlk kapı
+ * koşusunda bekleme vaka başınaydı ve retry yapan bir vaka iki isteği arka
+ * arkaya atıp kotayı deldi (ölçüldü: dakikada 20 istek).
+ *
+ * SDK'nın geri çekilmesi limite GİRDİKTEN sonra devreye giriyor; bu ise hiç
+ * girmemek için.
+ */
+async function pace(minIntervalMs: number): Promise<void> {
+  if (minIntervalMs <= 0) return;
+  const wait = lastRequestAt + minIntervalMs - Date.now();
+  if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
+  lastRequestAt = Date.now();
+}
+
 /** Tek model çağrısı. Sözleşmeye uymayan çıktı istisna olarak döner. */
 export async function callModel(options: GenerateOptions): Promise<Generation> {
   const { model, config, system, prompt } = options;
+  await pace(config.requestDelayMs);
 
   try {
     const result = await generateText({
@@ -78,9 +138,10 @@ export async function callModel(options: GenerateOptions): Promise<Generation> {
     });
     return result.output;
   } catch (error) {
-    if (isRateLimit(error)) {
-      throw new RateLimitError(
-        "Sağlayıcı istek limiti aşıldı (429) ve yeniden denemeler tükendi. " +
+    if (isCapacityError(error)) {
+      throw new CapacityError(
+        "Sağlayıcı çağrıyı kabul etmedi (kota 429 veya kapasite 503) ve " +
+          "yeniden denemeler tükendi. Model çıktısı değerlendirilemedi. " +
           "Bu bir model başarısızlığı değil — bekleyip tekrar dene ya da " +
           "codecraft.config.json içindeki requestDelayMs değerini artır.",
         { cause: error },

@@ -96,3 +96,33 @@ test("console kabul edilir", async () => {
   const result = await validateScript(`console.log("a"); console.warn("b"); console.error("c");`);
   assert.equal(result.ok, true, JSON.stringify(result.errors));
 });
+
+test("tipsiz parametre reddedilmez, gerçek API hatası hâlâ reddedilir", async () => {
+  // İlk gerçek kapı koşusunun bulduğu kusur: doğrulayıcı oyunda çalışan bir
+  // script'i yalnızca yardımcı fonksiyonun parametreleri tipsiz diye
+  // düşürüyordu (TS7006). Bedrock düz JavaScript çalıştırıyor, orada bu
+  // geçerli kod.
+  const untyped = await validateScript(`
+import { world } from "@minecraft/server";
+
+function key(x, y, z) {
+  return \`\${x},\${y},\${z}\`;
+}
+
+world.afterEvents.playerBreakBlock.subscribe((event) => {
+  const { x, y, z } = event.block.location;
+  console.log(key(x, y, z));
+});
+`);
+  assert.equal(untyped.ok, true, untyped.errors.map((e) => e.message).join("; "));
+
+  // Negatif kontrol: gevşetme yalnızca TS7006'yı kapsıyor. Gerçek bir API
+  // hatası hâlâ düşmeli, yoksa doğrulayıcı işe yaramaz hâle gelirdi.
+  const wrong = await validateScript(`
+import { world } from "@minecraft/server";
+world.afterEvents.playerBreakBlock.subscribe((event) => {
+  event.block.uydurulmusMetot();
+});
+`);
+  assert.equal(wrong.ok, false);
+});

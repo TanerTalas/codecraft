@@ -8,12 +8,42 @@
  * Anahtar bu dosyadan hiç okunmaz. Yalnızca ortam değişkeninden gelir, hiçbir
  * log satırına, rapora veya hata mesajına yazılmaz.
  */
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { ROOT } from "@codecraft/knowledge";
 
 import { UserError } from "./errors.ts";
+
+/**
+ * Yerel ortam dosyaları. İlk bulunan okunur.
+ *
+ * `.gitignore` zaten `.env.*` kalıbını tutuyor, yani anahtar git'e girmez.
+ * Node 24 `loadEnvFile`'ı yerleşik veriyor — `dotenv` gibi bir bağımlılık
+ * eklenmiyor.
+ */
+const ENV_FILES = [".env.local", ".env"];
+
+/**
+ * Varsa yerel ortam dosyasını `process.env`'e yükler.
+ *
+ * Zaten tanımlı bir değişkenin üstüne **yazmaz**: kabuğa `setx` ile yazılmış
+ * bir anahtar dosyadakinden önce gelir. Aksi hâlde iki kaynak varken hangisinin
+ * geçerli olduğu belirsiz kalır ve "neden eski anahtarı kullanıyor" türünden
+ * bir hata ayıklama turu doğar.
+ */
+export function loadEnvFiles(root: string = ROOT): void {
+  for (const name of ENV_FILES) {
+    const path = join(root, name);
+    if (!existsSync(path)) continue;
+
+    const existing = new Map(Object.entries(process.env));
+    process.loadEnvFile(path);
+    for (const [key, value] of existing) process.env[key] = value;
+    return;
+  }
+}
 
 export const CONFIG_FILE = "codecraft.config.json";
 export const LOCAL_CONFIG_FILE = "codecraft.config.local.json";
@@ -41,9 +71,11 @@ export type Config = {
    */
   maxRetries: number;
   /**
-   * Ardışık çağrılar arası bekleme. Ücretsiz kademede dakikalık istek sınırı
-   * var ve eval 24 vakayı sırayla koşuyor; SDK'nın geri çekilmesi limite
-   * girdikten sonra devreye giriyor, bu ise limite hiç girmemek için.
+   * İki model isteği arasındaki en az süre (ms).
+   *
+   * VAKA başına değil İSTEK başına uygulanır — sağlayıcının sınırı da öyle.
+   * Ölçüldü (30-08-2026, Gemini ücretsiz kademe): dakikada 20 istek. 4000 ms
+   * dakikada ~15 istek demek, güvenli pay bırakıyor.
    */
   requestDelayMs: number;
 };
@@ -103,6 +135,10 @@ function optionalNumber(raw: Record<string, unknown>, key: string, fallback: num
  * Yerel dosya üstüne yazar ve git'e girmez.
  */
 export async function loadConfig(root: string = ROOT): Promise<Config> {
+  // Yerel kurulumu okumak ile yapılandırmayı okumak aynı adım. Anahtarın
+  // kendisi hâlâ yalnızca process.env'den alınıyor, yapılandırmadan değil.
+  loadEnvFiles(root);
+
   const base = await readJsonIfExists(join(root, CONFIG_FILE));
   if (base === null) {
     throw new UserError(

@@ -264,8 +264,20 @@ iki mühendislik sonucu var ve ikisi de koda girdi:
 `/connect` ve `/wsserver` hiç belgelenmedi, her sürümde kırılabilir ve izlenecek
 resmi changelog yok. CI'da koşamaz — çalışan bir oyun istemcisi gerekiyor.
 
-- [ ] Yerelden koşan bir script: bağlantı kurulabiliyor mu, temel olaylar geliyor mu
-- [ ] Kırıldığında ne yapılacağı belli olsun — üretilen otomasyon script'leri buna bağlı
+- [x] Yerelden koşan bir script — `npm run ws:health` (`pipeline/src/ws-health.ts`)
+- [x] Kırıldığında ne yapılacağı belli — `docs/WEBSOCKET.md`
+
+> **Ölçüldü (30-08-2026, Bedrock 1.26.x).** Bağlantı kuruldu, komut cevabı
+> geldi (`time query daytime` → `statusCode=0`, "Daytime is 17839"),
+> `BlockBroken`, `BlockPlaced` ve `PlayerTravelled` olayları düştü.
+> `PlayerMessage` gelmedi ama oyunda sohbete mesaj yazıldığı doğrulanmadı —
+> **ölçülmedi sayılıyor**, kırık değil.
+>
+> Üç ön koşul da ölçülerek bulundu; ilk deneme
+> `Websocket server request rejected` verdi:
+> "Require Encrypted Websockets" kapalı olmalı (sunucumuz düz `ws://`),
+> dünyada hileler açık olmalı, ve UWP sürümünde loopback izni gerekir — bu
+> makinede gerekmedi, kurulum yeni düzende.
 
 ### Niyet ve yapılabilirlik eşlemesi
 

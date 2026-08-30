@@ -15,7 +15,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { RateLimitError } from "@codecraft/core";
+import { CapacityError } from "@codecraft/core";
 
 import { GATE_REQUIRED, loadCases } from "./cases.ts";
 import { evaluateCase, failedCase } from "./evaluate.ts";
@@ -106,7 +106,7 @@ async function runList(generator: Generator, cases: readonly EvalCase[]): Promis
       const failed = failedCase(testCase, error);
       // Limit hatası model başarısızlığı değil: ayrı işaretleniyor ki
       // skor yanlış okunmasın (ücretsiz kademede olağan bir durum).
-      if (error instanceof RateLimitError) failed.limited = true;
+      if (error instanceof CapacityError) failed.limited = true;
       results.push(failed);
     }
     printCase(results[results.length - 1] as CaseResult);

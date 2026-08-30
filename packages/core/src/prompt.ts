@@ -47,6 +47,18 @@ export function buildSystemPrompt(context: Context): string {
   sections.push(`## Dosya yerleşimi\n\n${LAYOUT}`);
 
   sections.push(
+    "## manifest.json\n\n" +
+      bullet([
+        "`header.uuid` ve her modülün `uuid` alanı **RFC 4122 sürüm 4** biçiminde " +
+          "olmalı: üçüncü grup `4` ile, dördüncü grup `8`, `9`, `a` veya `b` ile " +
+          "başlar. Örnek biçim: `xxxxxxxx-xxxx-4xxx-axxx-xxxxxxxxxxxx`.",
+        "Her UUID benzersiz olmalı — header ile modül aynı olamaz.",
+        "Script modülü varsa `dependencies` içine `@minecraft/server` ve " +
+          "kullanılıyorsa `@minecraft/server-ui` yazılır, yukarıdaki sürümlerle.",
+      ]),
+  );
+
+  sections.push(
     "## Kimlikler\n\n" +
       bullet([
         "Var olmayan bir minecraft: kimliği kullanma. Emin değilsen kendi " +

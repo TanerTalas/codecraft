@@ -114,6 +114,21 @@ function buildTsconfig(paths: Record<string, string>): string {
         moduleResolution: "bundler",
         types: [],
         strict: true,
+        // Üretilen paketler düz JavaScript gönderiyor ve Bedrock onu öyle
+        // çalıştırıyor. Tip yazılmamış bir parametre (TS7006) orada geçerli
+        // koddur — bu kural Bedrock API'sinin doğru kullanılıp
+        // kullanılmadığına dair hiçbir şey söylemez, yalnızca TypeScript
+        // yazım stiline bakar.
+        //
+        // İlk gerçek kapı koşusunda (30-08-2026) ölçüldü: model oyunda
+        // çalışacak bir zincirleme kazma script'i üretti, doğrulama yalnızca
+        // yardımcı fonksiyonun parametreleri tipsiz diye reddetti. Yani
+        // doğrulayıcı çalışan çıktıyı düşürüyordu.
+        //
+        // strict'in geri kalanı AÇIK kalıyor: strictNullChecks, tip uyuşmazlığı,
+        // olmayan modül ve 2.x'te kaldırılmış çağrılar hâlâ yakalanıyor —
+        // gerçek API hatalarını gösteren şeyler onlar.
+        noImplicitAny: false,
         noEmit: true,
         skipLibCheck: true,
         // paths mutlak yol veriyor: symlink kurmuyoruz, Windows'ta yönetici
