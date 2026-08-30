@@ -293,32 +293,42 @@ iki mühendislik sonucu var ve ikisi de koda girdi:
   `spawn-rule-01` beş koşudur kotaya takılıyordu, `--case=` liste desteği
   eklenince doğrudan hedeflenip ölçüldü ve **geçti**.
 
-- [ ] **Güncel prompt: ölçülen 15 vakanın 15'i geçti, 5 vaka kotadan eksik.**
+- [x] **Güncel prompt tam ölçüldü: 19/20, kapı açık.**
 
-  ```
-  npm run eval -- --generator=model --reuse --case=custom-item-01,recipe-ruby-01,recipe-vanilla-01,custom-entity-01,ore-gen-01
-  npm run eval -- --generator=model --gate --reuse --list=core
-  ```
+  Düşen tek vaka `ore-gen-01`: `minecraft:ore_feature` içinde hem üst düzey
+  `places_block` hem `replace_rules` var, şema ikisini birden kabul etmiyor.
+  **İki bağımsız ölçümde aynı hata** — üçüncüsü gelirse gerçek bir bilgi
+  boşluğu sayılır ve prompt'a girer.
 
-  Eksik beşin **üçü geçerse kapı açılır** (18/20). Beşi de daha önce en az bir
-  kez geçmişti; `ore-gen-01` hariç.
+- [x] **Önbellek bozulması bulundu ve onarıldı — ölçümleri kirletmişti.**
 
-  | Koşu | Prompt | Ölçülen | Geçen | Oran |
-  |---|---|---|---|---|
-  | 1 | düzeltme öncesi | 20 | 19 | %95 |
-  | 4 | düzeltilmiş | 20 | 17 | %85 |
-  | 5 | + `worldInitialize` | 15 | **15** | **%100** |
+  `writeCache` klasörü silmeden yazıyordu. Model bir koşuda
+  `BP/entities/player.json` üretip sonraki koşuda script-only bir çözüm
+  verince eski dosya klasörde kalıyor ve oynatma ikisini birden okuyor:
+  **hiç var olmamış bir paket** doğrulanıyor.
 
-  `worldInitialize` satırının hedefi `kill-counter-01` geçti.
+  Belirtisi şuydu: `no-fall-damage-01` üretildiği koşuda geçti, önbellekten
+  oynatıldığı koşuda düştü. Doğrulayıcının belirlenimsiz olduğundan
+  şüphelenildi, üç kez koşturulup belirlenimci olduğu ölçüldü, sonra dosya
+  zaman damgaları sebebi gösterdi.
 
-  **Ve bir teşhisim çürüdü:** `no-fall-damage-01` iki koşuda aynı
-  `damage_sensor` hatasıyla düşmüş, "ısrarcı olduğu için gerçek bir bilgi
-  boşluğu sayılabilir" diye not düşmüştüm. Bu koşuda geçti — yine gürültüymüş.
-  O teşhise göre prompt'a kural yazsaydım olmayan bir soruna kural eklemiş
-  olacaktım.
+  Altı vaka etkilenmişti, sekiz bayat dosya silindi. `core/pack.ts` içindeki
+  `writePack` bunu baştan doğru yapıyordu ("bayat dosya kalmasın"); aynı kural
+  önbelleğe uygulanmamıştı.
 
-  Ders tekrar ediyor: **vaka başına tek örnek hiçbir şey kanıtlamıyor.** İki
-  örnek de yetmiyor. Bir vakaya kural yazmadan önce üç bağımsız düşüş aranmalı.
+  **Bu yüzden 17/20 ve 18/20 okumaları geçersiz.** Onarımdan sonra aynı
+  önbellekle 19/20 çıktı. Güvenilir sayılar: her şeyin taze üretildiği koşular
+  ve onarım sonrası ölçüm.
+
+  | Prompt | Ölçüm | Güvenilir mi |
+  |---|---|---|
+  | `format_version` öncesi | 19/20 | evet, hepsi taze üretildi |
+  | düzeltilmiş | 17/20 | **hayır, bozuk önbellek** |
+  | + `worldInitialize` | 18/20 | **hayır, bozuk önbellek** |
+  | + `worldInitialize` (onarım sonrası) | **19/20** | evet |
+
+  Yani `format_version` ve `worldInitialize` düzeltmeleri skoru düşürmedi;
+  düşüren şey ölçüm aracının kendisiydi.
 - [ ] Prompt iyileştirme turları — kapı ölçüldükten sonra. Her tur önbelleği
   geçersiz kılar, yani her turun kendi kota bütçesi var
 
