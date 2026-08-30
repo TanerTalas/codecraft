@@ -17,11 +17,44 @@ import { resolveVersion } from "./version.ts";
 export const KINDS = ["block", "item", "entity"] as const;
 export type Kind = (typeof KINDS)[number];
 
+/**
+ * Kimlik taşıyan bütün indeksler.
+ *
+ * KINDS üçü doğrulamanın asıl kullandığı küme. Komut metinlerinde ise
+ * minecraft: namespace'i bunların dışına da çıkıyor (efekt, boyut, büyü,
+ * biyom...) ve o kimliklere "yok" demek uydurma hata üretirdi — bu yüzden
+ * geniş arama ayrı bir fonksiyon.
+ */
+export const ALL_KINDS = [
+  "block",
+  "item",
+  "entity",
+  "biome",
+  "camera-preset",
+  "cooldown-category",
+  "dimension",
+  "effect",
+  "enchantment",
+  "feature",
+  "potion-effect",
+  "potion-type",
+] as const;
+export type AnyKind = (typeof ALL_KINDS)[number];
+
 /** Her tür kendi indeks dosyasından okunur. */
-const INDEX_FILE: Record<Kind, string> = {
+const INDEX_FILE: Record<AnyKind, string> = {
   block: "blocks.json",
   item: "items.json",
   entity: "entities.json",
+  biome: "biomes.json",
+  "camera-preset": "camera-presets.json",
+  "cooldown-category": "cooldown-category.json",
+  dimension: "dimensions.json",
+  effect: "effects.json",
+  enchantment: "enchantments.json",
+  feature: "features.json",
+  "potion-effect": "potion-effects.json",
+  "potion-type": "potion-types.json",
 };
 
 /** Blok durumu tanımı: blocks.json'ın properties alanından. */
@@ -84,6 +117,38 @@ export async function lookup(id: string, options: LookupOptions = {}): Promise<L
   const kinds = options.kind === undefined ? KINDS : [options.kind];
 
   for (const kind of kinds) {
+    if ((await readIds(dir, INDEX_FILE[kind])).has(normalized)) {
+      return { id: normalized, found: true, kind, version };
+    }
+  }
+
+  return { id: normalized, found: false, kind: null, version };
+}
+
+export type AnyLookupResult = {
+  id: string;
+  found: boolean;
+  /** Hangi indekste bulundu. Bulunamadıysa null. */
+  kind: AnyKind | null;
+  version: string;
+};
+
+/**
+ * Kimliği BÜTÜN indekslerde arar.
+ *
+ * lookup() blok/item/entity'ye bakar — doğrulamanın ihtiyacı o. Komut
+ * metinlerinde ise minecraft:speed (efekt) veya minecraft:overworld (boyut)
+ * gibi kimlikler de geçiyor; dar arama onlara "yok" derdi ve uydurma hata
+ * üretmek, kaçırmaktan kötü.
+ */
+export async function lookupAny(
+  id: string,
+  options: { version?: string } = {},
+): Promise<AnyLookupResult> {
+  const { dir, version } = await resolveVersion(options.version);
+  const normalized = normalizeId(id);
+
+  for (const kind of ALL_KINDS) {
     if ((await readIds(dir, INDEX_FILE[kind])).has(normalized)) {
       return { id: normalized, found: true, kind, version };
     }

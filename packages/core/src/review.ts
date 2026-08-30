@@ -10,6 +10,7 @@
  * (CLAUDE.md, mimari kural 1).
  */
 import {
+  checkCommandIdentities,
   checkFileNames,
   checkIdentities,
   checkPatterns,
@@ -97,6 +98,34 @@ export async function validateFiles(
   return results;
 }
 
+/**
+ * Paketin kendi tanımladığı kimlikler.
+ *
+ * Komut kontrolü bunu kullanıyor: aynı üretimde "codecraft:ruby" tanımlanıp
+ * komutta kullanılmışsa doğrulanabilir hâle gelir, yoksa uyarı kalır.
+ */
+function declaredIdentifiers(files: readonly PackFile[]): string[] {
+  const ids: string[] = [];
+  for (const file of files) {
+    if (!file.path.endsWith(".json")) continue;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(file.content);
+    } catch {
+      continue; // validateJson bunu zaten raporluyor
+    }
+    if (typeof parsed !== "object" || parsed === null) continue;
+    for (const body of Object.values(parsed as Record<string, unknown>)) {
+      if (typeof body !== "object" || body === null) continue;
+      const description = (body as Record<string, unknown>)["description"];
+      if (typeof description !== "object" || description === null) continue;
+      const id = (description as Record<string, unknown>)["identifier"];
+      if (typeof id === "string") ids.push(id);
+    }
+  }
+  return ids;
+}
+
 export type Review = {
   /** En az bir dosya ajv ya da tsc ile ölçülebildi mi. */
   measured: boolean;
@@ -124,8 +153,23 @@ export async function review(files: readonly PackFile[], version: string): Promi
   findings.push(...(await checkIdentities(files, { version })).findings);
   findings.push(...checkFileNames(files).findings);
   for (const file of files) {
-    if (!isScript(file.path)) continue;
-    findings.push(...checkPatterns(file.content, { path: file.path }).findings);
+    if (isScript(file.path)) {
+      findings.push(...checkPatterns(file.content, { path: file.path }).findings);
+      continue;
+    }
+    // Komut çıktısı answer.txt'ye yazılıyor (output.ts LAYOUT). Sözdizimi
+    // doğrulanmıyor — v1 kapsamı dışında — ama içindeki kimlikler doğrulanıyor.
+    if (file.path.endsWith(".txt")) {
+      findings.push(
+        ...(
+          await checkCommandIdentities(file.content, {
+            version,
+            path: file.path,
+            declared: declaredIdentifiers(files),
+          })
+        ).findings,
+      );
+    }
   }
 
   const measured = results.some((file) => file.validator !== "atlandı");

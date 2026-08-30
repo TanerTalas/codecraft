@@ -20,6 +20,17 @@ const escape = (value: string): string =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
 
+/**
+ * Şema veya tsc gerçekten koştu mu.
+ *
+ * "ölçüldü" ile "doğrulandı" ayrı: komut vakalarında hiçbir dosya
+ * doğrulayıcıdan geçmiyor ama kimlik kontrolü koşuyor. İkisini birleştirmek
+ * raporun "doğrulama:+" demesine ve olmayan bir doğrulamayı iddia etmesine
+ * yol açardı.
+ */
+export const fileValidated = (result: CaseResult): boolean =>
+  result.files.some((file) => file.validator !== "atlandı");
+
 /** Vakanın tek kelimelik durumu — terminal ve HTML aynı kelimeleri kullanır. */
 export function status(result: CaseResult): "geçti" | "düştü" | "ölçülemedi" {
   if (result.failure !== undefined) return "düştü";

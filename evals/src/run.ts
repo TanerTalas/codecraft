@@ -21,7 +21,7 @@ import { GATE_REQUIRED, loadCases } from "./cases.ts";
 import { evaluateCase, failedCase } from "./evaluate.ts";
 import { cachedGenerator, modelGenerator } from "./generators/model.ts";
 import { recordedGenerator } from "./generators/recorded.ts";
-import { status, toHtml, toJson } from "./report.ts";
+import { fileValidated, status, toHtml, toJson } from "./report.ts";
 import type { CaseResult, EvalCase, Generator, RunResult } from "./types.ts";
 
 const OUTPUT_DIR = fileURLToPath(new URL("../output/", import.meta.url));
@@ -74,7 +74,11 @@ function printCase(result: CaseResult): void {
     `  ${MARK[state]}`,
     result.case.id.padEnd(24),
     result.case.kind.padEnd(8),
-    state === "ölçülemedi" ? "doğrulayıcı yok" : `doğrulama:${result.validation ? "+" : "-"}`,
+    state === "ölçülemedi"
+      ? "doğrulayıcı yok"
+      : fileValidated(result)
+        ? `doğrulama:${result.validation ? "+" : "-"}`
+        : "doğrulama:yok",
     state === "ölçülemedi" ? "" : `kontrol:${result.checks.ok ? "+" : "-"}`,
   ];
   console.log(columns.join(" ").trimEnd());

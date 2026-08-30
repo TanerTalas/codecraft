@@ -175,15 +175,15 @@
       "request": "Bana altmış dört tane elmas ver",
       "version": "1.26.40",
       "kind": "command",
-      "expect": { "validation": "pass", "checks": [] },
-      "note": "Komut sözdizimi doğrulayıcısı v1'de yok (CLAUDE.md). Kimlik kontrolü komut metnine de uygulanabilir — Aşama 3 kararı"
+      "expect": { "validation": "pass", "checks": ["commandIdentity"] },
+      "note": "Komut sözdizimi doğrulayıcısı v1'de yok (CLAUDE.md). Aşama 3'te kimlik kontrolü komut metnine uygulandı: uydurulmuş bir minecraft: kimliği yakalanır, sözdizimi hâlâ ölçülmez"
     },
     {
       "id": "command-fill-01",
       "request": "Etrafıma on çarpı on camdan bir kutu yap",
       "version": "1.26.40",
       "kind": "command",
-      "expect": { "validation": "pass", "checks": [] }
+      "expect": { "validation": "pass", "checks": ["commandIdentity"] }
     },
     {
       "id": "python-afk-fish-01",

@@ -18,7 +18,7 @@
  */
 import { basename } from "node:path";
 
-import { lookup, normalizeId } from "@codecraft/knowledge";
+import { lookup, lookupAny, normalizeId } from "@codecraft/knowledge";
 
 /** Üretilen paketin tek dosyası. path paket köküne göreli: "recipes/ruby.json". */
 export type PackFile = {
@@ -367,6 +367,82 @@ export function checkFileNames(files: readonly PackFile[]): CheckResult {
         `feature rule dosya adı "${actual}", identifier "${id}" ` +
         `olduğu için "${expected}.json" olmalı`,
       evidence: `${LIMITS} · B ("does not match filename")`,
+    });
+  }
+
+  return toResult(findings);
+}
+
+// --------------------------------------------------------------------------
+// A · komut metnindeki kimlikler
+// --------------------------------------------------------------------------
+
+/**
+ * Komut metninde geçen namespace'li kimlikler.
+ *
+ * Yalnızca kimlik biçimindeki belirteçler alınıyor; komut SÖZDİZİMİ
+ * doğrulanmıyor. Bedrock komut grameri için makine okunur resmi kaynak yok ve
+ * sözdizimi doğrulayıcısı v1 kapsamı dışında (CLAUDE.md). Bu, var olan kimlik
+ * kontrolünün komut metnine uygulanması — modelin en sık hatasını keser.
+ */
+const COMMAND_ID_RE = /\b[a-z][a-z0-9_]*:[a-z][a-z0-9_]*\b/g;
+
+export type CommandIdentityOptions = {
+  version?: string;
+  /** Üretilen paketin kendi tanımladığı kimlikler. Verilmezse doğrulanamaz. */
+  declared?: readonly string[];
+  /** Bulgulara yazılacak dosya yolu. */
+  path?: string;
+};
+
+/**
+ * Komut metnindeki kimlikler bu sürümde gerçekten var mı.
+ *
+ * minecraft: namespace'i BÜTÜN indekslerde aranıyor (lookupAny): komutlarda
+ * blok/item/entity dışında efekt, boyut, büyü kimlikleri de geçiyor ve dar
+ * arama onlara uydurma "yok" hatası verirdi.
+ *
+ * minecraft: dışı bir kimlik komut metninden doğrulanamaz — hangi paketin
+ * tanımladığı bilinmiyor. `declared` verilmişse ona bakılır, verilmemişse
+ * uyarı üretilir: bilinmeyene "geçti" denmiyor ama hata da uydurulmuyor.
+ */
+export async function checkCommandIdentities(
+  text: string,
+  options: CommandIdentityOptions = {},
+): Promise<CheckResult> {
+  const findings: Finding[] = [];
+  const declared = new Set((options.declared ?? []).map(normalizeId));
+  const seen = new Set<string>();
+
+  for (const match of text.matchAll(COMMAND_ID_RE)) {
+    const id = normalizeId(match[0]);
+    if (seen.has(id)) continue;
+    seen.add(id);
+
+    if (declared.has(id)) continue;
+
+    if (!id.startsWith("minecraft:")) {
+      findings.push({
+        check: "commandIdentity",
+        severity: "warning",
+        ...(options.path === undefined ? {} : { path: options.path }),
+        message:
+          `"${id}" komut metninden doğrulanamadı — minecraft: dışı bir kimliği ` +
+          "hangi paketin tanımladığı komuta bakarak bilinemez",
+        evidence: `${LIMITS} · A`,
+      });
+      continue;
+    }
+
+    const found = await lookupAny(id, { version: options.version });
+    if (found.found) continue;
+
+    findings.push({
+      check: "commandIdentity",
+      severity: "error",
+      ...(options.path === undefined ? {} : { path: options.path }),
+      message: `"${id}" ${found.version} sürümünde yok`,
+      evidence: `${LIMITS} · A (komut metnine uygulanan kimlik kontrolü)`,
     });
   }
 

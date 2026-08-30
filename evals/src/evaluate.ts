@@ -6,6 +6,7 @@
  */
 import { isScript, validateFiles } from "@codecraft/core";
 import {
+  checkCommandIdentities,
   checkFileNames,
   checkIdentities,
   checkPatterns,
@@ -47,6 +48,17 @@ async function runChecks(
       findings.push(...checkFileNames(files).findings);
       continue;
     }
+    if (name === "commandIdentity") {
+      // Komut sözdizimi değil, komut metnindeki kimlikler doğrulanıyor
+      // (CLAUDE.md: komut sözdizimi doğrulayıcısı v1'de yok).
+      for (const file of files) {
+        if (!file.path.endsWith(".txt")) continue;
+        findings.push(
+          ...(await checkCommandIdentities(file.content, { version, path: file.path })).findings,
+        );
+      }
+      continue;
+    }
     if (name.startsWith("pattern:")) {
       const only = [name.slice("pattern:".length)];
       for (const file of files) {
@@ -67,7 +79,11 @@ export async function evaluateCase(
 ): Promise<CaseResult> {
   const files: FileResult[] = await validateFiles(generation.files, testCase.version);
 
-  const measured = files.some((file) => file.validator !== "atlandı");
+  // Bir dosya doğrulayıcıdan geçmediyse bile istenen bir kontrol koştuysa vaka
+  // ölçülmüştür: komut vakaları tam olarak bu durumda — sözdizimi
+  // doğrulanamıyor ama kimlikler doğrulanabiliyor.
+  const measured =
+    files.some((file) => file.validator !== "atlandı") || testCase.expect.checks.length > 0;
   const validation = measured && files.every((file) => file.ok);
   const checks = await runChecks(testCase.expect.checks, generation.files, testCase.version);
 
