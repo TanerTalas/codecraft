@@ -116,3 +116,33 @@ test("her tipin şeması derleniyor", async () => {
     await validateJson({}, type);
   }
 });
+
+/**
+ * Ajv'nin iki mesajı tek başına eyleme dönüştürülemiyordu ve üretim döngüsünü
+ * boşa düşürüyordu: model hatayı okuyup neyi düzelteceğini bilemiyor.
+ *
+ * Ölçüldü (30-08-2026, ore-gen-01): "must NOT have additional properties"
+ * iki denemede de düzeltilemedi. Fazla alanın adı verilseydi düzeltilebilirdi.
+ */
+test("fazla alan hatası alanın adını söylüyor", async () => {
+  const doc = {
+    format_version: "1.13.0",
+    "minecraft:ore_feature": {
+      description: { identifier: "codecraft:ruby_ore_feature" },
+      count: 8,
+      // Bu alan ore_feature'ın üst seviyesinde yok; replace_rules içine ait.
+      places_block: "codecraft:ruby_ore",
+    },
+  };
+
+  const result = await validateJson(JSON.stringify(doc), "BP/features/ruby_ore_feature.json");
+
+  assert.equal(result.ok, false);
+  const error = result.errors.find((entry) => entry.keyword === "additionalProperties");
+  assert.ok(error, "additionalProperties hatası çıkmadı");
+  assert.match(
+    error.message,
+    /places_block/,
+    `mesaj alanın adını taşımıyor: ${error.message}`,
+  );
+});

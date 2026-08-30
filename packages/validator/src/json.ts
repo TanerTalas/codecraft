@@ -95,6 +95,41 @@ function parseError(error: unknown): JsonError {
 }
 
 /**
+ * Ajv'nin mesajını eyleme dönüştürülebilir hâle getirir.
+ *
+ * İki keyword tek başına işe yaramıyordu ve ikisi de üretim döngüsünü boşa
+ * düşürüyordu — model hatayı okuyup neyi düzelteceğini bilemiyor:
+ *
+ *   "must NOT have additional properties"   hangi alan fazla?
+ *   "must be equal to one of the allowed"   hangi değerler geçerli?
+ *
+ * Ölçüldü (30-08-2026, `ore-gen-01`): model `minecraft:ore_feature` içine
+ * `places_block` yazdı, ajv "must NOT have additional properties" dedi, retry
+ * aynı hatayı iki denemede de düzeltemedi. Alan adı verilseydi düzeltilebilirdi.
+ *
+ * Ajv bu bilgiyi zaten `params` içinde taşıyor; yalnızca mesaja geçmiyordu.
+ */
+function describe(error: ErrorObject): string {
+  const base = error.message ?? error.keyword;
+  const params = error.params as Record<string, unknown>;
+
+  if (error.keyword === "additionalProperties") {
+    const name = params["additionalProperty"];
+    if (typeof name === "string") return `${base}: "${name}"`;
+  }
+
+  if (error.keyword === "enum") {
+    const allowed = params["allowedValues"];
+    // Uzun enum listeleri (blok kimlikleri gibi) mesajı okunmaz yapardı.
+    if (Array.isArray(allowed) && allowed.length > 0 && allowed.length <= 12) {
+      return `${base}: ${allowed.map((value) => JSON.stringify(value)).join(", ")}`;
+    }
+  }
+
+  return base;
+}
+
+/**
  * Aynı yol için aynı mesaj birden çok kez çıkabiliyor (anyOf/oneOf dalları).
  * Sıra korunarak tekilleştirilir.
  */
@@ -103,7 +138,7 @@ function toErrors(errors: readonly ErrorObject[]): JsonError[] {
   const out: JsonError[] = [];
   for (const error of errors) {
     const path = error.instancePath;
-    const message = error.message ?? error.keyword;
+    const message = describe(error);
     const key = `${path}\u0000${error.keyword}\u0000${message}`;
     if (seen.has(key)) continue;
     seen.add(key);

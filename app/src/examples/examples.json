@@ -1,6 +1,6 @@
 {
   "$aciklama": "Gerçek model çıktıları, künyeleriyle. evals/src/build-examples.ts üretiyor, elle düzenlenmez. Rozetler bugünkü review() ile hesaplandı.",
-  "builtAt": "2026-08-30T18:31:57.424Z",
+  "builtAt": "2026-08-30T18:40:23.378Z",
   "examples": [
     {
       "id": "chain-mining-01",
@@ -239,17 +239,17 @@
       "version": "1.26.40",
       "provenance": {
         "model": "google/gemini-3.6-flash",
-        "generatedAt": "2026-08-30T18:30:01.811Z",
+        "generatedAt": "2026-08-30T18:37:59.562Z",
         "attempts": [
           {
             "number": 1,
             "ok": false,
-            "report": "BP/features/ruby_ore_feature.json (json, behavior/features/features):\n  - /minecraft:ore_feature :: must NOT have additional properties\nBP/items/ruby.json [asset]:\n  - doku anahtarı \"redstone\" hiçbir vanilla atlasında yok. Kaynak paketi üretilmiyor (v1 kapsamı behavior pack), o yüzden var olan bir vanilla anahtarı kullanılmalı. Yakın anahtarlar: redstone_dust\n    kanıt: docs/VALIDATION-LIMITS.md · C (\"Missing referenced asset\")"
+            "report": "BP/features/ruby_ore_feature.json (json, behavior/features/features):\n  - /minecraft:ore_feature :: must NOT have additional properties\nBP/feature_rules/ruby_ore_feature.json (json, behavior/feature_rules/feature_rules):\n  - / :: must have required property 'minecraft:feature_rules'\n  - / :: must NOT have additional properties"
           },
           {
             "number": 2,
             "ok": false,
-            "report": "BP/items/ruby.json (json, behavior/items/items):\n  - /minecraft:item/components/minecraft:icon :: must be string\n  - /minecraft:item/components/minecraft:icon :: must have required property 'textures'\n  - /minecraft:item/components/minecraft:icon :: must NOT have additional properties\n  - /minecraft:item/components/minecraft:icon :: must match exactly one schema in oneOf\nBP/features/ruby_ore_feature.json (json, behavior/features/features):\n  - /minecraft:ore_feature :: must NOT have additional properties"
+            "report": "BP/features/ruby_ore_feature.json (json, behavior/features/features):\n  - /minecraft:ore_feature :: must NOT have additional properties"
           }
         ]
       },
@@ -261,19 +261,19 @@
         },
         {
           "path": "BP/feature_rules/ruby_ore_feature.json",
-          "content": "{\n  \"format_version\": \"1.13.0\",\n  \"minecraft:feature_rules\": {\n    \"description\": {\n      \"identifier\": \"codecraft:ruby_ore_feature\",\n      \"places_feature\": \"codecraft:ruby_ore_feature\"\n    },\n    \"conditions\": {\n      \"placement_pass\": \"underground_pass\",\n      \"minecraft:biome_filter\": []\n    },\n    \"distribution\": {\n      \"iterations\": 8,\n      \"coordinate_eval_order\": \"zyx\",\n      \"x\": {\n        \"distribution\": \"uniform\",\n        \"extent\": [0, 16]\n      },\n      \"y\": {\n        \"distribution\": \"uniform\",\n        \"extent\": [-64, 32]\n      },\n      \"z\": {\n        \"distribution\": \"uniform\",\n        \"extent\": [0, 16]\n      }\n    }\n  }\n}"
+          "content": "{\n  \"format_version\": \"1.13.0\",\n  \"minecraft:feature_rules\": {\n    \"description\": {\n      \"identifier\": \"codecraft:ruby_ore_feature\",\n      \"places_feature\": \"codecraft:ruby_ore_feature\"\n    },\n    \"conditions\": {\n      \"placement_pass\": \"underground_pass\",\n      \"minecraft:biome_filter\": []\n    },\n    \"distribution\": {\n      \"iterations\": 10,\n      \"x\": {\n        \"distribution\": \"uniform\",\n        \"extent\": [0, 16]\n      },\n      \"y\": {\n        \"distribution\": \"uniform\",\n        \"extent\": [-64, 64]\n      },\n      \"z\": {\n        \"distribution\": \"uniform\",\n        \"extent\": [0, 16]\n      }\n    }\n  }\n}"
         },
         {
           "path": "BP/features/ruby_ore_feature.json",
-          "content": "{\n  \"format_version\": \"1.13.0\",\n  \"minecraft:ore_feature\": {\n    \"description\": {\n      \"identifier\": \"codecraft:ruby_ore_feature\"\n    },\n    \"count\": 8,\n    \"places_block\": \"codecraft:ruby_ore\",\n    \"may_replace\": [\n      {\n        \"name\": \"minecraft:stone\"\n      },\n      {\n        \"name\": \"minecraft:deepslate\"\n      }\n    ]\n  }\n}"
+          "content": "{\n  \"format_version\": \"1.13.0\",\n  \"minecraft:ore_feature\": {\n    \"description\": {\n      \"identifier\": \"codecraft:ruby_ore_feature\"\n    },\n    \"count\": 8,\n    \"places_block\": \"codecraft:ruby_ore\",\n    \"replace_rules\": [\n      {\n        \"places_block\": \"codecraft:ruby_ore\",\n        \"replace\": [\n          {\n            \"name\": \"minecraft:stone\"\n          },\n          {\n            \"name\": \"minecraft:deepslate\"\n          }\n        ]\n      }\n    ]\n  }\n}"
         },
         {
           "path": "BP/items/ruby.json",
-          "content": "{\n  \"format_version\": \"1.21.100\",\n  \"minecraft:item\": {\n    \"description\": {\n      \"identifier\": \"codecraft:ruby\"\n    },\n    \"components\": {\n      \"minecraft:icon\": {\n        \"texture\": \"redstone_dust\"\n      }\n    }\n  }\n}"
+          "content": "{\n  \"format_version\": \"1.21.100\",\n  \"minecraft:item\": {\n    \"description\": {\n      \"identifier\": \"codecraft:ruby\",\n      \"menu_category\": {\n        \"category\": \"nature\"\n      }\n    },\n    \"components\": {\n      \"minecraft:icon\": \"emerald\"\n    }\n  }\n}"
         },
         {
           "path": "BP/manifest.json",
-          "content": "{\n  \"format_version\": 2,\n  \"header\": {\n    \"name\": \"Ruby Ore Pack\",\n    \"description\": \"Adds ruby ore generation underground.\",\n    \"uuid\": \"d3b07384-2193-4e81-a712-9c1234567801\",\n    \"version\": [1, 0, 0],\n    \"min_engine_version\": [1, 26, 40]\n  },\n  \"modules\": [\n    {\n      \"type\": \"data\",\n      \"uuid\": \"d3b07384-2193-4e81-b813-9c1234567802\",\n      \"version\": [1, 0, 0]\n    }\n  ]\n}"
+          "content": "{\n  \"format_version\": 2,\n  \"header\": {\n    \"name\": \"Yakut Cevheri Paketi\",\n    \"description\": \"Yakut cevherinin yer altında doğal olarak oluşmasını sağlar.\",\n    \"uuid\": \"4a2f8d1e-3b5c-4e8f-9a1b-2c3d4e5f6a7b\",\n    \"version\": [1, 0, 0],\n    \"min_engine_version\": [1, 26, 40]\n  },\n  \"modules\": [\n    {\n      \"type\": \"data\",\n      \"uuid\": \"8b3c2d1e-4f5a-4b6c-8d9e-0f1a2b3c4d5e\",\n      \"version\": [1, 0, 0]\n    }\n  ]\n}"
         }
       ],
       "review": {
@@ -293,7 +293,7 @@
             "ok": false,
             "detail": "behavior/features/features",
             "errors": [
-              "/minecraft:ore_feature :: must NOT have additional properties"
+              "/minecraft:ore_feature :: must NOT have additional properties: \"places_block\""
             ]
           },
           {
@@ -306,14 +306,9 @@
           {
             "path": "BP/items/ruby.json",
             "validator": "json",
-            "ok": false,
+            "ok": true,
             "detail": "behavior/items/items",
-            "errors": [
-              "/minecraft:item/components/minecraft:icon :: must be string",
-              "/minecraft:item/components/minecraft:icon :: must have required property 'textures'",
-              "/minecraft:item/components/minecraft:icon :: must NOT have additional properties",
-              "/minecraft:item/components/minecraft:icon :: must match exactly one schema in oneOf"
-            ]
+            "errors": []
           },
           {
             "path": "BP/manifest.json",
@@ -325,7 +320,7 @@
         ],
         "findings": [],
         "ok": false,
-        "report": "BP/features/ruby_ore_feature.json (json, behavior/features/features):\n  - /minecraft:ore_feature :: must NOT have additional properties\nBP/items/ruby.json (json, behavior/items/items):\n  - /minecraft:item/components/minecraft:icon :: must be string\n  - /minecraft:item/components/minecraft:icon :: must have required property 'textures'\n  - /minecraft:item/components/minecraft:icon :: must NOT have additional properties\n  - /minecraft:item/components/minecraft:icon :: must match exactly one schema in oneOf"
+        "report": "BP/features/ruby_ore_feature.json (json, behavior/features/features):\n  - /minecraft:ore_feature :: must NOT have additional properties: \"places_block\""
       },
       "feasibility": null
     },
