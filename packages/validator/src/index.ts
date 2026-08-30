@@ -13,3 +13,14 @@ export { validateScript } from "./script.ts";
 export type { ScriptChannel, ScriptDiagnostic, ScriptOptions, ScriptResult } from "./script.ts";
 export { listTypes, resolveType } from "./schema-map.ts";
 export type { ResolvedType, SchemaMapEntry } from "./schema-map.ts";
+
+// Asama 2.5 — semanin ve tsc'nin yapisal olarak yakalayamadigi kontroller.
+// Olcum ve gerekce: docs/VALIDATION-LIMITS.md
+export { checkFileNames, checkIdentities, checkPatterns, patternNames } from "./checks.ts";
+export type {
+  CheckResult,
+  Finding,
+  IdentityOptions,
+  PackFile,
+  PatternOptions,
+} from "./checks.ts";
