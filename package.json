@@ -23,7 +23,8 @@
     "pipeline:notes": "node pipeline/src/release-notes.ts",
     "pipeline:freshness": "node pipeline/src/check-freshness.ts",
     "data:version": "node pipeline/src/latest-version.ts",
-    "validator:compare": "node packages/validator/scripts/compare-schema-sources.ts"
+    "validator:compare": "node packages/validator/scripts/compare-schema-sources.ts",
+    "fixtures:pack": "node packages/validator/scripts/build-test-pack.ts"
   },
   "devDependencies": {
     "@types/node": "^26.4.0",
