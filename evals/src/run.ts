@@ -5,8 +5,13 @@
  * geçirir, tablo basar ve evals/output/ altına HTML + JSON rapor yazar.
  *
  *   npm run eval                       kayıtlı çıktılarla koşar
- *   npm run eval -- --case=chain-mining-01   tek vaka
- *   npm run eval -- --gate             kapı sağlanmazsa exit 1
+ *   npm run eval -- --case=a,b        yalnızca bu vakalar (virgülle liste)
+ *   npm run eval -- --list=core       ek listeyi atla
+ *   npm run eval -- --reuse           parmak izi tutan vakaları önbellekten oynat
+ *   npm run eval -- --gate            kapı sağlanmazsa exit 1
+ *
+ * Kota dar olduğunda yordam: önce eksik vakalar `--case=` ile tek tek
+ * üretilip önbelleğe alınır, sonra tam kapı koşusu hepsini bedava oynatır.
  *
  * Varsayılan çıkış kodu 0: eval bir çalışma yüzeyi, blokaj değil. Kapıyı
  * ölçmek isteyen --gate verir.
@@ -47,7 +52,16 @@ type ListName = (typeof LISTS)[number];
 type Options = {
   generator: string;
   gate: boolean;
-  only: string | null;
+  /**
+   * Yalnızca bu vakalar koşulur. Virgülle ayrılmış liste kabul eder.
+   *
+   * Var olma sebebi ölçüm: günlük kota 20 istek ve çekirdek liste 20 vaka,
+   * yani kota listenin sonuna varmadan bitiyor. Aynı dört vaka dört koşu
+   * boyunca hiç ölçülemedi — sabit sıra yüzünden liste sonu sistematik olarak
+   * aç kalıyor. Eksik vakalar tek tek üretilip önbelleğe alınabilsin diye
+   * liste kabul ediyor; sonrasında tam kapı koşusu hepsini bedava oynatır.
+   */
+  only: string[] | null;
   reuse: boolean;
   list: ListName;
 };
@@ -75,7 +89,13 @@ function parseArgs(argv: readonly string[]): Options {
       }
       options.list = value as ListName;
     } else if (arg.startsWith("--case=")) {
-      options.only = arg.slice("--case=".length);
+      const ids = arg
+        .slice("--case=".length)
+        .split(",")
+        .map((id) => id.trim())
+        .filter((id) => id !== "");
+      if (ids.length === 0) throw new Error("--case= boş verildi");
+      options.only = ids;
     } else {
       // Bilinmeyen bayrak sessizce yok sayılmaz: --gate yerine --gates yazan
       // biri kapının koştuğunu sanırdı.
@@ -151,7 +171,7 @@ async function main(): Promise<void> {
 
   const cases = await loadCases();
   const pick = (list: EvalCase[]): EvalCase[] =>
-    options.only === null ? list : list.filter((testCase) => testCase.id === options.only);
+    options.only === null ? list : list.filter((testCase) => options.only?.includes(testCase.id));
 
   // Ek liste kapıya sayılmıyor ama model üreticisinde istek harcıyor. Ücretsiz
   // kademede günlük kota model başına 20 istek, yani 4 ek vaka bütçenin
@@ -159,7 +179,7 @@ async function main(): Promise<void> {
   const core = options.list === "extra" ? [] : pick(cases.core);
   const extra = options.list === "core" ? [] : pick(cases.extra);
   if (core.length === 0 && extra.length === 0) {
-    throw new Error(`Vaka bulunamadı: "${options.only}"`);
+    throw new Error(`Vaka bulunamadı: "${options.only?.join(", ")}"`);
   }
 
   console.log(`üretici: ${generator.name}`);
