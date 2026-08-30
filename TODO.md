@@ -400,16 +400,17 @@ döngüsüne** bağlamak — ölçmek değil, düzeltmek.
 - [x] **Bilinen kalıplar prompt'a giriyor.** `checks.ts`'deki `Pattern` tipine
   `guidance` alanı eklendi ve `patternGuide()` ile dışa açıldı. Prompt aynı
   tablodan besleniyor, ikinci bir liste tutulmuyor
-- [ ] **Asset referansı.** `minecraft:icon` kaynak paketi olmayınca içerik
-  hatası veriyor. **Karar verildi (30-08-2026): vanilla doku indeksi.** Kaynak
-  paketi üretilmiyor, v1 kapsamı değişmiyor; model yalnızca var olan bir
-  vanilla doku anahtarına işaret edebiliyor ve `checkAssets` bunu ölçüyor.
-  Uygulaması Aşama 4'te
-  - Kaynak doğrulandı (GitHub contents API, `Mojang/bedrock-samples@main`):
-    `resource_pack/textures/item_texture.json` ve `terrain_texture.json` var,
-    yani indeks makine okunur bir kaynaktan türetilebiliyor
-  - Kararın dürüst yarısı atlanmıyor: vanilla anahtarı içerik hatasını kaldırır
-    ama **özel görsel vermez**. Arayüz bunu açıkça söyleyecek
+- [x] **Asset referansı — kapatıldı (30-08-2026).** Karar: kaynak paketi
+  üretilmiyor, model yalnızca var olan bir vanilla doku anahtarına işaret
+  edebiliyor. v1 kapsamı değişmedi. Veri `pipeline/src/textures.ts` →
+  `data/<sürüm>/textures.json` (498 item, 1300 terrain), ölçüm `checkAssets`,
+  anlatım prompt. Ayrıntı ve kanıt `docs/VALIDATION-LIMITS.md` C
+  - Eski çıktılar kontrolden **düştü** (`"ruby"`, `"custom_ruby"`) — eval
+    onları "geçti" sayıyordu, yani gerçek bir kör nokta kapandı
+  - Kural prompt'a girdikten sonra aynı iki vaka gerçek modelle **geçti**:
+    ikon `"emerald"`, blok yüzeyi `"emerald_ore"`
+  - Prompt'a "anahtar = namespace'siz kimlik" kuralı **yazılmadı**, çünkü
+    ölçüldü ve yanlış: item'ların %13'ü, blokların %40'ı tutuyor
 
 **Bitiş kriteri:** CLI uçtan uca çalışıyor. Prompt burada onlarca istekle iyileştirilir — tarayıcıda yapmak çok yavaş.
 

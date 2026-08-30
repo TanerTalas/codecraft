@@ -87,7 +87,46 @@ içerik hatası üretir. v1 kapsamı behavior pack (`CLAUDE.md`), o yüzden ya
 minimum bir kaynak paketi de üretilmeli ya da kullanıcıya bunun eksik kalacağı
 açıkça söylenmeli.
 
-→ Aşama 4'te kullanıcıya görünür bir not, ya da kapsam kararı.
+### Karar ve kapanış (30-08-2026)
+
+**Kaynak paketi üretilmiyor.** Bunun yerine model yalnızca vanilla'da **zaten
+var olan** bir doku anahtarına işaret edebiliyor. v1 kapsamı değişmedi.
+
+Kaynak makine okunur ve doğrulandı — `Mojang/bedrock-samples@main` içinde
+`resource_pack/textures/item_texture.json` (498 anahtar) ve
+`terrain_texture.json` (1300 anahtar) var. Diğer dört sınıfla aynı düzen: tek
+ölçüm üç yere birden bağlanıyor.
+
+| Nerede | Ne yapıyor |
+|---|---|
+| `pipeline/src/textures.ts` | `data/<sürüm>/textures.json` üretiyor |
+| `packages/validator/src/checks.ts` → `checkAssets` | ölçüyor |
+| `packages/core/src/prompt.ts` | önceden anlatıyor |
+
+**Prompt'a yazılmayan bir kural var ve sebebi ölçüm.** İlk yazılacak cümle
+"anahtar, kimliğin namespace'siz hâlidir" idi. Veriye bakıldı ve **yanlış**
+çıktı: item kimliklerinin yalnızca **%13'ünün**, blok kimliklerinin **%40'ının**
+atlasta aynı adla karşılığı var (`minecraft:acacia_boat` item atlasında yok).
+O cümle prompt'a girseydi model kural gereği uyduracaktı. Yerine `checkAssets`
+hata mesajında gerçek yakın anahtarları öneriyor, retry onunla yakınsıyor.
+
+**Yanlış atlas hata değil uyarı.** Anahtar gerçekten var, yalnızca beklenen
+atlasta değil; ona "yok" demek uydurma hata olurdu.
+
+**Ölçüldü, iki aşamada:**
+
+1. Eski model çıktıları (kural prompt'ta yokken üretilmiş) yeni kontrolden
+   **düştü** — `custom-item-01` `"ruby"`, `custom-block-01` `"custom_ruby"`
+   yazmıştı. İkisi de oyunda içerik hatası verirdi ve eval bunu "geçti"
+   sayıyordu.
+2. Kural prompt'a girdikten sonra aynı iki vaka gerçek modele gönderildi
+   (`gemini-3.6-flash`) ve **ikisi de geçti**: model item ikonuna `"emerald"`,
+   blok yüzeyine `"emerald_ore"` yazdı — ikisi de vanilla atlasında var.
+
+**Bedeli açıkça söyleniyor, gizlenmiyor:** içerik hatası kalkıyor ama özel
+görsel elde edilmiyor. "Yakut" item'ı zümrüt dokusuyla görünüyor. Özel doku
+kullanıcının kendi kaynak paketini yazmasını gerektirir ve arayüz bunu
+çıktının yanında söyleyecek.
 
 ## D. Geçerli ama amaçlanmayan — en tehlikeli sınıf
 
@@ -177,7 +216,7 @@ arıyor, bulamıyor, sebebini bilmiyor.
 |---|---|---|---|
 | A · kimlik referansı | Hayır, ama çözülebilir | `checkIdentities`, `checkCommandIdentities` | **Aşama 3'te bağlandı** — `review()` koşuyor, bulgular retry'ın hata metnine giriyor |
 | B · dosya adı kuralı | **Yapısal olarak hayır** | `checkFileNames` | **Aşama 3'te düzeltiliyor** — `normalize()` dosya adını identifier'dan türetiyor |
-| C · asset referansı | Hayır | — | Aşama 4 — kapsam kararı veya uyarı |
+| C · asset referansı | Hayır | `checkAssets` | **Aşama 4'te kapatıldı** — vanilla doku indeksi; `review()` koşuyor, prompt anlatıyor |
 | D · geçerli ama yanlış | **Yapısal olarak hayır** | `checkPatterns` | **Aşama 3'te prompt'a girdi** — `patternGuide()` aynı tablodan besliyor |
 | E · yüklenmeyen manifest | Hayır — eski tip listede | `checkManifest` | **Aşama 3'te kapatıldı** — `normalize()` düzeltiyor, prompt anlatıyor |
 
