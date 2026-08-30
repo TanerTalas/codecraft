@@ -116,6 +116,7 @@ Atlanan bir adım varsa açıkça yazılır. Yarım iş, yanlış tamamlanmış 
 
 - Veri kaynakları ve lisansları: `docs/SOURCES.md`
 - Aşamalar ve geçiş kapısı: `docs/ROADMAP.md`
+- Doğrulamanın yakalayamadıkları: `docs/VALIDATION-LIMITS.md`
 
 ## Git kuralları
 

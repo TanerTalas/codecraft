@@ -118,9 +118,20 @@ LLM yok, arayüz yok. `packages/validator` saf fonksiyonlardan oluşur (mimari k
 > namespace'siz blok identifier'ı, `result`'ı olmayan shaped tarif. Şema
 > güncellenip yakalamaya başlarsa testler kırmızıya döner.
 >
-> **Henüz koşmamış yol:** üretilen bir paketin gerçekten Bedrock'ta yüklenmesi.
-> Şemanın kabul ettiğini oyunun da kabul ettiğini gösteren tek test bu; bitiş
-> kriteri değil ama bir fixture yanlış yazılmışsa orada görünür.
+> **Gerçek oyun testi koşuldu (30-08-2026, Bedrock 1.26.45).** Fixture'lardan
+> üretilen paket oyuna yüklendi: manifest, blok, item, entity, dialogue,
+> animasyon denetleyicisi ve spawn kuralları temiz geçti; `/give`, `/setblock`,
+> `/summon` çalıştı; script'in olay abonelikleri tetiklendi.
+>
+> Ama doğrulamadan geçip oyunda patlayan **dört sınıf** bulundu. Ayrıntı ve
+> kanıt: `docs/VALIDATION-LIMITS.md`. Kısaca: kimlik referansları (şema hedefin
+> var olduğuna bakmıyor), dosya adı ↔ içerik kuralları (hiçbir şema yakalayamaz),
+> asset referansları (behavior pack tek başına yetmiyor), ve geçerli ama
+> amaçlanmayan kod (`worldLoad`'da `sendMessage` hatasız çalışıp kimseye
+> ulaşmıyor).
+>
+> Sonuç: 20/20 geçmek "oyunda çalışıyor" demek değil. Aşama 2 kendi kapsamında
+> tamam, fark Aşama 2.5 ve 3'ün konusu.
 
 Bu aşama LLM'den önce geliyor: validator çalışmazsa ürün de çalışmaz. En riskli parça en ucuz şekilde test edilmiş olur.
 
@@ -143,6 +154,9 @@ Aşama 3 boyunca ana çalışma yüzeyi burası olacak.
 - [ ] `npm run eval` runner — 20 isteği modele gönderir, çıktıları validator'dan geçirir, tablo basar
 - [ ] HTML rapor. Tasarım yok, sadece tablo: istek / üretilen çıktı / doğrulama sonucu / hata mesajı
 - [ ] Rapor `evals/output/` altına yazılır, git'e girmez (model cevapları ve istek metinleri içerir)
+- [ ] **"Geçerli ama amaçlanmayan" vakaları da olmalı.** Doğrulamadan geçen ama
+  oyunda istediğini yapmayan çıktı sınıfı ölçüldü (`docs/VALIDATION-LIMITS.md`).
+  Eval setinde karşılığı yoksa "validator geçer" ölçütü yanıltıcı olur
 
 **Bitiş kriteri:** `npm run eval` koşuyor ve okunabilir bir tablo basıyor.
 
@@ -172,6 +186,25 @@ Doğrulamadan **önce** çalışır, LLM gerektirmez, kalıp eşlemesiyle yapıl
 
 - [ ] Platformun izin vermediği kategorileri tanı: girdi simülasyonu, dosya sistemi erişimi, ağ isteği
 - [ ] Yakalandığında doğrudan alternatif öner (örn. "fareye basılı tutmuş gibi kazsın" → zincirleme kazma veya dışarıdan çalışan script)
+
+### Doğrulamanın yakalayamadıkları (gerçek oyun testinden)
+
+Ölçüm ve kanıt: `docs/VALIDATION-LIMITS.md`. Dördü de şemadan ve `tsc`'den
+geçip oyunda hata üretti.
+
+- [ ] **Kimlik referansı kontrolü.** Şema `result.item` biçimini doğruluyor ama
+  işaret ettiği item'ın var olduğuna bakmıyor. `lookup` vanilla kimlikleri
+  zaten çözüyor; paketin kendi tanımladığı kimlikler için de aynı kontrol kurulmalı
+- [ ] **Dosya adı içerikten türetilmeli.** Oyun feature rule dosya adının
+  identifier'ın namespace'siz hâline eşit olmasını şart koşuyor. Şema yapısal
+  olarak göremez — üretim tarafının işi
+- [ ] **Bilinen kalıplar prompt'a girmeli.** `worldLoad`'da `world.sendMessage`
+  hatasız çalışıp kimseye ulaşmıyor; karşılama mesajı `playerSpawn` ile
+  yazılmalı. "Geçerli ama amaçlanmayan" sınıfı ne derleyici ne şema tarafından
+  yakalanabilir
+- [ ] **Asset referansı kararı.** `minecraft:icon` kaynak paketi olmayınca
+  içerik hatası veriyor. Ya minimum kaynak paketi de üretilir ya kullanıcıya
+  açıkça söylenir (Aşama 4)
 
 **Bitiş kriteri:** CLI uçtan uca çalışıyor. Prompt burada onlarca istekle iyileştirilir — tarayıcıda yapmak çok yavaş.
 

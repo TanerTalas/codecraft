@@ -90,7 +90,12 @@ const FILES: { fixture: string; target: string; type: string }[] = [
   { fixture: "dialogue-merchant.json", target: "dialogue/merchant.json", type: "behavior/dialogue" },
   {
     fixture: "feature-rules-ruby-ore.json",
-    target: "feature_rules/ruby_ore.json",
+    // Dosya adı identifier'ın namespace'siz hâliyle aynı olmak zorunda. Oyun
+    // 30-08-2026'daki ilk koşuda reddetti: "Feature rule identifier
+    // 'ruby_ore_feature' does not match filename 'ruby_ore'". Hiçbir JSON şeması
+    // bunu yakalayamaz — kural içerikle dosya adı arasında, şema ise sadece
+    // içeriği görüyor.
+    target: "feature_rules/ruby_ore_feature.json",
     type: "behavior/feature_rules",
   },
 ];
@@ -102,12 +107,29 @@ const ENTRY = "scripts/main.js";
 /**
  * Oyunda çalıştığı görülebilsin diye sohbete yazar. Önce validateScript'ten
  * geçer: API yanlışsa oyunda değil, burada patlar.
+ *
+ * worldLoad üç kanaldan birden raporluyor, çünkü ilk koşuda (30-08-2026)
+ * playerBreakBlock mesajları sohbete düştü ama worldLoad mesajı hiç görünmedi
+ * ve içerik günlüğünde de hata yoktu. İki ihtimal var ve tipler ayırt etmiyor:
+ * olay hiç tetiklenmedi, ya da tetiklendi ama o anda mesajı alacak oyuncu yoktu.
+ *
+ *   console.warn  -> içerik günlüğüne yazar, oyuncuya ihtiyaç duymaz.
+ *                    Satır günlükte varsa olay tetiklenmiş demektir.
+ *   sendMessage   -> ilk koşudaki davranışın aynısı, karşılaştırma için duruyor.
+ *   playerSpawn   -> oyuncu geldikten sonra yazar, her hâlükârda görünmeli.
  */
 const SCRIPT = [
   'import { world } from "@minecraft/server";',
   "",
   "world.afterEvents.worldLoad.subscribe(() => {",
-  '  world.sendMessage("CodeCraft test paketi yüklendi");',
+  '  console.warn("[codecraft] worldLoad tetiklendi");',
+  '  world.sendMessage("CodeCraft test paketi yüklendi (worldLoad)");',
+  "});",
+  "",
+  "world.afterEvents.playerSpawn.subscribe((event) => {",
+  "  if (!event.initialSpawn) return;",
+  '  console.warn("[codecraft] playerSpawn tetiklendi");',
+  '  event.player.sendMessage("CodeCraft test paketi yüklendi (playerSpawn)");',
   "});",
   "",
   "world.afterEvents.playerBreakBlock.subscribe((event) => {",
