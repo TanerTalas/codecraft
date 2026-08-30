@@ -289,39 +289,42 @@ iki mühendislik sonucu var ve ikisi de koda girdi:
   `min_engine_version` için doğru, `format_version` için değil. Niyeti
   "pazarlama numarasını yazma" idi ama kural gibi okunuyor ve prompt'a öyle
   geçti.
-- [ ] **Güncel prompt'un kapı ölçümü yarım: 3 vaka eksik, 3 istek yeter.**
+- [x] **`format_version` düzeltmesi ÖLÇÜLDÜ — işe yarıyor.**
+  `spawn-rule-01` beş koşudur kotaya takılıyordu, `--case=` liste desteği
+  eklenince doğrudan hedeflenip ölçüldü ve **geçti**.
 
-  ```
-  npm run eval -- --generator=model --reuse --case=spawn-rule-01,recipe-vanilla-01,ore-gen-01
-  npm run eval -- --generator=model --gate --reuse --list=core
-  ```
+- [ ] **Güncel prompt 17/20 — kapı bir vaka eksik.**
 
-  İlk komut eksik üçünü üretip önbelleğe alır (3 istek), ikincisi 20 vakayı
-  bedava oynatıp kapıyı hesaplar.
-
-  **Durum:**
-
-  | | Kayıtlı kapı (1. koşu) | Güncel prompt |
+  | | Kayıtlı kapı (1. koşu) | Güncel prompt (tam ölçüm) |
   |---|---|---|
-  | Prompt | `format_version` düzeltmesinden ÖNCE | düzeltilmiş + sıkıştırılmış |
-  | Ölçülen | 20 | 17 |
-  | Geçen | **19** | 15 |
-  | Ölçülemeyen | 0 | 3 |
+  | Prompt | düzeltmeden önce | düzeltilmiş + sıkıştırılmış |
+  | Ölçülen | 20 | 20 |
+  | Geçen | **19** | **17** |
+  | Düşen | `spawn-rule-01` | `no-fall-damage-01`, `kill-counter-01`, `ore-gen-01` |
 
-  Eksik üçü geçerse 18/20 — **tam sınırda kapı açılır**. İkisi geçerse 17/20,
-  kapalı kalır. Yani sonuç şu an gerçekten belirsiz ve tahmin edilmeyecek.
+  **İki sayıyı doğrudan karşılaştırmak yanıltıcı olur.** Ölçülen koşuların
+  geçme oranları %79, %88, %88, %95 arasında gezindi ve vaka başına tek örnek
+  var; 17 ile 19 arasındaki fark bu bandın içinde. Düzeltmenin skoru düşürdüğü
+  **kanıtlanmadı**, sadece bu koşuda daha düşük çıktı.
 
-  Güncel prompt'ta ısrarcı iki düşüş var:
-  - `no-fall-damage-01` — iki koşuda aynı `damage_sensor` şekil hatası
-  - `kill-counter-01` — `worldInitialize` diye olay yok (bir koşuda)
+  Düşen üç vaka ve durumları:
 
-  **Kayıtlı 19/20 sonucu geçerliliğini koruyor**: o ölçüm bir önceki prompt'la
-  yapıldı ve o hâliyle doğru. Geçiş kapısı açılmış durumda; buradaki iş
-  düzeltmenin bedelini ölçmek, kapıyı yeniden açmak değil.
+  - `kill-counter-01` — `worldInitialize` kaldırılmış bir 1.x olayı; 2.x'te
+    `worldLoad`. Prompt'ta zaten `world.events` ve `runCommandAsync` listeli,
+    bu üçüncüsü. **Tek satırlık, kanıtlı düzeltme.**
+  - `ore-gen-01` — `minecraft:ore_feature` içinde hem üst düzey
+    `places_block` hem `replace_rules` var, şema ikisini kabul etmiyor.
+    Şema ayrıntısı; tek satırla anlatılmıyor.
+  - `no-fall-damage-01` — `damage_sensor` şekli, **iki ölçümde de aynı hata**.
+    Israrcı olduğu için gerçek bir bilgi boşluğu sayılabilir.
 
-  **Yöntem kusuru giderildi:** `--case=` artık virgüllü liste alıyor. Dört koşu
-  boyunca liste sonundaki aynı vakalar aç kalmıştı; artık kıt istekler
-  doğrudan eksik vakalara yönlendirilebiliyor.
+  **Kayıtlı 19/20 geçerliliğini koruyor** ve geçiş kapısı açık kalıyor: o ölçüm
+  bir önceki prompt'la yapıldı, o hâliyle doğru. Buradaki iş kapıyı yeniden
+  açmak değil, prompt'u iyileştirmek.
+
+  Her prompt değişikliği parmak izini düşürüyor ve tam yeniden ölçüm 20 istek
+  gerektiriyor — kota dar olduğu için değişiklikler tek tek değil, toplu
+  yapılmalı.
 - [ ] Prompt iyileştirme turları — kapı ölçüldükten sonra. Her tur önbelleği
   geçersiz kılar, yani her turun kendi kota bütçesi var
 
