@@ -271,81 +271,24 @@ iki mühendislik sonucu var ve ikisi de koda girdi:
 
 ### Kalan iş
 
-- [ ] **Kapıyı gerçek modelle ölç.** İlk koşu yapıldı, **kapı henüz geçilmedi**:
-  20 vakanın 16'sı ölçülebildi, 4'ü günlük kotaya takıldı.
+- [x] **Kapıyı gerçek modelle ölç — yapıldı, 19/20.** Ayrıntı ⛔ GEÇİŞ KAPISI
+  bölümünde.
 
-  > **İlk gerçek kapı koşusu — 30-08-2026, `gemini-3.6-flash`:**
-  >
-  > | | |
-  > |---|---|
-  > | Modele ulaşan vaka | 16 |
-  > | Geçen | **16** |
-  > | Kotaya takılan | 4 |
-  > | Kapı ölçütü | 18/20 |
-  >
-  > **Ölçülen her vaka geçti.** Kalan dördü `recipe-vanilla-01`,
-  > `custom-entity-01`, `spawn-rule-01`, `ore-gen-01` — hiçbiri modele
-  > gitmedi, "model düştü" diye sayılmıyor.
-  >
-  > Bu skor kapıyı geçmiş SAYILMAZ. 16 < 18 ve dört vaka ölçülmedi. Kapı,
-  > yirmisi de ölçüldüğünde açılır ya da açılmaz.
-  >
-  > Karşılaştırma için: prova koşusu (`gemini-3.5-flash`, eski prompt ve
-  > validator) 16 ölçülen vakanın 15'ini geçiriyordu. Aradaki farkı bugün
-  > ölçümle yapılan üç prompt düzeltmesi ve validator'ın JavaScript moduna
-  > geçmesi kapattı.
+- [ ] **`format_version` kuralı yanlış — kapı koşusunun bulduğu.**
+  Prompt "format_version her zaman 1.26.xx" diyor ve model buna uydu; ama
+  `format_version` OYUN SÜRÜMÜ DEĞİL, o dosya tipinin kendi şema sürümü.
+  Spawn rules `1.8.0`/`1.10.0`/`1.12.0` kabul ediyor, feature rules
+  `1.13.0`, manifest `2`. Her tip farklı.
 
-  ```
-  npm run eval -- --generator=model --gate --reuse --list=core
-  ```
+  Kaynak elimizde: derlenmiş Blockception şemaları her tip için izin verilen
+  `format_version` enum'unu tutuyor. Bağlam katmanı bunu okuyup prompt'a
+  tipe özel yazabilir — tahminle değil, veriyle.
 
-  **Kota tavanı — AI Studio kota panosundan okundu (30-08-2026):** ücretsiz
-  kademe model başına **dakikada 5**, **günde 20** istek ve dakikada 250K token
-  veriyor. 24 vakalık kapı retry'larla 24–48 istek demek, yani tek günde
-  bitmiyor. Günlük kota Pasifik saatiyle gece yarısı sıfırlanıyor.
-
-  Dakikalık sınır önce **yanlış okundu**: API hata metnindeki `limit: 20`
-  günlük sınır (`GenerateRequestsPerDayPerProjectPerModel-FreeTier`), dakikalık
-  değil. `requestDelayMs` 4000 iken dakikada 15 istek ediyordu — tavanın üç
-  katı. 13000'e çıkarıldı, dakikada ~4,6 istek.
-
-  `--list=core` ek listeyi atlar: o 4 vaka kapıya sayılmıyor ama istek
-  harcıyordu, yani günlük bütçenin beşte biri sayılmayan vakalara gidiyordu.
-
-  Yordam: her gün yukarıdaki komut koşulur. `--reuse` parmak izi tutan
-  vakaları önbellekten oynatır, kalanlar modele gider; kota bitince koşu durur
-  ve ertesi gün kaldığı yerden devam eder. Birkaç günde tamamlanır.
-
-  **Parmak izi = model kimliği + sürüm + istek + sistem prompt'unun tamamı.**
-  Prompt'a dokunulduğu anda bütün önbellek geçersiz olur ve kapı baştan
-  ölçülür. Bu kasıtlı: iyileştirilmiş bir prompt'un skorunu eski çıktılarla
-  ölçmek rapora yalan söyletirdi.
-
-  **Model `gemini-3.6-flash`'ta sabit.** Kapı baştan sona tek modelle
-  ölçülmeli, yoksa sayı bir şey ifade etmez. Model değiştirilirse parmak izi
-  zaten bütün önbelleği düşürür.
-
-  > **Prova koşusu — 30-08-2026, `gemini-3.5-flash`. BU KAPI SKORU DEĞİL.**
-  >
-  > `gemini-3.6-flash`'ın günlük kotası tükendiği için, o günkü artık kota
-  > başka bir modelde prova olarak kullanıldı. Amacı ölçmek değil, kalan
-  > kusurları avlamaktı.
-  >
-  > 20 çekirdek vakanın **16'sı modele ulaştı**, 4'ü günlük kotaya takıldı ve
-  > "limit" olarak işaretlendi (model başarısızlığı sayılmadı).
-  >
-  > | Aşama | Sonuç |
-  > |---|---|
-  > | Prova sırasında (eski validator) | 16 ölçülen vakanın 15'i geçti |
-  > | Aynı çıktı, düzeltilmiş validator | **16 ölçülen vakanın 16'sı geçti** |
-  >
-  > İkinci satır sıfır istek harcadı: önbellekteki gerçek model çıktısı
-  > `--generator=cached` ile yeniden doğrulandı. Aradaki fark tek bir vaka
-  > (`chain-mining-01`) ve sebebi modelin çıktısı değil, validator'ın
-  > JavaScript'i TypeScript sanmasıydı.
-  >
-  > **Bu sayı kapıya yazılmaz.** Farklı model, eksik dört vaka. Kapı yarın
-  > `gemini-3.6-flash` ile ölçülecek.
+  **`CLAUDE.md` de bu yüzden yanıltıcı:** "format_version ve
+  min_engine_version alanlarına her zaman 1.26.xx biçimi yazılır" cümlesi
+  `min_engine_version` için doğru, `format_version` için değil. Niyeti
+  "pazarlama numarasını yazma" idi ama kural gibi okunuyor ve prompt'a öyle
+  geçti.
 - [ ] Prompt iyileştirme turları — kapı ölçüldükten sonra. Her tur önbelleği
   geçersiz kılar, yani her turun kendi kota bütçesi var
 
@@ -482,8 +425,19 @@ döngüsüne** bağlamak — ölçmek değil, düzeltmek.
 
 ## ⛔ GEÇİŞ KAPISI
 
-- [ ] **Eval seti 20'de 18 doğrulamadan geçiyor** — `npm run eval -- --gate`,
-  gerçek model üreticisiyle
+- [x] **Eval seti 20'de 18 doğrulamadan geçiyor** — **19/20 ölçüldü, kapı açıldı**
+
+> **30-08-2026, `gemini-3.6-flash`.** `npm run eval -- --generator=model --gate --reuse --list=core`
+>
+> Ölçüm iki koşuda tamamlandı: ilk koşuda 16 vaka modele gitti ve 16'sı geçti,
+> kalan 4 günlük kotaya takıldı. İkinci koşuda o 16'sı **önbellekten** oynatıldı
+> (parmak izi tuttu: aynı model, aynı sistem prompt'u, aynı istek) ve eksik
+> dördü modele gitti.
+>
+> **Düşen tek vaka `spawn-rule-01`** ve gerçek bir hata: model
+> `"format_version": "1.26.40"` yazdı, spawn rules şeması yalnızca
+> `1.8.0`/`1.10.0`/`1.12.0` kabul ediyor. Sebebi bizim prompt'umuz —
+> aşağıdaki maddeye bak.
 
 Bu sayıya ulaşmadan arayüze geçilmez. Kapıya ulaşılmadığında ne üzerinde çalışılacağı da belli olur, çünkü hangi vakaların patladığı görülür.
 
