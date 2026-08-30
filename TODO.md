@@ -289,6 +289,34 @@ iki mühendislik sonucu var ve ikisi de koda girdi:
   `min_engine_version` için doğru, `format_version` için değil. Niyeti
   "pazarlama numarasını yazma" idi ama kural gibi okunuyor ve prompt'a öyle
   geçti.
+- [ ] **`format_version` düzeltmesi ölçülmedi — ikinci kapı koşusu belirsiz.**
+
+  Düzeltme yapıldı (`context.formatVersions`: şemadan okunan kısıtlar +
+  oyunda yüklendiği ölçülmüş değerler). Ama ölçüm sonuç vermedi:
+
+  | | 1. koşu (eski prompt) | 2. koşu (yeni prompt) |
+  |---|---|---|
+  | Ölçülen | 20 | 14 |
+  | Geçen | 19 | 11 |
+  | Kotaya takılan | 0 | 6 |
+
+  **Düzeltmenin hedefi `spawn-rule-01` ikinci koşuda ölçülemedi** — kotaya
+  takıldı. Yani işe yarayıp yaramadığı hâlâ bilinmiyor.
+
+  Üç vaka geriledi ve üçü de birinci koşuda geçmişti:
+  `death-coords-01` (`entityDeath` diye olay yok), `no-fall-damage-01`
+  (`damage_sensor` şekli), `sleep-skip-night-01` (manifest UUID v4 değil).
+
+  Üçüncüsü dikkat çekici: o kural prompt'ta **zaten yazılı** ve birinci koşuda
+  uygulanıyordu. Prompt'un uzaması dikkati seyreltmiş olabilir — ama vaka
+  başına tek örnek var ve `temperature: 0` bile tam belirlenimci değil.
+  **İki açıklama ayırt edilemiyor; tahmin yürütülmedi.**
+
+  Bölüm sıkıştırıldı (15 satır → 3, prompt 3975 → 3731 karakter). Bir sonraki
+  adım tek bir tam koşu: 20 vakanın hepsi ölçülmeden karar verilmeyecek.
+
+  **Kayıtlı kapı sonucu 19/20 geçerliliğini koruyor** — o ölçüm bir önceki
+  prompt'la yapıldı ve o hâliyle doğru. Yeni prompt henüz tam ölçülmedi.
 - [ ] Prompt iyileştirme turları — kapı ölçüldükten sonra. Her tur önbelleği
   geçersiz kılar, yani her turun kendi kota bütçesi var
 

@@ -53,20 +53,17 @@ export function buildSystemPrompt(context: Context): string {
       ]),
   );
 
-  const formats = Object.entries(context.formatVersions).filter(([type]) =>
-    type.startsWith("behavior/") || type === "general/manifest",
-  );
+  // Tek satır, madde listesi değil. İlk hâli 15 satırdı ve prompt'un %13'ünü
+  // kaplıyordu; aynı bilgi üçte bir yere sığıyor. Uzun prompt dikkati
+  // seyreltiyor olabilir (ölçüm belirsiz kaldı ama bedava bir iyileştirme bu).
+  const formats = Object.entries(context.formatVersions)
+    .filter(([type]) => type.startsWith("behavior/") || type === "general/manifest")
+    .map(([type, values]) => `${type.split("/").at(-1)} ${values.join("/")}`);
+
   if (formats.length > 0) {
     sections.push(
-      "## format_version — dosya tipine göre\n\n" +
-        bullet(
-          formats.map(
-            ([type, values]) =>
-              `${type}: ${values.map((value) => `\`${value}\``).join(" veya ")}`,
-          ),
-        ) +
-        "\n\nListede olmayan bir tip üretiyorsan o tipin kendi şema sürümünü " +
-        "yaz; oyun sürümünü yazma.",
+      `## format_version\n\n${formats.join(" · ")}\n\n` +
+        "Listede olmayan tipte o tipin kendi şema sürümünü yaz, oyun sürümünü değil.",
     );
   }
 

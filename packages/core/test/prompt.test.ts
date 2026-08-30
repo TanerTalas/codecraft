@@ -104,7 +104,7 @@ test("format_version oyun sürümüyle karıştırılmıyor", () => {
   const prompt = buildSystemPrompt(context());
   assert.match(prompt, /`format_version` oyun sürümü DEĞİL/);
   // Tipe özel değerler listeleniyor ve veriden geliyor.
-  assert.match(prompt, /behavior\/spawn_rules\/spawn_rules: `1\.8\.0`/);
+  assert.match(prompt, /spawn_rules 1\.8\.0/);
 });
 
 test("format_version listesi boşsa bölüm hiç basılmıyor", () => {
