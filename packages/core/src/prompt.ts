@@ -100,6 +100,24 @@ export function buildSystemPrompt(context: Context): string {
   );
 
   sections.push(
+    "## Doku (texture) referansları\n\n" +
+      bullet([
+        "Kaynak paketi ÜRETİLMİYOR. `minecraft:icon` ve " +
+          "`minecraft:material_instances` yalnızca vanilla'da ZATEN VAR OLAN bir " +
+          "doku anahtarına işaret edebilir; tanımsız bir anahtar oyunda uyarı " +
+          "değil içerik hatası verir ve item elde bomboş görünür.",
+        `Anahtar sayısı: ${context.textures.item} item ikonu, ` +
+          `${context.textures.terrain} blok yüzeyi.`,
+        "Anahtar adı kimlikten TÜRETİLEMEZ. Ölçüldü: item kimliklerinin yalnızca " +
+          "%13'ünün, blok kimliklerinin %40'ının atlasta aynı adla karşılığı var. " +
+          '"codecraft:ruby" için "ruby" yazma — o anahtar yok.',
+        "Yeni bir item ya da blok için var olan bir vanilla dokusunu ödünç al " +
+          '(örneğin ikon "diamond", blok yüzeyi "diamond_ore"). Özel görsel ' +
+          "kullanıcının kendi kaynak paketini yazmasını gerektirir; bunu notlarda söyle.",
+      ]),
+  );
+
+  sections.push(
     "## Dosya adı kuralları\n\n" +
       bullet([
         "feature rule dosyasının adı identifier'ın namespace'siz hâline eşit " +

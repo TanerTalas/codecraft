@@ -184,3 +184,36 @@ export async function blockStates(
   }
   return states;
 }
+
+/** Doku atlası: item ikonları ile blok yüzeyleri ayrı atlaslarda tutulur. */
+export const TEXTURE_ATLASES = ["item", "terrain"] as const;
+export type TextureAtlas = (typeof TEXTURE_ATLASES)[number];
+
+const TEXTURES_FILE = "textures.json";
+
+type TextureIndex = Record<TextureAtlas, string[]>;
+
+/**
+ * Bu sürümde tanımlı vanilla doku anahtarları.
+ *
+ * `minecraft:icon` ve `material_instances[].texture` bir kaynak paketindeki
+ * anahtara işaret ediyor. v1 kaynak paketi üretmiyor (CLAUDE.md), o yüzden
+ * yalnızca vanilla'da zaten var olan bir anahtar kullanılabilir — yoksa oyun
+ * `Missing referenced asset` diye içerik hatası basıyor
+ * (docs/VALIDATION-LIMITS.md C).
+ */
+export async function textureKeys(
+  atlas: TextureAtlas,
+  options: { version?: string } = {},
+): Promise<ReadonlySet<string>> {
+  const { dir } = await resolveVersion(options.version);
+  const path = join(dir, TEXTURES_FILE);
+
+  const cached = idCache.get(`${path}#${atlas}`);
+  if (cached !== undefined) return cached;
+
+  const index = await readIndex<TextureIndex>(dir, TEXTURES_FILE);
+  const keys = new Set(index[atlas] ?? []);
+  idCache.set(`${path}#${atlas}`, keys);
+  return keys;
+}

@@ -23,7 +23,10 @@
       "request": "Kırdığım bloğun aynı türden komşularını da kırsın",
       "version": "1.26.40",
       "kind": "script",
-      "expect": { "validation": "pass", "checks": [] },
+      "expect": {
+        "validation": "pass",
+        "checks": []
+      },
       "note": "Yol haritasındaki asıl vaka. playerBreakBlock + komşu tarama"
     },
     {
@@ -31,7 +34,12 @@
       "request": "Dünyaya ilk kez giren oyuncuya hoş geldin mesajı göster",
       "version": "1.26.40",
       "kind": "script",
-      "expect": { "validation": "pass", "checks": ["pattern:welcome-on-player-spawn"] },
+      "expect": {
+        "validation": "pass",
+        "checks": [
+          "pattern:welcome-on-player-spawn"
+        ]
+      },
       "note": "D sınıfı. Naif cevap worldLoad + world.sendMessage yazar; ajv ve tsc geçer, mesaj kimseye ulaşmaz"
     },
     {
@@ -39,7 +47,12 @@
       "request": "Oyuncu dünyaya ilk girdiğinde eline bir demir kılıç versin",
       "version": "1.26.40",
       "kind": "script",
-      "expect": { "validation": "pass", "checks": ["pattern:welcome-on-player-spawn"] },
+      "expect": {
+        "validation": "pass",
+        "checks": [
+          "pattern:welcome-on-player-spawn"
+        ]
+      },
       "note": "D sınıfı, aynı tuzağın ikinci hâli: worldLoad anında oyuncu yok"
     },
     {
@@ -47,7 +60,12 @@
       "request": "Dünyaya her giren oyuncuya sunucu kurallarını yazsın",
       "version": "1.26.40",
       "kind": "script",
-      "expect": { "validation": "pass", "checks": ["pattern:welcome-on-player-spawn"] },
+      "expect": {
+        "validation": "pass",
+        "checks": [
+          "pattern:welcome-on-player-spawn"
+        ]
+      },
       "note": "D sınıfı üçüncü vaka: 'her giren' ifadesi initialSpawn kontrolünü de sınıyor"
     },
     {
@@ -55,28 +73,40 @@
       "request": "Öldüğüm yerin koordinatlarını bana yazsın",
       "version": "1.26.40",
       "kind": "script",
-      "expect": { "validation": "pass", "checks": [] }
+      "expect": {
+        "validation": "pass",
+        "checks": []
+      }
     },
     {
       "id": "no-fall-damage-01",
       "request": "Düşerken hasar almayayım",
       "version": "1.26.40",
       "kind": "script",
-      "expect": { "validation": "pass", "checks": [] }
+      "expect": {
+        "validation": "pass",
+        "checks": []
+      }
     },
     {
       "id": "block-place-log-01",
       "request": "Kim nereye blok koydu diye sohbete yazsın",
       "version": "1.26.40",
       "kind": "script",
-      "expect": { "validation": "pass", "checks": [] }
+      "expect": {
+        "validation": "pass",
+        "checks": []
+      }
     },
     {
       "id": "mob-timer-01",
       "request": "Her otuz saniyede bir yanımda bir zombi belirsin",
       "version": "1.26.40",
       "kind": "script",
-      "expect": { "validation": "pass", "checks": [] },
+      "expect": {
+        "validation": "pass",
+        "checks": []
+      },
       "note": "Zamanlayıcı vakası. 1.x'in world.events API'si 2.x'te kaldırıldı, tsc bunu yakalamalı"
     },
     {
@@ -84,21 +114,30 @@
       "request": "Elma yediğimde canım tamamen dolsun",
       "version": "1.26.40",
       "kind": "script",
-      "expect": { "validation": "pass", "checks": [] }
+      "expect": {
+        "validation": "pass",
+        "checks": []
+      }
     },
     {
       "id": "kill-counter-01",
       "request": "Kaç tane mob öldürdüğümü sayıp bana söylesin",
       "version": "1.26.40",
       "kind": "script",
-      "expect": { "validation": "pass", "checks": [] }
+      "expect": {
+        "validation": "pass",
+        "checks": []
+      }
     },
     {
       "id": "nearby-ore-01",
       "request": "Yakınımda elmas cevheri varsa haber versin",
       "version": "1.26.40",
       "kind": "script",
-      "expect": { "validation": "pass", "checks": [] },
+      "expect": {
+        "validation": "pass",
+        "checks": []
+      },
       "note": "Her tick'te tüm blokları gezen kod geçerli ama kullanılamaz. Bugün kalıbı yok, Aşama 3'te ölçülüp kalıp yazılacak"
     },
     {
@@ -106,14 +145,22 @@
       "request": "Bir kişi yatağa girince gece geçsin",
       "version": "1.26.40",
       "kind": "script",
-      "expect": { "validation": "pass", "checks": [] }
+      "expect": {
+        "validation": "pass",
+        "checks": []
+      }
     },
     {
       "id": "manifest-01",
       "request": "Bana boş bir davranış paketi iskeleti kur",
       "version": "1.26.40",
       "kind": "json",
-      "expect": { "validation": "pass", "checks": ["manifest"] },
+      "expect": {
+        "validation": "pass",
+        "checks": [
+          "manifest"
+        ]
+      },
       "note": "E sınıfı. Şema \"type\": \"javascript\" modülünü kabul ediyor ama oyun paketi hiç göstermiyor — gerçek oyunda ölçüldü"
     },
     {
@@ -121,21 +168,38 @@
       "request": "Yakut cevheri diye yeni bir blok ekle",
       "version": "1.26.40",
       "kind": "json",
-      "expect": { "validation": "pass", "checks": ["identity"] }
+      "expect": {
+        "validation": "pass",
+        "checks": [
+          "identity",
+          "asset"
+        ]
+      }
     },
     {
       "id": "custom-item-01",
       "request": "Yakut diye yeni bir eşya ekle",
       "version": "1.26.40",
       "kind": "json",
-      "expect": { "validation": "pass", "checks": ["identity"] }
+      "expect": {
+        "validation": "pass",
+        "checks": [
+          "identity",
+          "asset"
+        ]
+      }
     },
     {
       "id": "recipe-ruby-01",
       "request": "Dokuz yakuttan bir yakut bloğu yapılsın",
       "version": "1.26.40",
       "kind": "json",
-      "expect": { "validation": "pass", "checks": ["identity"] },
+      "expect": {
+        "validation": "pass",
+        "checks": [
+          "identity"
+        ]
+      },
       "note": "A sınıfı. Tarifin kendi identifier'ı sonuç item'ını var etmiyor; oyun tam bu yüzden reddetti"
     },
     {
@@ -143,7 +207,12 @@
       "request": "Elmas bloğunu dokuz elmasa geri dönüştürebileyim",
       "version": "1.26.40",
       "kind": "json",
-      "expect": { "validation": "pass", "checks": ["identity"] },
+      "expect": {
+        "validation": "pass",
+        "checks": [
+          "identity"
+        ]
+      },
       "note": "A sınıfı, vanilla tarafı: uydurulmuş bir minecraft: kimliği lookup ile yakalanmalı"
     },
     {
@@ -151,14 +220,24 @@
       "request": "Köylüleri koruyan bir muhafız yaratığı ekle",
       "version": "1.26.40",
       "kind": "json",
-      "expect": { "validation": "pass", "checks": ["identity"] }
+      "expect": {
+        "validation": "pass",
+        "checks": [
+          "identity"
+        ]
+      }
     },
     {
       "id": "spawn-rule-01",
       "request": "Muhafız yaratığı gece yüzeyde doğsun",
       "version": "1.26.40",
       "kind": "json",
-      "expect": { "validation": "pass", "checks": ["identity"] },
+      "expect": {
+        "validation": "pass",
+        "checks": [
+          "identity"
+        ]
+      },
       "note": "A sınıfı. Spawn kuralı var olmayan bir entity'ye yazılamaz"
     },
     {
@@ -166,7 +245,13 @@
       "request": "Yakut cevheri yer altında doğal olarak oluşsun",
       "version": "1.26.40",
       "kind": "json",
-      "expect": { "validation": "pass", "checks": ["identity", "filename"] },
+      "expect": {
+        "validation": "pass",
+        "checks": [
+          "identity",
+          "filename"
+        ]
+      },
       "note": "B sınıfı. Feature rule dosyasının adı identifier'ın namespace'siz hâline eşit olmalı — hiçbir şema göremez"
     }
   ],
@@ -176,7 +261,13 @@
       "request": "Bana altmış dört tane elmas ver",
       "version": "1.26.40",
       "kind": "command",
-      "expect": { "validation": "pass", "checks": ["commandSyntax", "commandIdentity"] },
+      "expect": {
+        "validation": "pass",
+        "checks": [
+          "commandSyntax",
+          "commandIdentity"
+        ]
+      },
       "note": "Komut sözdizimi doğrulayıcısı v1'de yok (CLAUDE.md). Aşama 3'te kimlik kontrolü komut metnine uygulandı: uydurulmuş bir minecraft: kimliği yakalanır, sözdizimi hâlâ ölçülmez"
     },
     {
@@ -184,14 +275,23 @@
       "request": "Etrafıma on çarpı on camdan bir kutu yap",
       "version": "1.26.40",
       "kind": "command",
-      "expect": { "validation": "pass", "checks": ["commandSyntax", "commandIdentity"] }
+      "expect": {
+        "validation": "pass",
+        "checks": [
+          "commandSyntax",
+          "commandIdentity"
+        ]
+      }
     },
     {
       "id": "python-afk-fish-01",
       "request": "Ben klavyeye dokunmadan otomatik balık tutsun",
       "version": "1.26.40",
       "kind": "python",
-      "expect": { "validation": "pass", "checks": [] },
+      "expect": {
+        "validation": "pass",
+        "checks": []
+      },
       "note": "Yapılabilirlik vakası: @minecraft/server oyuncu girdisini simüle edemez, doğru cevap dışarıdan çalışan script (docs/ROADMAP.md)"
     },
     {
@@ -199,7 +299,10 @@
       "request": "Dünyamı her akşam otomatik yedeklesin",
       "version": "1.26.40",
       "kind": "python",
-      "expect": { "validation": "pass", "checks": [] },
+      "expect": {
+        "validation": "pass",
+        "checks": []
+      },
       "note": "Behavior pack dosya sistemine erişemez, bu istek zorunlu olarak dışarıdan çalışan script"
     }
   ]

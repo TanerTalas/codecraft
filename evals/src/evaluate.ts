@@ -9,6 +9,7 @@ import {
   checkCommandIdentities,
   checkFileNames,
   checkIdentities,
+  checkAssets,
   checkManifest,
   checkPatterns,
   validateCommand,
@@ -52,6 +53,10 @@ async function runChecks(
     }
     if (name === "manifest") {
       findings.push(...checkManifest(files).findings);
+      continue;
+    }
+    if (name === "asset") {
+      findings.push(...(await checkAssets(files, { version })).findings);
       continue;
     }
     if (name === "commandSyntax") {

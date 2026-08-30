@@ -42,6 +42,7 @@ const CONTEXT: Context = {
   patterns: [],
   formatVersions: { "behavior/blocks/blocks": ["1.21.100"] },
   identities: [],
+  textures: { item: 498, terrain: 1300 },
 };
 
 /** Sırayla verilen çıktıları döndüren model. Gelen istemleri kaydeder. */

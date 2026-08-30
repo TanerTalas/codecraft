@@ -18,7 +18,8 @@
  */
 import { basename } from "node:path";
 
-import { lookup, lookupAny, normalizeId } from "@codecraft/knowledge";
+import { lookup, lookupAny, normalizeId, textureKeys } from "@codecraft/knowledge";
+import type { TextureAtlas } from "@codecraft/knowledge";
 
 /** Üretilen paketin tek dosyası. path paket köküne göreli: "recipes/ruby.json". */
 export type PackFile = {
@@ -450,6 +451,183 @@ export function checkFileNames(files: readonly PackFile[]): CheckResult {
         `feature rule dosya adı "${actual}", identifier "${id}" ` +
         `olduğu için "${expected}.json" olmalı`,
       evidence: `${LIMITS} · B ("does not match filename")`,
+    });
+  }
+
+  return toResult(findings);
+}
+
+// --------------------------------------------------------------------------
+// C · varlık (asset) referansları
+// --------------------------------------------------------------------------
+
+/**
+ * Doku referansı taşıyan alanlar ve hangi atlasa baktıkları.
+ *
+ * `minecraft:icon` item ikonudur (atlas.items), `material_instances` blok
+ * yüzeyidir (atlas.terrain). İkisi de bir KAYNAK PAKETİNDEKİ anahtara işaret
+ * ediyor — dosya yoluna değil.
+ */
+const ASSET_FIELDS: Record<string, TextureAtlas> = {
+  "minecraft:icon": "item",
+  "minecraft:material_instances": "terrain",
+};
+
+/**
+ * `minecraft:icon` üç biçimde de yazılabiliyor, üçü de oyunda geçerli:
+ *
+ *   "minecraft:icon": "ruby"
+ *   "minecraft:icon": { "texture": "ruby" }
+ *   "minecraft:icon": { "textures": { "default": "ruby" } }
+ */
+function iconKeys(value: unknown): string[] {
+  if (typeof value === "string") return [value];
+
+  const object = asObject(value);
+  if (object === null) return [];
+
+  const keys: string[] = [];
+  if (typeof object["texture"] === "string") keys.push(object["texture"]);
+
+  const textures = asObject(object["textures"]);
+  if (textures !== null) {
+    for (const entry of Object.values(textures)) {
+      if (typeof entry === "string") keys.push(entry);
+    }
+  }
+
+  return keys;
+}
+
+/** `material_instances`: { "*": { "texture": "ruby_ore", ... } } */
+function materialKeys(value: unknown): string[] {
+  const instances = asObject(value);
+  if (instances === null) return [];
+
+  const keys: string[] = [];
+  for (const instance of Object.values(instances)) {
+    const object = asObject(instance);
+    const texture = object?.["texture"];
+    if (typeof texture === "string") keys.push(texture);
+  }
+  return keys;
+}
+
+/**
+ * Ağacın herhangi bir yerindeki doku referanslarını toplar.
+ *
+ * Özyineleme, alan yolunu sabitlemekten güvenli: bileşenler hem `components`
+ * altında hem `permutations[].components` altında geçiyor ve biçim sürümden
+ * sürüme yer değiştiriyor. Aranan şey alanın ADI, yerleştiği yol değil.
+ */
+function collectAssetRefs(value: unknown, out: { key: string; atlas: TextureAtlas }[]): void {
+  if (Array.isArray(value)) {
+    for (const item of value) collectAssetRefs(item, out);
+    return;
+  }
+
+  const object = asObject(value);
+  if (object === null) return;
+
+  for (const [name, child] of Object.entries(object)) {
+    const atlas = ASSET_FIELDS[name];
+    if (atlas !== undefined) {
+      const keys = name === "minecraft:icon" ? iconKeys(child) : materialKeys(child);
+      for (const key of keys) out.push({ key, atlas });
+      continue;
+    }
+    collectAssetRefs(child, out);
+  }
+}
+
+export type AssetOptions = { version?: string };
+
+/**
+ * Atlasta bu anahtara en yakın birkaç ad.
+ *
+ * Retry'ın işe yaraması için gerekli: "bu anahtar yok" demek modele ne
+ * yazacağını söylemiyor. Anahtar adı kimlikten TÜRETİLEMİYOR — ölçüldü
+ * (30-08-2026): item kimliklerinin yalnızca %13'ü, blok kimliklerinin %40'ı
+ * atlasta aynı adla geçiyor. O yüzden kural anlatmak yerine gerçek adlar
+ * öneriliyor.
+ *
+ * Eşleşme parça bazlı: "ruby_ore" -> "ore" geçen anahtarlar.
+ */
+function nearestKeys(key: string, atlas: ReadonlySet<string>, limit = 3): string[] {
+  const parts = key.split("_").filter((part) => part.length > 2);
+  if (parts.length === 0) return [];
+
+  const scored: { key: string; score: number }[] = [];
+  for (const candidate of atlas) {
+    const score = parts.filter((part) => candidate.includes(part)).length;
+    if (score > 0) scored.push({ key: candidate, score });
+  }
+
+  // Skor eşitse alfabetik: aynı girdi her koşuda aynı öneriyi versin.
+  scored.sort((a, b) => (b.score - a.score) || (a.key < b.key ? -1 : 1));
+  return scored.slice(0, limit).map((entry) => entry.key);
+}
+
+/**
+ * Doku referansı gerçekten var mı.
+ *
+ * NEDEN ERROR: kaynak paketi olmayan bir pakette tanımsız bir doku anahtarı
+ * oyunda uyarı değil İÇERİK HATASI üretiyor ve item elde bomboş görünüyor —
+ * gerçek oyunda ölçüldü (docs/VALIDATION-LIMITS.md C).
+ *
+ * NEDEN KAYNAK PAKETİ ÜRETMİYORUZ: v1 kapsamı behavior pack (CLAUDE.md).
+ * Karar 30-08-2026'da alındı: model yalnızca zaten var olan bir vanilla
+ * anahtarına işaret edebilir. Bunun bedeli açık ve gizlenmiyor — özel görsel
+ * elde edilmiyor, "ruby" elmas dokusuyla görünüyor. Arayüz bunu söylüyor.
+ *
+ * Yanlış atlas ERROR değil WARNING: anahtar gerçekten var, yalnızca beklenen
+ * atlasta değil. Ona "yok" demek uydurma hata olurdu.
+ */
+export async function checkAssets(
+  files: readonly PackFile[],
+  options: AssetOptions = {},
+): Promise<CheckResult> {
+  const { parsed, findings } = parseJsonFiles(files);
+
+  const refs: { file: PackFile; key: string; atlas: TextureAtlas }[] = [];
+  for (const { file, body } of parsed) {
+    const found: { key: string; atlas: TextureAtlas }[] = [];
+    collectAssetRefs(body, found);
+    for (const ref of found) refs.push({ file, ...ref });
+  }
+
+  if (refs.length === 0) return toResult(findings);
+
+  const item = await textureKeys("item", options);
+  const terrain = await textureKeys("terrain", options);
+  const sets: Record<TextureAtlas, ReadonlySet<string>> = { item, terrain };
+
+  for (const { file, key, atlas } of refs) {
+    if (sets[atlas].has(key)) continue;
+
+    const other: TextureAtlas = atlas === "item" ? "terrain" : "item";
+    if (sets[other].has(key)) {
+      findings.push({
+        check: "asset",
+        severity: "warning",
+        path: file.path,
+        message: `doku anahtarı "${key}" ${atlas} atlasında değil, ${other} atlasında`,
+        evidence: `${LIMITS} · C · data/<sürüm>/textures.json`,
+      });
+      continue;
+    }
+
+    const near = nearestKeys(key, sets[atlas]);
+    findings.push({
+      check: "asset",
+      severity: "error",
+      path: file.path,
+      message:
+        `doku anahtarı "${key}" hiçbir vanilla atlasında yok. Kaynak paketi ` +
+        "üretilmiyor (v1 kapsamı behavior pack), o yüzden var olan bir vanilla " +
+        "anahtarı kullanılmalı" +
+        (near.length === 0 ? "" : `. Yakın anahtarlar: ${near.join(", ")}`),
+      evidence: `${LIMITS} · C ("Missing referenced asset")`,
     });
   }
 

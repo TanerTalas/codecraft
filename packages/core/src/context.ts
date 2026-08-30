@@ -10,7 +10,7 @@
  * veri: Aşama 4'te aynı nesne sunucudan gelecek, prompt.ts değişmeyecek
  * (CLAUDE.md, mimari kural 2).
  */
-import { lookup, resolveVersion } from "@codecraft/knowledge";
+import { lookup, resolveVersion, textureKeys } from "@codecraft/knowledge";
 import {
   listTypes,
   patternGuide,
@@ -56,6 +56,14 @@ export type Context = {
   formatVersions: Record<string, string[]>;
   /** İstekte geçen kimliklerin doğrulanmış durumu. Boş olabilir. */
   identities: IdentityNote[];
+  /**
+   * Vanilla doku atlaslarındaki anahtar sayısı.
+   *
+   * Liste değil sayı: item atlası 498, terrain 1300 anahtar taşıyor ve ikisini
+   * prompt'a koymak bütçeyi yerdi. Modelin ihtiyacı olan şey kural; yanlış
+   * anahtar yazarsa `checkAssets` yakınlarını öneriyor ve retry düzeltiyor.
+   */
+  textures: { item: number; terrain: number };
 };
 
 /**
@@ -154,5 +162,9 @@ export async function buildContext(
     // şemanın reddedeceği bir değeri asla eklememeli.
     formatVersions: mergeFormatVersions(await schemaFormatVersions(version)),
     identities: await collectIdentities(request, version),
+    textures: {
+      item: (await textureKeys("item", { version })).size,
+      terrain: (await textureKeys("terrain", { version })).size,
+    },
   };
 }

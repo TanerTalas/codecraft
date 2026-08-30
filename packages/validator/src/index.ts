@@ -35,6 +35,7 @@ export type { ResolvedType, SchemaMapEntry } from "./schema-map.ts";
 // Asama 2.5 — semanin ve tsc'nin yapisal olarak yakalayamadigi kontroller.
 // Olcum ve gerekce: docs/VALIDATION-LIMITS.md
 export {
+  checkAssets,
   checkCommandIdentities,
   checkFileNames,
   checkManifest,
@@ -44,6 +45,7 @@ export {
   patternNames,
 } from "./checks.ts";
 export type {
+  AssetOptions,
   CheckResult,
   CommandIdentityOptions,
   Finding,

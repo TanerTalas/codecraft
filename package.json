@@ -24,6 +24,7 @@
     "pipeline:schemas": "node pipeline/src/schemas-mojang.ts",
     "pipeline:blockception": "node pipeline/src/schemas-blockception.ts",
     "pipeline:types": "node pipeline/src/script-types.ts",
+    "pipeline:textures": "node pipeline/src/textures.ts",
     "pipeline:notes": "node pipeline/src/release-notes.ts",
     "pipeline:freshness": "node pipeline/src/check-freshness.ts",
     "ws:health": "node pipeline/src/ws-health.ts",

@@ -22,6 +22,7 @@ const context = (overrides: Partial<Context> = {}): Context => ({
   modules: { "@minecraft/server": "2.9.0" },
   documentTypes: ["behavior/blocks/blocks"],
   patterns: [{ name: "bir-kalip", guidance: "şöyle yaz", evidence: "ölçüldü" }],
+  textures: { item: 498, terrain: 1300 },
   identities: [],
   ...overrides,
 });

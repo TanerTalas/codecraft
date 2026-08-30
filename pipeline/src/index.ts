@@ -24,6 +24,7 @@ import {
 } from "./schemas-blockception.ts";
 import { collectReleaseNotes } from "./release-notes.ts";
 import { collectScriptTypes } from "./script-types.ts";
+import { TEXTURES_FILE, collectTextures } from "./textures.ts";
 import { runIfMain } from "./lib/cli.ts";
 import { DATA_DIR } from "./lib/paths.ts";
 import { toJson, writeIfChanged } from "./lib/fs.ts";
@@ -60,6 +61,11 @@ export async function runPipeline(): Promise<void> {
 
   const scriptTypes = await collectScriptTypes(version);
   console.log(`  script tipleri   ${scriptTypes.written.length} dosya güncellendi`);
+
+  const textures = await collectTextures(version);
+  console.log(
+    `  doku anahtarları ${textures.counts.item} item, ${textures.counts.terrain} terrain`,
+  );
 
   const releaseNotes = await collectReleaseNotes(version);
   console.log(`  sürüm notları    ${releaseNotes.path === null ? "yok" : releaseNotes.path}`);
@@ -102,6 +108,10 @@ export async function runPipeline(): Promise<void> {
         hash: blockception.hash,
       },
       scriptTypes: { path: "script-types", modules: scriptTypes.modules },
+      // minecraft:icon ve material_instances yalnızca var olan bir vanilla
+      // anahtarına işaret edebilir — kaynak paketi üretilmiyor
+      // (docs/VALIDATION-LIMITS.md C).
+      textures: { file: TEXTURES_FILE, item: textures.counts.item, terrain: textures.counts.terrain },
       releaseNotes: releaseNotes.path === null ? null : { repo: CREATOR_REPO, path: releaseNotes.path },
     },
   };

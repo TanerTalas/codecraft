@@ -11,6 +11,7 @@
  */
 import {
   checkCommandIdentities,
+  checkAssets,
   checkFileNames,
   checkIdentities,
   checkManifest,
@@ -187,6 +188,7 @@ export async function review(files: readonly PackFile[], version: string): Promi
   findings.push(...(await checkIdentities(files, { version })).findings);
   findings.push(...checkFileNames(files).findings);
   findings.push(...checkManifest(files).findings);
+  findings.push(...(await checkAssets(files, { version })).findings);
   for (const file of files) {
     if (isScript(file.path)) {
       findings.push(...checkPatterns(file.content, { path: file.path }).findings);
