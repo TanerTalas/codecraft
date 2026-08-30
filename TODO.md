@@ -278,6 +278,28 @@ iki mühendislik sonucu var ve ikisi de koda girdi:
   **Model `gemini-3.6-flash`'ta sabit.** Kapı baştan sona tek modelle
   ölçülmeli, yoksa sayı bir şey ifade etmez. Model değiştirilirse parmak izi
   zaten bütün önbelleği düşürür.
+
+  > **Prova koşusu — 30-08-2026, `gemini-3.5-flash`. BU KAPI SKORU DEĞİL.**
+  >
+  > `gemini-3.6-flash`'ın günlük kotası tükendiği için, o günkü artık kota
+  > başka bir modelde prova olarak kullanıldı. Amacı ölçmek değil, kalan
+  > kusurları avlamaktı.
+  >
+  > 20 çekirdek vakanın **16'sı modele ulaştı**, 4'ü günlük kotaya takıldı ve
+  > "limit" olarak işaretlendi (model başarısızlığı sayılmadı).
+  >
+  > | Aşama | Sonuç |
+  > |---|---|
+  > | Prova sırasında (eski validator) | 16 ölçülen vakanın 15'i geçti |
+  > | Aynı çıktı, düzeltilmiş validator | **16 ölçülen vakanın 16'sı geçti** |
+  >
+  > İkinci satır sıfır istek harcadı: önbellekteki gerçek model çıktısı
+  > `--generator=cached` ile yeniden doğrulandı. Aradaki fark tek bir vaka
+  > (`chain-mining-01`) ve sebebi modelin çıktısı değil, validator'ın
+  > JavaScript'i TypeScript sanmasıydı.
+  >
+  > **Bu sayı kapıya yazılmaz.** Farklı model, eksik dört vaka. Kapı yarın
+  > `gemini-3.6-flash` ile ölçülecek.
 - [ ] Prompt iyileştirme turları — kapı ölçüldükten sonra. Her tur önbelleği
   geçersiz kılar, yani her turun kendi kota bütçesi var
 
