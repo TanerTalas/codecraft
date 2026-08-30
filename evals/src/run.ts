@@ -40,10 +40,26 @@ const GENERATORS: Record<string, (options: Options) => Generator | Promise<Gener
   cached: () => cachedGenerator(),
 };
 
-type Options = { generator: string; gate: boolean; only: string | null; reuse: boolean };
+/** Hangi listeler koşacak. Kapı yalnızca "core"u sayar. */
+const LISTS = ["core", "extra", "all"] as const;
+type ListName = (typeof LISTS)[number];
+
+type Options = {
+  generator: string;
+  gate: boolean;
+  only: string | null;
+  reuse: boolean;
+  list: ListName;
+};
 
 function parseArgs(argv: readonly string[]): Options {
-  const options: Options = { generator: "recorded", gate: false, only: null, reuse: false };
+  const options: Options = {
+    generator: "recorded",
+    gate: false,
+    only: null,
+    reuse: false,
+    list: "all",
+  };
 
   for (const arg of argv) {
     if (arg === "--gate") {
@@ -52,6 +68,12 @@ function parseArgs(argv: readonly string[]): Options {
       options.reuse = true;
     } else if (arg.startsWith("--generator=")) {
       options.generator = arg.slice("--generator=".length);
+    } else if (arg.startsWith("--list=")) {
+      const value = arg.slice("--list=".length);
+      if (!LISTS.includes(value as ListName)) {
+        throw new Error(`Bilinmeyen liste: "${value}". Tanınanlar: ${LISTS.join(", ")}`);
+      }
+      options.list = value as ListName;
     } else if (arg.startsWith("--case=")) {
       options.only = arg.slice("--case=".length);
     } else {
@@ -131,8 +153,11 @@ async function main(): Promise<void> {
   const pick = (list: EvalCase[]): EvalCase[] =>
     options.only === null ? list : list.filter((testCase) => testCase.id === options.only);
 
-  const core = pick(cases.core);
-  const extra = pick(cases.extra);
+  // Ek liste kapıya sayılmıyor ama model üreticisinde istek harcıyor. Ücretsiz
+  // kademede günlük kota model başına 20 istek, yani 4 ek vaka bütçenin
+  // beşte biri — kapı ölçülürken --list=core ile atlanabilsin.
+  const core = options.list === "extra" ? [] : pick(cases.core);
+  const extra = options.list === "core" ? [] : pick(cases.extra);
   if (core.length === 0 && extra.length === 0) {
     throw new Error(`Vaka bulunamadı: "${options.only}"`);
   }

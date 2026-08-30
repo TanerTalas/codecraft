@@ -250,13 +250,16 @@ iki mühendislik sonucu var ve ikisi de koda girdi:
   **Bu adım koşulmadı ve atlanmadı; açıkça bekliyor**
 
   ```
-  npm run eval -- --generator=model --gate --reuse
+  npm run eval -- --generator=model --gate --reuse --list=core
   ```
 
   **Günlük kota tavanı — ölçüldü (30-08-2026):** ücretsiz kademe model başına
   **günde 20 istek** veriyor (`GenerateRequestsPerDayPerProjectPerModel-FreeTier`,
   değer 20). 24 vakalık kapı retry'larla 24–48 istek demek, yani tek günde
   bitmiyor. Kota Pasifik saatiyle gece yarısı sıfırlanıyor.
+
+  `--list=core` ek listeyi atlar: o 4 vaka kapıya sayılmıyor ama istek
+  harcıyordu, yani günlük bütçenin beşte biri sayılmayan vakalara gidiyordu.
 
   Yordam: her gün yukarıdaki komut koşulur. `--reuse` parmak izi tutan
   vakaları önbellekten oynatır, kalanlar modele gider; kota bitince koşu durur
