@@ -31,9 +31,31 @@ type Probe = {
   /** Neyi ölçüyoruz. */
   question: string;
   command: string;
-  /** Beklenen sonuç — ölçüm bunu doğrular ya da çürütür. */
-  expect: "ok" | "error";
+  /**
+   * Beklenen sonuç — ölçüm bunu doğrular ya da çürütür.
+   *
+   * `parses`: oyun komutu AYRIŞTIRABİLDİ mi. Çalışıp bir şey yapması değil;
+   * biz sözdizimi ölçüyoruz.
+   */
+  expect: "parses" | "syntax-error";
 };
+
+/**
+ * Sözdizimi hatasının durum kodu — ölçülerek bulundu (30-08-2026).
+ *
+ * İlk turda "negatif kod = hata" varsayılmıştı ve bu yanlış sonuca götürdü:
+ * `fill ... minecraft:air 0 replace` `-2147352576` ("0 blocks filled") döndü,
+ * yani KOMUT AYRIŞTIRILDI ama hiçbir bloğu değiştirmedi. Ayrıştırılamayan
+ * komutlar ayrı bir kod veriyor:
+ *
+ *   -2147483648  Syntax error: Unexpected "@z": at "testfor >>@z<<"
+ *   -2147352576  0 blocks filled          (ayrıştırıldı, sonuç boş)
+ *             0  Found Lyliahh            (ayrıştırıldı, başarılı)
+ *
+ * Bu ayrım kritik: "çalıştı mı" ile "ayrıştırıldı mı" karıştırılırsa
+ * doğrulayıcıya yanlış kural yazılır.
+ */
+const SYNTAX_ERROR_STATUS = -2147483648;
 
 /**
  * Ölçülecek sorular.
@@ -43,34 +65,53 @@ type Probe = {
  * ölçüm değil.
  */
 const PROBES: Probe[] = [
-  // --- seçici harfleri: docs/COMMANDS.md "bilinen boşluk" ---
-  { question: "seçici @s", command: "testfor @s", expect: "ok" },
-  { question: "seçici @p", command: "testfor @p", expect: "ok" },
-  { question: "seçici @a", command: "testfor @a", expect: "ok" },
-  { question: "seçici @e", command: "testfor @e", expect: "ok" },
-  { question: "seçici @r", command: "testfor @r", expect: "ok" },
-  { question: "seçici @n", command: "testfor @n", expect: "ok" },
-  { question: "seçici @z (geçersiz olmalı)", command: "testfor @z", expect: "error" },
-  { question: "seçici @x (geçersiz olmalı)", command: "testfor @x", expect: "error" },
-  { question: "seçici @q (geçersiz olmalı)", command: "testfor @q", expect: "error" },
+  // --- 1. tur teyidi: seçici harfleri (ölçüldü, doğrulayıcıya girdi) ---
+  { question: "seçici @s", command: "testfor @s", expect: "parses" },
+  { question: "seçici @z (geçersiz)", command: "testfor @z", expect: "syntax-error" },
 
-  // --- fill'in eski veri değeri: doğrulayıcı "kaldırılmış" diyor ---
+  // --- AÇIK SORU 1: fill'in eski <data> argümanı ---
+  // 1. turda ikisi de -2147352576 ("0 blocks filled") döndü, yani ikisi de
+  // AYRIŞTIRILDI. Doğrulayıcı ise eski biçimi reddediyor — yanlış pozitif
+  // şüphesi. Ayrıştırılamayan bir değerle karşılaştırarak kesinleştiriyoruz.
   {
-    question: "fill eski <data> argümanı",
+    question: "fill eski <data> (0)",
     command: "fill ~ ~ ~ ~ ~ ~ minecraft:air 0 replace",
-    expect: "error",
+    expect: "parses",
   },
   {
-    question: "fill data'sız (doğru biçim)",
+    question: "fill saçma değer (BOGUS)",
+    command: "fill ~ ~ ~ ~ ~ ~ minecraft:air BOGUS replace",
+    expect: "syntax-error",
+  },
+  {
+    question: "fill data'sız (modern biçim)",
     command: "fill ~ ~ ~ ~ ~ ~ minecraft:air replace",
-    expect: "ok",
+    expect: "parses",
   },
 
-  // --- blok durumu doğrulaması: aralık dışı değer gerçekten reddediliyor mu ---
+  // --- AÇIK SORU 2: blok durumu sözdizimi ---
+  // 1. turda ["facing_direction"=99] "Syntax error: Unexpected \"=\"" verdi.
+  // Değer aralık dışıydı ama hata SÖZDİZİMİ hatasıydı — yani biçimin kendisi
+  // mi reddedildi, değer mi? Geçerli bir değerle ayırt ediliyor.
   {
-    question: "blok durumu aralık dışı",
-    command: 'testforblock ~ ~ ~ minecraft:acacia_button ["facing_direction"=99]',
-    expect: "error",
+    question: "blok durumu, GEÇERLİ değer",
+    command: 'testforblock ~ ~-1 ~ minecraft:acacia_button ["facing_direction"=0]',
+    expect: "parses",
+  },
+  {
+    question: "blok durumu, tırnaksız ad",
+    command: "testforblock ~ ~-1 ~ minecraft:acacia_button [facing_direction=0]",
+    expect: "parses",
+  },
+  {
+    question: "blok durumu, aralık dışı değer",
+    command: 'testforblock ~ ~-1 ~ minecraft:acacia_button ["facing_direction"=99]',
+    expect: "syntax-error",
+  },
+  {
+    question: "testforblock durumsuz (temel)",
+    command: "testforblock ~ ~-1 ~ minecraft:air",
+    expect: "parses",
   },
 ];
 
@@ -155,8 +196,8 @@ async function run(): Promise<void> {
         const status = message.body?.statusCode ?? null;
         resolve({
           probe,
-          // Bedrock'ta 0 ve pozitif değerler başarı, negatifler hata.
-          ok: status !== null && status >= 0,
+          // Ölçtüğümüz şey "çalıştı mı" değil, "AYRIŞTIRILDI mı".
+          ok: status !== SYNTAX_ERROR_STATUS,
           status,
           text: message.body?.statusMessage ?? "",
         });
@@ -167,9 +208,9 @@ async function run(): Promise<void> {
     });
 
     results.push(outcome);
-    const mark = outcome.ok === (probe.expect === "ok") ? " " : "!";
+    const mark = outcome.ok === (probe.expect === "parses") ? " " : "!";
     console.log(
-      `${mark} ${probe.question.padEnd(34)} ${outcome.ok ? "kabul" : "RED  "} ` +
+      `${mark} ${probe.question.padEnd(34)} ${outcome.ok ? "ayrıştı" : "SÖZDİZİMİ HATASI"} ` +
         `(${outcome.status ?? "-"}) ${outcome.text.slice(0, 60)}`,
     );
     await sleep(GAP_MS);
@@ -193,7 +234,7 @@ async function run(): Promise<void> {
     return;
   }
 
-  const surprises = results.filter((r) => r.ok !== (r.probe.expect === "ok"));
+  const surprises = results.filter((r) => r.ok !== (r.probe.expect === "parses"));
   if (surprises.length === 0) {
     console.log(
       `Ölçülen ${results.length} sorunun hepsi beklentiyle uyuştu — ` +
@@ -204,8 +245,10 @@ async function run(): Promise<void> {
     for (const s of surprises) {
       console.log(`  ${s.probe.question}`);
       console.log(`    komut:    ${s.probe.command}`);
-      console.log(`    beklenen: ${s.probe.expect === "ok" ? "kabul" : "red"}`);
-      console.log(`    ölçülen:  ${s.ok ? "kabul" : "red"} (${s.status ?? "-"}) ${s.text}`);
+      console.log(`    beklenen: ${s.probe.expect === "parses" ? "ayrışır" : "sözdizimi hatası"}`);
+      console.log(
+        `    ölçülen:  ${s.ok ? "ayrıştı" : "sözdizimi hatası"} (${s.status ?? "-"}) ${s.text}`,
+      );
     }
     process.exitCode = 1;
   }

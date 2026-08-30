@@ -12,7 +12,14 @@ export type { JsonError, JsonErrorKind, JsonResult } from "./json.ts";
 export { validateScript } from "./script.ts";
 export type { ScriptChannel, ScriptDiagnostic, ScriptOptions, ScriptResult } from "./script.ts";
 export { listTypes, resolveType } from "./schema-map.ts";
-export { CHECKED_TYPES, loadCommandIndex, tokenize, validateCommand } from "./command.ts";
+export {
+  CHECKED_TYPES,
+  loadCommandIndex,
+  parseBlockStates,
+  SELECTOR_LETTERS,
+  tokenize,
+  validateCommand,
+} from "./command.ts";
 export type {
   CommandDef,
   CommandError,

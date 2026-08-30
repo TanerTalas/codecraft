@@ -18,6 +18,7 @@ import {
   CHECKED_TYPES,
   loadCommandIndex,
   parseBlockStates,
+  SELECTOR_LETTERS,
   tokenize,
   validateCommand,
 } from "../src/command.ts";
@@ -170,12 +171,23 @@ test("denetlenmeyen yapısal tipler kayıt altında", async () => {
   assert.ok(Object.keys(index.enums).length > 200);
 });
 
-test("seçici harfi henüz doğrulanmıyor — bilinen boşluk", async () => {
-  // @z geçerli bir seçici değil ama geçerli harflerin listesi Mojang'ın
-  // makine okunur tanımında yok. Elle liste yazmak bu projenin kaçındığı şey;
-  // ölçülene kadar kabul ediliyor ve boşluk burada kayıtlı.
-  const result = await check("/give @z minecraft:diamond 1");
-  assert.equal(result.ok, true);
+test("seçici harfleri oyundan ölçülen listeye göre doğrulanıyor", async () => {
+  // Liste elle yazılmadı: npm run ws:probe ile oyuna soruldu (30-08-2026).
+  // Altısı kabul edildi, @z/@x/@q "Syntax error: Unexpected" ile reddedildi.
+  for (const letter of SELECTOR_LETTERS) {
+    const result = await check(`/testfor @${letter}`);
+    assert.equal(result.ok, true, `@${letter} reddedildi`);
+  }
+  for (const letter of ["z", "x", "q"]) {
+    const result = await check(`/testfor @${letter}`);
+    assert.equal(result.ok, false, `@${letter} kabul edildi`);
+  }
+});
+
+test("oyuncu adı seçici yerine kullanılabilir", async () => {
+  // Seçici olmayan düz bir ad geçerli bir hedef.
+  const result = await check("/testfor Lyliahh");
+  assert.equal(result.ok, true, result.errors[0]?.message ?? "");
 });
 
 // --------------------------------------------------------------------------

@@ -189,7 +189,18 @@ const INT_RE = /^[+-]?\d+$/;
 const COORD_RE = /^[~^][+-]?(?:\d+\.?\d*|\.\d+)?$|^[+-]?(?:\d+\.?\d*|\.\d+)$/;
 /** `1..5`, `..5`, `3..`, `4` */
 const RANGE_RE = /^(?:\d+\.\.\d*|\.\.\d+|[+-]?\d+)$/;
-const SELECTOR_HEAD_RE = /^@[a-z]$/;
+/**
+ * Geçerli hedef seçici harfleri — **oyundan ölçüldü**, elle yazılmadı.
+ *
+ * Mojang'ın makine okunur komut tanımında bu liste yok. Uydurmak yerine
+ * `npm run ws:probe` ile oyuna soruldu (30-08-2026, Bedrock 1.26.x):
+ * altısı `statusCode 0` ile kabul edildi, `@z` `@x` `@q` ise
+ * `Syntax error: Unexpected "@z"` ile reddedildi.
+ *
+ * Ölçüm yordamı `docs/WEBSOCKET.md` ve `docs/COMMANDS.md` içinde; yeni bir
+ * sürümde harf eklenirse aynı probe tekrar koşulup burası güncellenir.
+ */
+export const SELECTOR_LETTERS = ["s", "p", "a", "e", "r", "n"] as const;
 
 /**
  * Gerçekten denetlenen yapısal tipler.
@@ -270,8 +281,12 @@ function checkSelector(value: string): string | null {
 
   const bracket = value.indexOf("[");
   const head = bracket === -1 ? value : value.slice(0, bracket);
-  if (!SELECTOR_HEAD_RE.test(head)) {
-    return `geçersiz seçici "${head}" — @s, @p, @a, @e, @r, @n gibi olmalı`;
+  const letter = head.slice(1);
+  if (!(SELECTOR_LETTERS as readonly string[]).includes(letter)) {
+    return (
+      `geçersiz seçici "${head}" — kabul edilenler: ` +
+      SELECTOR_LETTERS.map((l) => `@${l}`).join(", ")
+    );
   }
   if (bracket === -1) return null;
 
