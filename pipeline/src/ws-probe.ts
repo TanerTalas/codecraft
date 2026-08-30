@@ -2,9 +2,9 @@
  * Oyuna komut gönderip cevabını okuyan ölçüm aracı.
  *
  * Amacı tek: **elle liste yazmak yerine ölçmek.** Komut doğrulayıcısında
- * (`docs/COMMANDS.md`) iki boşluk "geçerli değerlerin listesi Mojang'ın
+ * (`docs/COMMANDS.md`) bazı kurallar "geçerli değerlerin listesi Mojang'ın
  * tanımında yok" diye açık bırakıldı. Bu script o listeyi oyunun kendisinden
- * çıkarıyor: komutu gönderir, `statusCode` okur, sonucu tablo hâlinde basar.
+ * çıkarıyor.
  *
  * CI'da koşamaz — çalışan bir Minecraft istemcisi gerekiyor:
  *
@@ -12,8 +12,8 @@
  *
  * Sonra oyunda `/connect localhost:19131` yazılır.
  *
- * Gönderilen komutlar **dünyayı değiştirmiyor**: hepsi ya sorgu ya da
- * kasten geçersiz. Yine de yaratıcı modda, harcanabilir bir dünyada koşulmalı.
+ * Gönderilen komutlar **dünyayı değiştirmiyor**: hepsi ya sorgu ya da kasten
+ * geçersiz. Yine de yaratıcı modda, harcanabilir bir dünyada koşulmalı.
  */
 import { randomUUID } from "node:crypto";
 
@@ -26,6 +26,10 @@ const WAIT_MS =
   Number(process.argv.find((a) => a.startsWith("--wait="))?.slice(7) ?? 300) * 1000;
 /** Komutlar arası bekleme. Oyun ard arda gelen isteklerde cevap düşürebiliyor. */
 const GAP_MS = 250;
+/** Tek komutun cevabı için beklenen süre. */
+const ANSWER_MS = 5000;
+
+type Expectation = "parses" | "syntax-error";
 
 type Probe = {
   /** Neyi ölçüyoruz. */
@@ -35,9 +39,9 @@ type Probe = {
    * Beklenen sonuç — ölçüm bunu doğrular ya da çürütür.
    *
    * `parses`: oyun komutu AYRIŞTIRABİLDİ mi. Çalışıp bir şey yapması değil;
-   * biz sözdizimi ölçüyoruz.
+   * ölçülen şey sözdizimi.
    */
-  expect: "parses" | "syntax-error";
+  expect: Expectation;
 };
 
 /**
@@ -45,24 +49,22 @@ type Probe = {
  *
  * İlk turda "negatif kod = hata" varsayılmıştı ve bu yanlış sonuca götürdü:
  * `fill ... minecraft:air 0 replace` `-2147352576` ("0 blocks filled") döndü,
- * yani KOMUT AYRIŞTIRILDI ama hiçbir bloğu değiştirmedi. Ayrıştırılamayan
- * komutlar ayrı bir kod veriyor:
+ * yani KOMUT AYRIŞTIRILDI ama hiçbir bloğu değiştirmedi.
  *
  *   -2147483648  Syntax error: Unexpected "@z": at "testfor >>@z<<"
  *   -2147352576  0 blocks filled          (ayrıştırıldı, sonuç boş)
  *             0  Found Lyliahh            (ayrıştırıldı, başarılı)
  *
- * Bu ayrım kritik: "çalıştı mı" ile "ayrıştırıldı mı" karıştırılırsa
- * doğrulayıcıya yanlış kural yazılır.
+ * "Çalıştı mı" ile "ayrıştırıldı mı" karıştırılırsa doğrulayıcıya yanlış
+ * kural yazılır.
  */
 const SYNTAX_ERROR_STATUS = -2147483648;
 
 /**
  * Ölçülecek sorular.
  *
- * Her satırın bir gerekçesi var; "olsa iyi olur" komutu yok. Beklenti
- * sütunu bizim varsayımımız — ölçüm onu çürütürse doğrulayıcı düzeltilir,
- * ölçüm değil.
+ * Her satırın bir gerekçesi var; "olsa iyi olur" komutu yok. Beklenti sütunu
+ * bizim varsayımımız — ölçüm onu çürütürse doğrulayıcı düzeltilir, ölçüm değil.
  */
 const PROBES: Probe[] = [
   // --- 1. tur teyidi: seçici harfleri (ölçüldü, doğrulayıcıya girdi) ---
@@ -90,9 +92,9 @@ const PROBES: Probe[] = [
   },
 
   // --- AÇIK SORU 2: blok durumu sözdizimi ---
-  // 1. turda ["facing_direction"=99] "Syntax error: Unexpected \"=\"" verdi.
-  // Değer aralık dışıydı ama hata SÖZDİZİMİ hatasıydı — yani biçimin kendisi
-  // mi reddedildi, değer mi? Geçerli bir değerle ayırt ediliyor.
+  // 1. turda ["facing_direction"=99] "Syntax error: Unexpected =" verdi.
+  // Değer aralık dışıydı ama hata SÖZDİZİMİ hatasıydı — biçimin kendisi mi
+  // reddedildi, değer mi? Geçerli bir değerle ayırt ediliyor.
   {
     question: "blok durumu, GEÇERLİ değer",
     command: 'testforblock ~ ~-1 ~ minecraft:acacia_button ["facing_direction"=0]',
@@ -131,10 +133,47 @@ const send = (socket: WebSocket, commandLine: string): void => {
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
-type Outcome = { probe: Probe; ok: boolean; status: number | null; text: string };
+/**
+ * Üç durum, iki değil.
+ *
+ * "Cevap gelmedi" bir ÖLÇÜM DEĞİL. Onu sözdizimi hatası saymak, bağlantı
+ * koptuğunda doğrulayıcıya yanlış kural yazdırırdı — ilk 2. tur denemesinde
+ * tam olarak öyle raporlandı ve yanıltıcıydı.
+ */
+type Verdict = "parsed" | "syntax-error" | "no-answer";
+
+type Outcome = { probe: Probe; verdict: Verdict; status: number | null; text: string };
+
+const LABEL: Record<Verdict, string> = {
+  parsed: "ayrıştı",
+  "syntax-error": "SÖZDİZİMİ HATASI",
+  "no-answer": "cevap yok",
+};
+
+/** Ölçüm beklentiyi çürüttü mü. Ölçülemeyen soru çürütmez. */
+const contradicts = (outcome: Outcome): boolean =>
+  outcome.verdict !== "no-answer" &&
+  outcome.verdict !== (outcome.probe.expect === "parses" ? "parsed" : "syntax-error");
+
+const RECONNECT_HELP = [
+  "Bağlantı komutlara cevap vermeden koptu. Ölçülen kalıp şu: oyunu açtıktan",
+  "sonraki İLK /connect çalışıyor, sonrakiler anında kopuyor — oyun önceki",
+  "bağlantıyı temizlemiyor gibi görünüyor.",
+  "",
+  "Denenecekler, sırayla:",
+  "  1. Oyunda  /wsserver out  yazıp bağlantıyı kapat, sonra tekrar /connect",
+  "  2. Dünyadan çık, tekrar gir, sonra /connect",
+  "  3. Oyunu kapatıp aç",
+].join("\n");
 
 async function run(): Promise<void> {
-  const server = new WebSocketServer({ port: PORT });
+  const server = new WebSocketServer({
+    port: PORT,
+    // Bedrock'ın WebSocket uygulaması belgelenmemiş ve zaten spec ihlali
+    // yapıyor (kapatma çerçevesinde status 0). Sıkıştırma uzantısı pazarlığı
+    // fazladan bir değişken; kapatarak eleniyor.
+    perMessageDeflate: false,
+  });
   const results: Outcome[] = [];
   /** Bağlantı koptuysa sebebi. Dolduğunda ölçüm durur ve kısmi sonuç basılır. */
   let dropped: string | null = null;
@@ -162,13 +201,10 @@ async function run(): Promise<void> {
    *
    * Bedrock bağlantıyı kapatırken spec dışı bir kapatma çerçevesi gönderiyor
    * (status kodu 0; RFC 6455 bunu yasaklıyor) ve `ws` bunu `RangeError` ile
-   * reddediyor. İşleyici olmadan Node işlenmemiş 'error' olayında çöküyor —
-   * ilk gerçek koşuda tam olarak bu oldu ve bütün ölçüm kayboldu.
-   *
-   * Şimdi kopma kaydediliyor, o ana kadarki sonuçlar korunuyor.
+   * reddediyor. İşleyici olmadan Node işlenmemiş 'error' olayında çöküyor.
    */
   socket.on("error", (error) => {
-    dropped = error.message;
+    dropped ??= error.message;
   });
   socket.on("close", (code) => {
     dropped ??= `oyun bağlantıyı kapattı (kod ${code})`;
@@ -178,10 +214,11 @@ async function run(): Promise<void> {
 
   for (const probe of PROBES) {
     if (dropped !== null) break;
+
     const outcome = await new Promise<Outcome>((resolve) => {
       const timer = setTimeout(
-        () => resolve({ probe, ok: false, status: null, text: "cevap gelmedi" }),
-        5000,
+        () => resolve({ probe, verdict: "no-answer", status: null, text: "" }),
+        ANSWER_MS,
       );
 
       const onMessage = (data: Buffer): void => {
@@ -197,7 +234,7 @@ async function run(): Promise<void> {
         resolve({
           probe,
           // Ölçtüğümüz şey "çalıştı mı" değil, "AYRIŞTIRILDI mı".
-          ok: status !== SYNTAX_ERROR_STATUS,
+          verdict: status === SYNTAX_ERROR_STATUS ? "syntax-error" : "parsed",
           status,
           text: message.body?.statusMessage ?? "",
         });
@@ -208,36 +245,34 @@ async function run(): Promise<void> {
     });
 
     results.push(outcome);
-    const mark = outcome.ok === (probe.expect === "parses") ? " " : "!";
     console.log(
-      `${mark} ${probe.question.padEnd(34)} ${outcome.ok ? "ayrıştı" : "SÖZDİZİMİ HATASI"} ` +
-        `(${outcome.status ?? "-"}) ${outcome.text.slice(0, 60)}`,
+      `${contradicts(outcome) ? "!" : " "} ${probe.question.padEnd(32)} ` +
+        `${LABEL[outcome.verdict].padEnd(17)} (${outcome.status ?? "-"}) ` +
+        outcome.text.slice(0, 56),
     );
     await sleep(GAP_MS);
   }
 
+  const measured = results.filter((r) => r.verdict !== "no-answer");
   console.log("\n--- özet ---");
 
   if (dropped !== null) {
-    console.log(`Bağlantı ölçüm bitmeden koptu: ${dropped}`);
-    console.log(`${results.length}/${PROBES.length} soru ölçülebildi.\n`);
+    console.log(`bağlantı koptu: ${dropped}`);
+    console.log(`${measured.length}/${PROBES.length} soru ölçülebildi\n`);
   }
 
-  if (results.length === 0) {
-    console.log(
-      "Hiçbir ölçüm alınamadı. Oyunda dünya açık kaldı mı, /connect yazıldıktan\n" +
-        "sonra dünyadan çıkılmadı mı kontrol et.",
-    );
+  if (measured.length === 0) {
+    console.log(RECONNECT_HELP);
     process.exitCode = 1;
     socket.close();
     server.close();
     return;
   }
 
-  const surprises = results.filter((r) => r.ok !== (r.probe.expect === "parses"));
+  const surprises = measured.filter(contradicts);
   if (surprises.length === 0) {
     console.log(
-      `Ölçülen ${results.length} sorunun hepsi beklentiyle uyuştu — ` +
+      `Ölçülen ${measured.length} sorunun hepsi beklentiyle uyuştu — ` +
         "doğrulayıcı oyunla aynı fikirde.",
     );
   } else {
@@ -246,11 +281,14 @@ async function run(): Promise<void> {
       console.log(`  ${s.probe.question}`);
       console.log(`    komut:    ${s.probe.command}`);
       console.log(`    beklenen: ${s.probe.expect === "parses" ? "ayrışır" : "sözdizimi hatası"}`);
-      console.log(
-        `    ölçülen:  ${s.ok ? "ayrıştı" : "sözdizimi hatası"} (${s.status ?? "-"}) ${s.text}`,
-      );
+      console.log(`    ölçülen:  ${LABEL[s.verdict]} (${s.status ?? "-"}) ${s.text}`);
     }
     process.exitCode = 1;
+  }
+
+  if (measured.length < PROBES.length) {
+    console.log(`\n${PROBES.length - measured.length} soru ölçülemedi.\n`);
+    console.log(RECONNECT_HELP);
   }
 
   socket.close();

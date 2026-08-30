@@ -151,7 +151,13 @@ function report(): void {
   }
 }
 
-const server = new WebSocketServer({ port: PORT });
+const server = new WebSocketServer({
+    port: PORT,
+    // Bedrock'ın WebSocket uygulaması belgelenmemiş ve zaten spec ihlali
+    // yapıyor (kapatma çerçevesinde status 0). Sıkıştırma uzantısı pazarlığı
+    // fazladan bir değişken; kapatarak eleniyor.
+    perMessageDeflate: false,
+  });
 
 const connectTimer = setTimeout(() => {
   console.log(`\n${CONNECT_TIMEOUT_MS / 1000} saniyede bağlantı gelmedi.`);
