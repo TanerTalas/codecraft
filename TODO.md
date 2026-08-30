@@ -553,9 +553,69 @@ Aşama 4'ün tamamı bu ikisine dayanıyordu ve ikisi de tahmindi. İkisi de art
 > `npm test` 162/162, `npm run typecheck` exit 0,
 > `npm run eval -- --generator=cached --list=all` **19/20** (değişmedi).
 
+### Adım 2 — Sunucu uçları (tamamlandı)
+
+- [x] `POST /api/context`, `POST /api/review`, `GET /api/config` — Node runtime
+- [x] `packages/core/src/api.ts` kablo sözleşmesi: uçlar buradaki şemayı parse
+  ediyor, tarayıcı buradaki istemciyi çağırıyor. `remoteReview`, `ReviewFn`
+  imzasının aynısı — `generate()` farkı görmüyor
+
+> Paketleyici iki yerde kırdı, ikisi de ölçüldü ve düzeltildi:
+> `new URL("../../../", import.meta.url)` derleme anında düşüyordu,
+> `require.resolve("typescript/...")` dosya yolu yerine **sayısal modül
+> kimliği** döndürüyordu. `serverExternalPackages` denendi, Turbopack workspace
+> sembolik bağlarını proje kaynağı sayıyor, işe yaramadı.
+
+### Adım 3.5 — Hata mesajları eyleme dönüştürülebilir oldu (30-08-2026)
+
+Tek retry'ımız var ve okunamayan bir mesaj o retry'ı boşa harcıyordu. Ajv iki
+şeyi zaten `params` içinde taşıyormuş, yalnızca mesaja geçmiyordu:
+
+| Önce | Sonra |
+|---|---|
+| `must NOT have additional properties` | `… : "places_block"` |
+| `must be equal to one of the allowed values` | `… : "first_pass", "surface_pass", …` |
+
+- [x] `packages/validator/src/json.ts` → `describe()`. Enum listesi 12 öğeye
+  kadar yazılıyor; blok kimliği gibi uzun listeler mesajı okunmaz yapardı
+
+> **Ölçüldü ve `ore-gen-01` kapandı.** Kapıdaki tek düşen vaka buydu.
+>
+> | Koşu | 1. deneme | 2. deneme |
+> |---|---|---|
+> | Düzeltmeden önce | 2 hata | hâlâ düşük — mesaj okunamıyordu |
+> | Düzeltmeden sonra | **3 hata** | **geçti** |
+>
+> Son koşuda birinci deneme üç ayrı hata verdi ve üçü de bugün eyleme
+> dönüştürülebilir hâle gelmişti: fazla alan (`places_block`), geçersiz enum
+> (`placement_pass`), ve olmayan doku anahtarı (`redstone` → öneri
+> `redstone_dust`). İkinci deneme üçünü birden düzeltti.
+>
+> Yani retry döngüsünün kendisi zaten çalışıyordu; eksik olan şey modele ne
+> söylendiğiydi.
+
+**Çekirdek liste 20/20 — ama bu taze bir kapı koşusu DEĞİL.** Ölçüm
+`--generator=cached` ile alındı ve o üretici parmak izini doğrulamıyor: 19
+vakanın çıktısı bugünkü prompt'tan önce üretilmişti. Yalnızca `ore-gen-01`
+taze. Skor "bu çıktılar bugünkü doğrulayıcıdan geçiyor" demek; "bugünkü prompt
+20'de 20 üretiyor" **demiyor**. Prompt bugün iki kez değişti, o yüzden gerçek
+kapı koşusu 20 taze istek ister ve ayrı bir güne bırakıldı.
+
+### Adım 3.6 — Örnek çıktılar künyesiyle derlendi
+
+- [x] `evals/src/build-examples.ts` → `app/src/examples/examples.json`
+  (`npm run examples:build`). Yedi örnek: altısı geçen, biri yapılabilirlik
+  engeli. `ore-gen-01` retry akışını gösteriyor (düştü → geçti)
+- [x] Künye zorunlu: model adı + tarih. Künyesiz çıktı yayınlanmıyor, çünkü
+  elle yazılmış bir dosyadan ayırt edilemez
+- [x] Deneme geçmişi artık önbelleğe yazılıyor (`CacheMeta.attempts`). Çıktı
+  dosyaları yalnızca **son** denemeyi taşıyor, yani retry'ın koşup koşmadığı
+  hiçbir yerden anlaşılmıyordu — arayüzün göstermesi gereken veri hiç yoktu
+  - Eski girdilerde alan yok. `null` **"retry koşmadı" demek değil**,
+    "kaydedilmemiş" demek. Rozetin "ölçülemedi" hâliyle aynı mantık
+
 ### Kalan iş
 
-- [ ] Sunucu uçları: `POST /api/context`, `POST /api/review`, `GET /api/config`
 - [ ] Kalıcı sürüm seçici
 - [ ] Sohbet alanı
 - [ ] Kod bloğu ve kopyala butonu

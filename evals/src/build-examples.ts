@@ -47,10 +47,10 @@ const SHOWCASE = [
   "custom-item-01",
   "no-fall-damage-01",
   "recipe-vanilla-01",
-  // En sonda ve bilerek: DÜŞEN bir örnek. Tekrar deneme döngüsünü gösteren
-  // elimizdeki tek gerçek kayıt bu — birinci denemede iki hata vardı, ikinci
-  // deneme ikisini de düzeltti ama ikon biçimini bozdu. Rozetin doğruyu
-  // söylediğini de gösteriyor: geçmeyen çıktı "geçti" diye sunulmuyor.
+  // En sonda ve bilerek: tekrar deneme döngüsünü gösteren tek gerçek kayıt.
+  // Birinci denemede ÜÇ ayrı hata vardı (fazla alan, geçersiz enum, olmayan
+  // doku anahtarı), ikinci deneme üçünü de düzeltti ve geçti. Ürünün genel
+  // modellerden farkı tam olarak bu döngü (docs/ROADMAP.md).
   "ore-gen-01",
 ] as const;
 
