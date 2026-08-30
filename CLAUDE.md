@@ -46,7 +46,8 @@ yüklenmez. Modül sürümü ile oyun sürümü asla birbirinin yerine kullanıl
 - JSON doğrulama: `ajv`
 - Script doğrulama: `typescript` derleyicisi
 - Arayüz: Next.js + Tailwind
-- LLM soyutlaması: Vercel AI SDK
+- LLM soyutlaması: Vercel AI SDK (`ai@7`). Sağlayıcı yapılandırmadan okunur;
+  bugünkü varsayılan `@ai-sdk/google` (Gemini, ücretsiz kademe)
 - Hosting: Vercel veya Cloudflare, ücretsiz kademe
 
 Python sadece **üretilen** otomasyon script'lerinin dili. Altyapıda Python çalıştırılmıyor.
@@ -79,6 +80,7 @@ app/                  # Next.js
 | Kullanıcı hesabı, oturum, veritabanı | v1'de sıfır kişisel veri. Anahtar tarayıcıda, geçmiş yerelde |
 | Kendi JSON şemalarını yazmak | Blockception zaten yazmış, BSD-3-Clause |
 | Model ID'lerini koda gömmek | Yapılandırmadan oku, ekosistem sık değişiyor |
+| Ücretli API, tier veya hosting kullanmak | Bütçe yok. Ücretsiz kademe bir kısıt değil, gereksinim — istek limiti de tasarıma girer |
 | Komut sözdizimi doğrulayıcısı (v1'de) | En zahmetli parça, v1 onsuz da anlamlı |
 
 ## Takıldığında dur ve sor

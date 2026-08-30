@@ -135,12 +135,12 @@ adıyla verilmeli.
 
 ## Özet
 
-| Sınıf | Şema yakalar mı | Bugün ne ölçüyor | Nerede çözülür |
+| Sınıf | Şema yakalar mı | Ne ölçüyor | Durum |
 |---|---|---|---|
-| A · kimlik referansı | Hayır, ama çözülebilir | `checkIdentities` | Aşama 3 — üretim döngüsüne bağlanacak |
-| B · dosya adı kuralı | **Yapısal olarak hayır** | `checkFileNames` | Aşama 3 — üretim tarafı dosya adını içerikten türetecek |
+| A · kimlik referansı | Hayır, ama çözülebilir | `checkIdentities`, `checkCommandIdentities` | **Aşama 3'te bağlandı** — `review()` koşuyor, bulgular retry'ın hata metnine giriyor |
+| B · dosya adı kuralı | **Yapısal olarak hayır** | `checkFileNames` | **Aşama 3'te düzeltiliyor** — `normalize()` dosya adını identifier'dan türetiyor |
 | C · asset referansı | Hayır | — | Aşama 4 — kapsam kararı veya uyarı |
-| D · geçerli ama yanlış | **Yapısal olarak hayır** | `checkPatterns` | Aşama 3 — kalıplar prompt'a girecek |
+| D · geçerli ama yanlış | **Yapısal olarak hayır** | `checkPatterns` | **Aşama 3'te prompt'a girdi** — `patternGuide()` aynı tablodan besliyor |
 
 Üç kontrol de `packages/validator/src/checks.ts` içinde, saf fonksiyon, model
 çağrısı yok. Aşama 2.5'te yazıldılar ve eval seti onları koşuyor: `expect.checks`
@@ -157,7 +157,11 @@ alanı hangi kontrolün hangi vakada isteneceğini söylüyor
   bedrock-samples `features/` klasöründen indeks çıkarması gerekir.
 - **`checkFileNames` yalnızca feature rule kuralını biliyor.** Başka dosya
   tipleri için benzer kurallar olabilir ama ölçülmedi. Ölçülmemiş kural
-  kodlanmıyor.
+  kodlanmıyor. `normalize()` de yalnızca bu kuralı düzeltiyor, aynı sebeple.
+- **Komut sözdizimi hâlâ doğrulanmıyor.** `checkCommandIdentities` yalnızca
+  kimliklere bakıyor; gramer v1 kapsamı dışında (`CLAUDE.md`). Özel
+  namespace'li bir kimlik komut metninden doğrulanamaz — aynı üretimde
+  tanımlanmışsa geçer, değilse uyarı üretir, hata değil.
 
 Aşama 2'nin sonucu bu tabloyla birlikte okunmalı: 20 fixture'ın hepsi doğru
 sonuç veriyor, ama "doğrulamadan geçti" ile "oyunda çalışıyor" aynı şey değil.

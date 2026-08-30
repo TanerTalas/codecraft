@@ -176,11 +176,15 @@ Aşama 3 boyunca ana çalışma yüzeyi burası olacak.
 Kapıya sayılan 20 vaka yalnızca bugün ölçülebilen tiplerden oluşuyor
 (`script`, `json`). Komut ve Python vakaları `extra` listesinde duruyor.
 
-- [ ] **Komut kimlik kontrolü — Aşama 3.** Komut sözdizimi doğrulayıcısı v1'de
-  yok (`CLAUDE.md`), çünkü Bedrock komut grameri için makine okunur resmi
-  kaynak yok. Ama komut metnindeki kimlikler (`/give @s codecraft:ruby`)
-  `checkIdentities` ile kontrol edilebilir — bu sözdizimi doğrulaması değil,
-  var olan kontrolün komut metnine uygulanması. Modelin en sık hatasını keser
+- [x] **Komut kimlik kontrolü — Aşama 3'te yapıldı.**
+  `checkCommandIdentities` (`packages/validator/src/checks.ts`) komut
+  metnindeki kimlikleri doğruluyor. Sözdizimi hâlâ doğrulanmıyor — grameri
+  için makine okunur resmi kaynak yok (`CLAUDE.md`)
+  - Arama `lookupAny` ile bütün indekslere bakıyor: komutlarda efekt, boyut
+    ve büyü kimlikleri de geçiyor, dar arama onlara uydurma "yok" derdi
+  - İki komut vakası artık `extra` listesinde **ölçülüyor** (kapıya sayılmaz).
+    Negatif kontrol koşuldu: `minecraft:diamond` yerine `minecraft:ruby`
+    yazıldığında vaka kırmızıya dönüyor
 - [ ] **Python doğrulayıcısı — Aşama 3'ten sonra ölç, sonra karar ver.**
   `CLAUDE.md` "altyapıda Python çalıştırılmıyor" diyor; en ucuz doğrulama bile
   (`py_compile`) bu kuralı esnetir, o yüzden sormadan yapılmaz. Seçenekler:
@@ -213,11 +217,42 @@ Kapıya sayılan 20 vaka yalnızca bugün ölçülebilen tiplerden oluşuyor
 
 Çekirdek mantık `packages/core` içinde, CLI ince kabuk (mimari kural 1).
 
-- [ ] Akış: istek → ilgili veriyi topla → sürüme kilitli prompt kur → modele gönder → validator'dan geçir
-- [ ] **Tek retry döngüsü:** hata varsa hatayı da vererek bir kez daha dene. Ürünün kalite farkını yaratan şey bu, genel modeller yapmıyor
-- [ ] LLM soyutlaması Vercel AI SDK üzerinden
-- [ ] Model ID'leri yapılandırmadan okunur, koda gömülmez
-- [ ] CLI komutu
+- [x] Akış: istek → ilgili veriyi topla → sürüme kilitli prompt kur → modele gönder → validator'dan geçir
+  - `packages/core/src/generate.ts`. Sıra: yapılabilirlik → bağlam → prompt →
+    model → normalize → doğrulama
+- [x] **Tek retry döngüsü** — hata metni `review.report`'tan geliyor ve
+  bulguların `evidence` alanını da taşıyor
+- [x] LLM soyutlaması Vercel AI SDK üzerinden — `ai@7`, `@ai-sdk/google@4`
+  - `generateObject` ai@7'de deprecated; doğru yol `generateText` +
+    `Output.object`. Kurulu `.d.ts`'ten okundu, hatırlanmadı
+  - Yeniden deneme SDK'ya bırakıldı: 429'da `Retry-After` başlığına saygılı
+    üstel geri çekilmeyi kendisi yapıyor, ikinci bir backoff yazılmadı
+- [x] Model ID'leri yapılandırmadan okunur, koda gömülmez —
+  `codecraft.config.json`. Anahtar yalnızca ortam değişkeninden; yapılandırmaya
+  sır yazılırsa yükleyici duruyor
+  - Model kimliği tahmin edilmiyor: `npm run codecraft -- --models` anahtarla
+    sağlayıcının listesini çekiyor
+- [x] CLI komutu — `npm run codecraft`, diske yazar, `--install` ile oyuna kurar
+
+### Sağlayıcı seçimi
+
+**Google Gemini, ücretsiz kademe.** Projede ücretli API kullanılmıyor. Bunun
+iki mühendislik sonucu var ve ikisi de koda girdi:
+
+- Vakalar arası bekleme (`requestDelayMs`) ve limitten düşen vakanın ayrı
+  işaretlenmesi — "model yanlış üretti" ile "çağrı hiç yapılamadı" karışırsa
+  kapı skoru yalan söyler
+- `--generator=cached`: model bir kez koşar, sonraki koşular önbelleği oynatır
+
+### Kalan iş
+
+- [ ] **Kapıyı gerçek modelle ölç** — `npm run eval -- --generator=model --gate`.
+  API anahtarı gerekiyor (`GOOGLE_GENERATIVE_AI_API_KEY`), henüz yok.
+  **Bu adım koşulmadı ve atlanmadı; açıkça bekliyor**
+- [ ] Prompt iyileştirme turları — kapı ölçüldükten sonra
+- [ ] **Vanilla feature indeksi** (opsiyonel). `places_feature` bugün yalnızca
+  `minecraft:` dışı namespace'lerde kesin sonuç veriyor. Kapıyı etkilemiyor
+  (uyarı vakayı düşürmez), o yüzden en sonda
 
 ### WebSocket sağlık kontrolü (Aşama 1'den taşındı)
 
@@ -243,24 +278,41 @@ Kontrol fonksiyonları Aşama 2.5'te yazıldı (`packages/validator/src/checks.t
 ve eval seti onları koşuyor. Burada kalan iş, aynı fonksiyonları **üretim
 döngüsüne** bağlamak — ölçmek değil, düzeltmek.
 
-- [ ] **Kimlik referansı kontrolü.** `checkIdentities` yazıldı. Üretim
-  döngüsünde doğrulamadan sonra koşacak ve bulguları retry'ın hata metnine
-  girecek
-- [ ] **Dosya adı içerikten türetilmeli.** `checkFileNames` kuralı ölçüyor ama
-  düzeltmiyor. Üretim tarafı feature rule dosya adını identifier'dan türetmeli
-  — doğrulama katmanının değil, üretim katmanının işi
-- [ ] **Bilinen kalıplar prompt'a girmeli.** `checkPatterns` tablosu kalıpları
-  adıyla tutuyor (`welcome-on-player-spawn`). Prompt aynı tablodan beslenmeli:
-  kalıp hem önceden anlatılsın hem sonradan ölçülsün
-- [ ] **Vanilla feature indeksi.** `places_feature` bugün yalnızca `minecraft:`
-  dışı namespace'lerde kesin sonuç veriyor; `features.json` yapı feature'larını
-  tutuyor, yerleştirme feature'larını değil. Pipeline bedrock-samples
-  `features/` klasöründen indeks çıkarırsa uyarı hataya döner
+- [x] **Kimlik referansı kontrolü.** `review()` doğrulamadan sonra
+  `checkIdentities`'i koşuyor ve bulgular retry'ın hata metnine giriyor —
+  `evidence` alanıyla birlikte
+- [x] **Dosya adı içerikten türetiliyor.** `packages/core/src/normalize.ts`
+  feature rule dosya adını identifier'dan türetip dosyayı yeniden adlandırıyor,
+  doğrulamadan önce. Testi negatif kontrol biçiminde: normalize çıktısı her
+  zaman `checkFileNames`'i geçmeli
+- [x] **Bilinen kalıplar prompt'a giriyor.** `checks.ts`'deki `Pattern` tipine
+  `guidance` alanı eklendi ve `patternGuide()` ile dışa açıldı. Prompt aynı
+  tablodan besleniyor, ikinci bir liste tutulmuyor
 - [ ] **Asset referansı kararı.** `minecraft:icon` kaynak paketi olmayınca
   içerik hatası veriyor. Ya minimum kaynak paketi de üretilir ya kullanıcıya
   açıkça söylenir (Aşama 4)
 
 **Bitiş kriteri:** CLI uçtan uca çalışıyor. Prompt burada onlarca istekle iyileştirilir — tarayıcıda yapmak çok yavaş.
+
+> **Durum (30-08-2026): kod tamam, ölçüm eksik.**
+>
+> `npm run typecheck` exit 0, `npm test` 122/122, `npm run eval` regresyonsuz
+> (çekirdek hâlâ 15/20, kayıtlı üreticiyle).
+>
+> Model gerektirmeyen her şey koşuyor ve doğrulandı:
+> - Yapılabilirlik kapısı uçtan uca çalışıyor, **anahtar bile istemiyor**:
+>   `npm run codecraft -- "Fareme basılı tutmuş gibi otomatik kazsın"`
+>   modeli hiç kurmadan gerekçe, kanıt ve alternatif basıyor
+> - Tek retry döngüsü `ai/test` sahte modeliyle ölçüldü: birinci deneme
+>   düştüğünde ikinci istem hata metnini taşıyor, üçüncü deneme yok
+> - Yapılabilirlik kurallarının dayandığı API yokluğu `.d.ts` üzerinde
+>   taranıyor — Mojang `SimulatedPlayer`'ı taşırsa test kırmızıya döner
+> - Katman ayrımı testle sabit: üretim yolundaki modüllerde `node:` import'u
+>   yok, Aşama 4 baştan refactor olmayacak
+>
+> **Koşulmamış tek şey gerçek model çağrısı.** API anahtarı yok
+> (`GOOGLE_GENERATIVE_AI_API_KEY`). Kapı bu yüzden **ölçülmedi** — atlanmadı,
+> bekliyor.
 
 ---
 

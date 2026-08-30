@@ -98,6 +98,12 @@ CLI ile başlamanın sebebi: çekirdek döngüyü arayüz yazmadan test edebilme
 
 Çekirdek paket ayrımı için `CLAUDE.md` içindeki mimari kurallara bak. CLI ince bir kabuk olmalı.
 
+Sağlayıcı **Google Gemini, ücretsiz kademe** — projede ücretli API
+kullanılmıyor. Sağlayıcı `codecraft.config.json`'dan okunuyor, değiştirmek tek
+satır. Ücretsiz kademenin istek limiti bir tasarım kısıtı: eval vakalar arası
+bekliyor, limitten düşen vaka ayrı işaretleniyor, ve model çıktısı
+önbelleğe alınıp `--generator=cached` ile tekrar oynatılabiliyor.
+
 ---
 
 ## GEÇİŞ KAPISI
@@ -105,6 +111,10 @@ CLI ile başlamanın sebebi: çekirdek döngüyü arayüz yazmadan test edebilme
 **20'de 18 doğrulamadan geçiyor.**
 
 Bu sayıya ulaşmadan arayüze geçilmez.
+
+Skor model kalitesine duyarlı, o yüzden **her zaman model adıyla birlikte**
+kaydedilir. Ücretsiz bir modelle kapının altında kalmak tek başına "prompt
+kötü" demek değil; hangi vakaların hangi sebeple düştüğü ayrıştırılır.
 
 Sayının anlamlı olması için kapıya sayılan 20 vaka bugün otomatik ölçülebilen
 tiplerden oluşur: `script` (tsc) ve `json` (ajv). Komut ve Python çıktılarının
