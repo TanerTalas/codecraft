@@ -7,13 +7,18 @@
  * O tek retry ürünün genel modellerden farkı (docs/ROADMAP.md). Sayısı sabit
  * bir: ikinci bir hata döngüsü kaliteyi artırmıyor, maliyeti artırıyor.
  *
- * `review` parametre olarak alınıyor. Aşama 4'te doğrulama sunucuya taşındığında
- * yerine bir HTTP çağrısı geçecek ve bu dosya değişmeyecek (mimari kural 2).
- * Bu yüzden burada node: modülü import edilmiyor.
+ * `context` ve `review` parametre olarak alınıyor. İkisi de Node'a bağlı
+ * (dosya sistemi, ajv, tsc); Aşama 4'te ikisinin de yerine bir HTTP çağrısı
+ * geçecek ve bu dosya değişmeyecek (mimari kural 2).
+ *
+ * Bu yüzden burada node: modülü import edilmiyor — ve `./context.ts` yalnızca
+ * TİP olarak import ediliyor. Değer olarak import edilseydi çalışma zamanında
+ * @codecraft/knowledge üzerinden node:fs zinciri buraya kadar gelirdi; ölçüldü,
+ * kırıktı (packages/core/test/layers.test.ts geçişli grafiği izliyor).
  */
 import type { LanguageModel } from "ai";
 
-import { buildContext, type Context, type ContextOptions } from "./context.ts";
+import type { Context } from "./context.ts";
 import { checkFeasibility, type FeasibilityResult } from "./feasibility.ts";
 import { callModel } from "./model.ts";
 import { normalize, type Fix } from "./normalize.ts";
@@ -47,8 +52,16 @@ export type GenerateResult =
       ok: boolean;
     };
 
-export type GenerateOptions = ContextOptions & {
+export type GenerateOptions = {
   config: Config;
+  /**
+   * Sürüme kilitli bağlam ya da onu kuran fonksiyon.
+   *
+   * Fonksiyon biçimi `model` ile aynı sebepten: yapılabilirlik engellediğinde
+   * bağlam da kurulmaz, yani gereksiz bir dosya okuması (Aşama 4'te gereksiz
+   * bir HTTP çağrısı) yapılmaz.
+   */
+  context: Context | (() => Promise<Context>);
   /**
    * Model ya da onu kuran fonksiyon.
    *
@@ -73,7 +86,8 @@ export async function generate(
 
   const model = typeof options.model === "function" ? options.model() : options.model;
 
-  const context = await buildContext(request, { version: options.version });
+  const context =
+    typeof options.context === "function" ? await options.context() : options.context;
   const system = buildSystemPrompt(context);
 
   const attempts: Attempt[] = [];

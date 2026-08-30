@@ -2,12 +2,20 @@
  * Katman ayrımının testi.
  *
  * Mimari kural 2: üretim tarayıcıda, doğrulama sunucuda. Aşama 3 tek makinede
- * koşuyor, o yüzden bu kural bugün hiçbir şeyi kırmıyor — ve tam bu yüzden
- * sessizce ihlal edilebilir. Test, üretim yolundaki modüllere node: bağımlılığı
- * sızdığı anda kırmızıya döner; Aşama 4 baştan refactor olmasın.
+ * koşuyordu, o yüzden bu kural hiçbir şeyi kırmıyor — ve tam bu yüzden sessizce
+ * ihlal edilebiliyor.
+ *
+ * ÖNCEKİ HÂLİ YETMİYORDU: yalnızca modülün KENDİ import satırlarına bakıyordu.
+ * `generate.ts` node: bir şey import etmiyordu ama `./context.ts`'i değer
+ * olarak import ediyordu, o da @codecraft/knowledge üzerinden node:fs çekiyordu.
+ * Yani test yeşildi ve iddia yanlıştı; tarayıcı paketi node:fs isteyecekti.
+ *
+ * Bu yüzden test artık `src/browser.ts`'ten başlayıp import grafiğini GEÇİŞLİ
+ * olarak yürüyor. Tek ölçüt: o giriş noktasından çalışma zamanında ulaşılan
+ * hiçbir dosya Node'a ya da doğrulama paketlerine bağlanmayacak.
  */
 import { readFile, readdir } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -15,53 +23,120 @@ import { test } from "node:test";
 // pathname Windows'ta "/C:/..." veriyor; fileURLToPath doğru yolu verir.
 const SRC = fileURLToPath(new URL("../src/", import.meta.url));
 
-/** Tarayıcıda da koşacak modüller. */
-const PURE = [
-  "errors.ts",
-  "feasibility.ts",
-  "generate.ts",
-  "model.ts",
-  "normalize.ts",
-  "output.ts",
-  "prompt.ts",
-];
+/**
+ * Tarayıcıya girmesi yasak olan paketler.
+ *
+ * Yürüyücü yalnızca yerel `./*.ts` kenarlarını izliyor, paket sınırını
+ * geçmiyor — yani node:fs'i @codecraft/knowledge'ın İÇİNDE göremez. Sızıntıyı
+ * yakalayan şey bu liste: o paketlerin Node'a bağlı olduğu zaten biliniyor,
+ * o yüzden adlarının grafikte görünmesi tek başına yeterli kanıt.
+ *
+ * Ölçüldü: `generate.ts` context.ts'i değer olarak import ederken bu test
+ * kırmızı, `import type`'a çevrilince yeşil.
+ */
+const FORBIDDEN = ["@codecraft/validator", "@codecraft/knowledge"];
 
-/** Node'a bağlı olması BEKLENEN modüller — gerekçesi dosyanın başında yazılı. */
+/** Node'a bağlı olması BEKLENEN modüller — gerekçesi her dosyanın başında yazılı. */
 const NODE_BOUND = ["config.ts", "context.ts", "review.ts", "pack.ts", "cli.ts"];
 
-const importsOf = (source: string): string[] =>
-  [...source.matchAll(/^import[^;]*?from\s+"([^"]+)"/gm)].map((match) => match[1] as string);
-
-test("üretim yolundaki modüller node: modülü import etmiyor", async () => {
-  for (const name of PURE) {
-    const source = await readFile(join(SRC, name), "utf8");
-    const nodeImports = importsOf(source).filter((path) => path.startsWith("node:"));
-    assert.deepEqual(
-      nodeImports,
-      [],
-      `${name} node: modülü import ediyor (${nodeImports.join(", ")}) — ` +
-        "Aşama 4'te tarayıcıda koşamaz",
-    );
+/**
+ * Bir dosyanın ÇALIŞMA ZAMANINDA çektiği import'lar.
+ *
+ * `import type` ve `type` nitelenmiş adlar dışarıda: onların çalışma zamanında
+ * karşılığı yok, tarayıcıya kod taşımıyorlar. Ayrım tam da bu testin konusu —
+ * `browser.ts` Context'i tip olarak alıyor, değer olarak değil.
+ */
+function runtimeImports(source: string): string[] {
+  const out: string[] = [];
+  for (const match of source.matchAll(/^(?:import|export)\s+([^;]*?)\s*from\s+"([^"]+)"/gms)) {
+    const clause = match[1] as string;
+    const specifier = match[2] as string;
+    if (/^type\b/.test(clause.trim())) continue;
+    // `import { a, type B }` — hepsi tipse çalışma zamanı etkisi yok.
+    const inner = clause.match(/\{([^}]*)\}/)?.[1];
+    if (inner !== undefined && clause.trim().startsWith("{")) {
+      const names = inner.split(",").map((n) => n.trim()).filter((n) => n.length > 0);
+      if (names.length > 0 && names.every((n) => n.startsWith("type "))) continue;
+    }
+    out.push(specifier);
   }
+  return out;
+}
+
+/** browser.ts'ten başlayıp yerel .ts kenarlarını izler. */
+async function reachableFrom(entry: string): Promise<Map<string, string[]>> {
+  const seen = new Map<string, string[]>();
+  const queue = [entry];
+
+  while (queue.length > 0) {
+    const file = queue.pop() as string;
+    if (seen.has(file)) continue;
+    const source = await readFile(join(SRC, file), "utf8");
+    const specifiers = runtimeImports(source);
+    seen.set(file, specifiers);
+
+    for (const specifier of specifiers) {
+      if (!specifier.startsWith(".")) continue;
+      const resolved = relative(SRC, join(SRC, dirname(file), specifier)).split("\\").join("/");
+      queue.push(resolved);
+    }
+  }
+
+  return seen;
+}
+
+test("tarayıcı giriş noktasından node: modülüne ulaşılamıyor", async () => {
+  const graph = await reachableFrom("browser.ts");
+  const offenders: string[] = [];
+
+  for (const [file, specifiers] of graph) {
+    for (const specifier of specifiers) {
+      if (specifier.startsWith("node:")) offenders.push(`${file} -> ${specifier}`);
+    }
+  }
+
+  assert.deepEqual(
+    offenders,
+    [],
+    `browser.ts'ten node: modülüne ulaşılıyor:\n  ${offenders.join("\n  ")}\n` +
+      "Tarayıcıda koşamaz (mimari kural 2).",
+  );
 });
 
-test("üretim yolu doğrulama paketlerine doğrudan bağlanmıyor", async () => {
-  // review.ts arayüzü üzerinden gidilmeli: ajv ve tsc sunucuda kalacak.
-  for (const name of PURE) {
-    const source = await readFile(join(SRC, name), "utf8");
-    const value = importsOf(source).filter((path) => path === "@codecraft/validator");
-    assert.deepEqual(value, [], `${name} validator'ı doğrudan import ediyor`);
+test("tarayıcı giriş noktasından doğrulama paketlerine ulaşılamıyor", async () => {
+  // ajv ve tsc sunucuda kalacak; tarayıcı review.ts arayüzünden geçmeli.
+  const graph = await reachableFrom("browser.ts");
+  const offenders: string[] = [];
+
+  for (const [file, specifiers] of graph) {
+    for (const specifier of specifiers) {
+      if (FORBIDDEN.includes(specifier)) offenders.push(`${file} -> ${specifier}`);
+    }
   }
+
+  assert.deepEqual(offenders, [], `Doğrulama paketi tarayıcıya sızıyor:\n  ${offenders.join("\n  ")}`);
 });
 
-test("node'a bağlı modüller listede kayıtlı", async () => {
-  // Yeni bir modül eklenip listelerin hiçbirine yazılmazsa bu test söyler.
+test("node'a bağlı modüller tarayıcı grafiğinde değil", async () => {
+  const graph = await reachableFrom("browser.ts");
+  const leaked = NODE_BOUND.filter((name) => graph.has(name));
+  assert.deepEqual(
+    leaked,
+    [],
+    `Node'a bağlı modül tarayıcı grafiğine girmiş: ${leaked.join(", ")}. ` +
+      "Değer olarak değil, tip olarak import edilmeli.",
+  );
+});
+
+test("her modül ya tarayıcı grafiğinde ya NODE_BOUND listesinde", async () => {
+  // Yeni bir modül eklenip hiçbir yere yazılmazsa bu test söyler.
+  const graph = await reachableFrom("browser.ts");
   const files = (await readdir(SRC)).filter((name) => name.endsWith(".ts"));
-  const known = new Set([...PURE, ...NODE_BOUND, "index.ts"]);
+  const known = new Set([...graph.keys(), ...NODE_BOUND, "index.ts", "browser.ts"]);
   const unknown = files.filter((name) => !known.has(name));
   assert.deepEqual(
     unknown,
     [],
-    `Sınıflandırılmamış modül: ${unknown.join(", ")}. PURE veya NODE_BOUND listesine ekle.`,
+    `Sınıflandırılmamış modül: ${unknown.join(", ")}. browser.ts'ten ulaşılmalı ya da NODE_BOUND'a yazılmalı.`,
   );
 });

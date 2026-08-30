@@ -13,6 +13,7 @@ import { join } from "node:path";
 import { ROOT } from "@codecraft/knowledge";
 
 import { loadConfig } from "./config.ts";
+import { buildContext } from "./context.ts";
 import { UserError } from "./errors.ts";
 import { generate } from "./generate.ts";
 import { createModel, listModels } from "./model.ts";
@@ -89,15 +90,17 @@ async function main(): Promise<void> {
     );
   }
 
-  console.log(`model:   ${config.provider}/${config.model}`);
-  console.log(`istek:   ${options.request}\n`);
+  const request = options.request;
 
-  const result = await generate(options.request, {
+  console.log(`model:   ${config.provider}/${config.model}`);
+  console.log(`istek:   ${request}\n`);
+
+  const result = await generate(request, {
     config,
-    // Tembel: yapılabilirlik engellerse anahtar hiç istenmez.
+    // Tembel: yapılabilirlik engellerse ne bağlam kurulur ne anahtar istenir.
+    context: () => buildContext(request, { version: options.version }),
     model: () => createModel(config),
     review,
-    version: options.version,
     onAttempt: (attempt) => {
       const state = attempt.review.ok ? "geçti" : "düştü";
       console.log(`deneme ${attempt.number}: ${state}`);

@@ -12,6 +12,7 @@ import { test } from "node:test";
 import { MockLanguageModelV4 } from "ai/test";
 
 import type { Config } from "../src/config.ts";
+import type { Context } from "../src/context.ts";
 import { generate } from "../src/generate.ts";
 import type { Generation } from "../src/output.ts";
 import type { Review, ReviewFn } from "../src/review.ts";
@@ -24,6 +25,23 @@ const CONFIG: Config = {
   temperature: 0,
   maxRetries: 0,
   requestDelayMs: 0,
+};
+
+/**
+ * Sabit bağlam.
+ *
+ * `generate()` bağlamı parametre olarak alıyor, o yüzden bu test data/ altını
+ * hiç okumuyor: ölçtüğü şey döngü, veri değil.
+ */
+const CONTEXT: Context = {
+  version: "1.26.40.5",
+  minEngineVersion: [1, 26, 40],
+  engineVersion: "1.26.40",
+  modules: { "@minecraft/server": "2.9.0" },
+  documentTypes: ["behavior/blocks/blocks"],
+  patterns: [],
+  formatVersions: { "behavior/blocks/blocks": ["1.21.100"] },
+  identities: [],
 };
 
 /** Sırayla verilen çıktıları döndüren model. Gelen istemleri kaydeder. */
@@ -82,6 +100,7 @@ test("ilk deneme geçerse retry koşmaz", async () => {
 
   const result = await generate("Düşerken hasar almayayım", {
     config: CONFIG,
+    context: CONTEXT,
     model,
     review: scriptedReview([passing()]),
   });
@@ -101,6 +120,7 @@ test("ilk deneme düşerse hata metniyle tek retry koşar", async () => {
 
   const result = await generate("Düşerken hasar almayayım", {
     config: CONFIG,
+    context: CONTEXT,
     model,
     review: scriptedReview([
       failing("main.js: 2:1 TS2339: Property 'events' does not exist"),
@@ -124,6 +144,7 @@ test("retry de düşerse tam iki deneme yapılır ve sonuç düşük döner", as
 
   const result = await generate("Düşerken hasar almayayım", {
     config: CONFIG,
+    context: CONTEXT,
     model,
     review: scriptedReview([failing("bir hata"), failing("hâlâ hata")]),
   });
@@ -136,13 +157,20 @@ test("retry de düşerse tam iki deneme yapılır ve sonuç düşük döner", as
   assert.equal(result.ok, false);
 });
 
-test("yapılabilirlik engellerse model hiç kurulmaz", async () => {
+test("yapılabilirlik engellerse ne bağlam kurulur ne model", async () => {
   const { model, prompts } = scriptedModel([{ kind: "script", files: [FILE] }]);
   let reviewed = false;
   let built = 0;
+  let contexts = 0;
 
   const result = await generate("Fareme basılı tutmuş gibi otomatik kazsın", {
     config: CONFIG,
+    // Fabrika biçimi: engellenen istekte bağlam da kurulmaz. Aşama 4'te bu
+    // bir HTTP çağrısı olacak, yani boşuna atılmadığı burada sabitleniyor.
+    context: async () => {
+      contexts += 1;
+      return CONTEXT;
+    },
     // Fabrika biçimi: model kurulmadığı sürece API anahtarı da gerekmez.
     // CLI anahtarsız çalışabilsin diye önemli.
     model: () => {
@@ -157,6 +185,7 @@ test("yapılabilirlik engellerse model hiç kurulmaz", async () => {
 
   assert.equal(result.status, "infeasible");
   assert.equal(built, 0, "model kuruldu — anahtar gereksiz yere istenirdi");
+  assert.equal(contexts, 0, "bağlam kuruldu — Aşama 4'te boşuna HTTP çağrısı olurdu");
   assert.deepEqual(prompts, []);
   assert.equal(reviewed, false);
 });
@@ -179,6 +208,7 @@ test("dosya adı düzeltmesi doğrulamadan önce uygulanır", async () => {
   let seen: readonly { path: string }[] = [];
   const result = await generate("Yakut cevheri doğal oluşsun", {
     config: CONFIG,
+    context: CONTEXT,
     model,
     review: async (files) => {
       seen = files;

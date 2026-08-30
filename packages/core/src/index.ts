@@ -14,7 +14,8 @@ export {
   loadEnvFiles,
   requireApiKey,
 } from "./config.ts";
-export type { Config, ProviderName } from "./config.ts";
+export type { Config, Env, ProviderName } from "./provider.ts";
+export { defaultEnv } from "./provider.ts";
 
 export { UserError } from "./errors.ts";
 

@@ -15,7 +15,7 @@
 import { createGoogle } from "@ai-sdk/google";
 import { APICallError, generateText, Output, type LanguageModel } from "ai";
 
-import { requireApiKey, type Config } from "./config.ts";
+import { defaultEnv, requireApiKey, type Config, type Env } from "./provider.ts";
 import { UserError } from "./errors.ts";
 import { generationSchema, type Generation } from "./output.ts";
 
@@ -78,7 +78,7 @@ export function isCapacityError(error: unknown): boolean {
  * `env` parametre: tarayıcıda process yok, o yüzden Aşama 4 anahtarı doğrudan
  * geçecek — varsayılan değer yalnızca argüman verilmediğinde değerlendirilir.
  */
-export function createModel(config: Config, env = process.env): LanguageModel {
+export function createModel(config: Config, env: Env = defaultEnv()): LanguageModel {
   if (config.provider === "google") {
     return createGoogle({ apiKey: requireApiKey("google", env) })(config.model);
   }
@@ -152,7 +152,7 @@ export async function callModel(options: GenerateOptions): Promise<Generation> {
 }
 
 /** Sağlayıcının bu anahtar için sunduğu modeller. Tahmin edilmez, sorulur. */
-export async function listModels(config: Config, env = process.env): Promise<string[]> {
+export async function listModels(config: Config, env: Env = defaultEnv()): Promise<string[]> {
   if (config.provider !== "google") {
     throw new Error(`Sağlayıcı "${config.provider}" için model listesi desteklenmiyor`);
   }

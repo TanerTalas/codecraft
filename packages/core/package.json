@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Uretim dongusu: veri toplama, prompt, model cagrisi, dogrulama, tek retry",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./browser": "./src/browser.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.57",

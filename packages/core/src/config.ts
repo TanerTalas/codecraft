@@ -15,6 +15,13 @@ import { join } from "node:path";
 import { ROOT } from "@codecraft/knowledge";
 
 import { UserError } from "./errors.ts";
+import { API_KEY_ENV, type Config, type ProviderName } from "./provider.ts";
+
+// Saf parçalar provider.ts'te duruyor (gerekçe orada). Buradan yeniden dışa
+// açılıyorlar ki var olan Node tarafı çağıranlar tek yerden import etmeye
+// devam etsin.
+export { API_KEY_ENV, requireApiKey } from "./provider.ts";
+export type { Config, ProviderName } from "./provider.ts";
 
 /**
  * Yerel ortam dosyaları. İlk bulunan okunur.
@@ -48,43 +55,6 @@ export function loadEnvFiles(root: string = ROOT): void {
 export const CONFIG_FILE = "codecraft.config.json";
 export const LOCAL_CONFIG_FILE = "codecraft.config.local.json";
 
-export type ProviderName = "google";
-
-/** Sağlayıcı adı -> anahtarın okunduğu ortam değişkeni. */
-export const API_KEY_ENV: Record<ProviderName, string> = {
-  google: "GOOGLE_GENERATIVE_AI_API_KEY",
-};
-
-export type Config = {
-  provider: ProviderName;
-  /** Sağlayıcının model kimliği. --models ile listelenir, elle yazılmaz. */
-  model: string;
-  maxOutputTokens: number;
-  temperature: number;
-  /**
-   * Taşıma katmanı yeniden denemesi (429, 5xx). AI SDK'ya geçer; SDK üstel
-   * geri çekilmeyi ve Retry-After başlığını kendisi uyguluyor, o yüzden burada
-   * ikinci bir backoff yazılmıyor.
-   *
-   * Üretim döngüsündeki kalite retry'ıyla karıştırılmamalı: o hatayı modele
-   * geri veren ayrı bir denemedir ve sayısı sabit birdir (TODO.md Aşama 3).
-   */
-  maxRetries: number;
-  /**
-   * İki model isteği arasındaki en az süre (ms).
-   *
-   * VAKA başına değil İSTEK başına uygulanır — sağlayıcının sınırı da öyle.
-   *
-   * Ölçüldü (30-08-2026, AI Studio kota panosu, Gemini ücretsiz kademe):
-   * dakikada **5** istek, günde **20** istek, model başına.
-   *
-   * Dakikalık sınır önce yanlış okundu (API hata metnindeki "limit: 20" günlük
-   * sınırdı, dakikalık değil) ve 4000 ms yazılmıştı — dakikada 15 istek, yani
-   * tavanın üç katı. 13000 ms dakikada ~4,6 istek demek, 5'in altında pay
-   * bırakıyor.
-   */
-  requestDelayMs: number;
-};
 
 const DEFAULTS: Omit<Config, "model"> = {
   provider: "google",
@@ -185,22 +155,4 @@ export async function loadConfig(root: string = ROOT): Promise<Config> {
     maxRetries: optionalNumber(raw, "maxRetries", DEFAULTS.maxRetries),
     requestDelayMs: optionalNumber(raw, "requestDelayMs", DEFAULTS.requestDelayMs),
   };
-}
-
-/**
- * Anahtarı ortamdan okur. Yoksa ne yapılacağını tek adımda söyler
- * (CLAUDE.md, "Nasıl sorulur").
- */
-export function requireApiKey(provider: ProviderName, env = process.env): string {
-  const name = API_KEY_ENV[provider];
-  const value = env[name];
-  if (value === undefined || value.trim() === "") {
-    throw new UserError(
-      `${name} tanımlı değil. Google AI Studio'dan (aistudio.google.com) ` +
-        `ücretsiz bir anahtar alıp şunu çalıştır:\n` +
-        `  setx ${name} "..."\n` +
-        "Yeni bir terminal açman gerekir. Anahtar hiçbir dosyaya yazılmaz.",
-    );
-  }
-  return value;
 }
