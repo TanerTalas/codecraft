@@ -71,12 +71,12 @@ Bu yüzden **denetlenmeyen bir tip kabul edilir.** Gerçekten denetlenen tipler
 
 `INT`, `WILDCARDINT`, `POSITION`, `POSITION_FLOAT`, `FULLINTEGERRANGE`,
 `SELECTION`, `WILDCARDSELECTION`, `OPERATOR`, `COMPAREOPERATOR`,
-`postfix_t/s/d/l`
+`BLOCK_STATE_ARRAY`, `postfix_t/s/d/l`
 
 Denetlenmeyenler de gizlenmiyor, testte tek tek listeli:
 
-`BLOCK_STATE_ARRAY`, `CODEBUILDERARGS`, `EXECUTECHAINEDOPTION_0`, `ID`,
-`JSON_OBJECT`, `MESSAGE_ROOT`, `PATHCOMMAND`, `RAWTEXT`, `RVAL`, `VAL`
+`CODEBUILDERARGS`, `EXECUTECHAINEDOPTION_0`, `ID`, `JSON_OBJECT`,
+`MESSAGE_ROOT`, `PATHCOMMAND`, `RAWTEXT`, `RVAL`, `VAL`
 
 Liste küçüldükçe test güncellenir. Mojang yeni bir yapısal tip eklerse test
 kırmızıya döner ve karar zorlanır — sessizce kabul edilmez.
@@ -91,14 +91,35 @@ kırmızıya döner ve karar zorlanır — sessizce kabul edilmez.
     okunabilir (`docs/WEBSOCKET.md`). Ölçülürse liste kaynaklı hâle gelir.
 - **Seçici filtre anahtarları doğrulanmıyor** (`type=`, `r=`, `scores=`).
   Aynı sebep: tanımda yoklar.
-- **Blok durumları doğrulanmıyor.** `data/<sürüm>/blocks.json` durum adlarını
-  ve alabildikleri değerleri tutuyor, yani bu kapatılabilir bir boşluk —
-  `BLOCK_STATE_ARRAY` ayrıştırılıp `blockStates` ile karşılaştırılabilir.
+
+## Kapatılan boşluk: blok durumları
+
+`BLOCK_STATE_ARRAY` ayrıştırılıyor ve `data/<sürüm>/blocks.json` indeksine
+karşı doğrulanıyor: durum adı o bloğa ait mi, değer kabul edilen kümede mi.
+`["facing_direction"=99]` yakalanır (0–5), `["uydurma_durum"=1]` yakalanır.
+
+Blok `minecraft:` dışı bir namespace'teyse **sessizce geçilir**: eklenti bloğu
+olabilir ve komut grameri onu bilemez. Aynı ilke enum eşleşmesinde de var —
+`/setblock ~ ~ ~ codecraft:ruby_ore` reddedilmiyor. Bu ölçülerek eklendi:
+başta kullanıcının kendi bloğu "geçersiz" görünüyordu.
+
+## İlk gün ne yakaladı
+
+Doğrulayıcı yazılır yazılmaz **kendi elle yazdığımız eval fixture'ındaki bir
+hatayı** buldu:
+
+```
+/fill ~-5 ~ ~-5 ~5 ~4 ~5 minecraft:glass 0 hollow
+```
+
+`fill`'in dört aşırı yüklemesinin hiçbiri blok adından sonra tam sayı kabul
+etmiyor — eski `<data>` argümanı kaldırılmış. Fixture düzeltildi ve vaka teste
+çevrildi. Yani elle yazılmış "doğru" örnek yanlıştı; ölçüm onu düzeltti.
 
 ## Testler
 
-`packages/validator/test/command.test.ts` — 16 test, iki yön de ölçülüyor:
-on iki geçerli komut geçmeli, altı bozuk komut düşmeli. Eval tarafında
-`command-give-01` ve `command-fill-01` vakaları `commandSyntax` kontrolünü
-istiyor; negatif kontrol koşuldu (koordinat bileşeni silinince vaka kırmızıya
-döndü).
+`packages/validator/test/command.test.ts` — 23 test, iki yön de ölçülüyor:
+geçerli komutlar geçmeli, bozuk komutlar düşmeli, ve kapsam sınırı (hangi
+tipler denetlenmiyor) sabitlenmiş. Eval tarafında `command-give-01` ve
+`command-fill-01` vakaları `commandSyntax` kontrolünü istiyor; negatif kontrol
+koşuldu — koordinat bileşeni silinince vaka kırmızıya döndü.

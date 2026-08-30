@@ -14,7 +14,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { CHECKED_TYPES, loadCommandIndex, tokenize, validateCommand } from "../src/command.ts";
+import {
+  CHECKED_TYPES,
+  loadCommandIndex,
+  parseBlockStates,
+  tokenize,
+  validateCommand,
+} from "../src/command.ts";
 
 const VERSION = "1.26.40";
 const check = (line: string) => validateCommand(line, { version: VERSION });
@@ -23,7 +29,7 @@ test("geçerli komutlar geçer", async () => {
   for (const line of [
     "/give @s minecraft:diamond 64",
     "/give @s minecraft:diamond",
-    "/fill ~-5 ~ ~-5 ~5 ~3 ~5 minecraft:glass 0 hollow",
+    "/fill ~-5 ~ ~-5 ~5 ~3 ~5 minecraft:glass hollow",
     "/setblock ~ ~1 ~ minecraft:stone",
     "/effect @s minecraft:speed 30 1",
     "/effect @s speed 30 1",
@@ -149,7 +155,6 @@ test("denetlenmeyen yapısal tipler kayıt altında", async () => {
   // Kapsam gizlenmiyor, sabitleniyor. Bu liste küçüldükçe test güncellenir;
   // Mojang yeni bir yapısal tip eklerse burada görünür ve kararı zorlar.
   assert.deepEqual(unchecked, [
-    "BLOCK_STATE_ARRAY",
     "CODEBUILDERARGS",
     "EXECUTECHAINEDOPTION_0",
     "ID",
@@ -171,4 +176,76 @@ test("seçici harfi henüz doğrulanmıyor — bilinen boşluk", async () => {
   // ölçülene kadar kabul ediliyor ve boşluk burada kayıtlı.
   const result = await check("/give @z minecraft:diamond 1");
   assert.equal(result.ok, true);
+});
+
+// --------------------------------------------------------------------------
+// Blok durumları
+// --------------------------------------------------------------------------
+
+test("blok durumu ayrıştırma", () => {
+  assert.deepEqual(parseBlockStates('["open_bit"=true]'), [{ key: "open_bit", value: "true" }]);
+  assert.deepEqual(parseBlockStates("[]"), []);
+  assert.deepEqual(parseBlockStates('["a"=1,"b"="x"]'), [
+    { key: "a", value: "1" },
+    { key: "b", value: "x" },
+  ]);
+  // Biçim tanınmazsa null: çağıran "ayrıştıramadım" der, hata uydurmaz.
+  assert.equal(parseBlockStates("acik"), null);
+  assert.equal(parseBlockStates('["esitlik yok"]'), null);
+});
+
+test("geçerli blok durumları geçer", async () => {
+  for (const line of [
+    '/setblock ~ ~ ~ minecraft:acacia_button ["facing_direction"=3]',
+    '/setblock ~ ~ ~ minecraft:acacia_door ["open_bit"=true]',
+    '/setblock ~ ~ ~ minecraft:acacia_door ["minecraft:cardinal_direction"="north"]',
+    "/setblock ~ ~ ~ minecraft:stone []",
+  ]) {
+    const result = await check(line);
+    assert.equal(result.ok, true, `${line} → ${result.errors[0]?.message ?? ""}`);
+  }
+});
+
+test("uydurulmuş durum adı yakalanır", async () => {
+  const result = await check('/setblock ~ ~ ~ minecraft:acacia_button ["uydurma_durum"=1]');
+  assert.equal(result.ok, false);
+  assert.match(result.errors[0]?.message ?? "", /durumu değil/);
+});
+
+test("aralık dışı durum değeri yakalanır", async () => {
+  // facing_direction 0..5; 99 kabul edilmemeli.
+  const result = await check('/setblock ~ ~ ~ minecraft:acacia_button ["facing_direction"=99]');
+  assert.equal(result.ok, false);
+  assert.match(result.errors[0]?.message ?? "", /geçerli değil/);
+});
+
+test("paketin kendi kimlikleri reddedilmez", async () => {
+  // Yanlış pozitif en pahalı hata: kullanıcının kendi bloğu "geçersiz"
+  // görünüyordu. Komut grameri eklenti kimliğini bilemez; var olup olmadığı
+  // checkCommandIdentities'in ayrı ekseni.
+  for (const line of [
+    "/setblock ~ ~ ~ codecraft:ruby_ore",
+    "/give @s codecraft:ruby 1",
+    "/summon codecraft:guard ~ ~ ~",
+  ]) {
+    const result = await check(line);
+    assert.equal(result.ok, true, `${line} → ${result.errors[0]?.message ?? ""}`);
+  }
+});
+
+test("uydurulmuş vanilla kimliği hâlâ reddedilir", async () => {
+  // Gevşetmenin sınırı: minecraft: namespace'i indeksten kesin doğrulanıyor.
+  const result = await check("/setblock ~ ~ ~ minecraft:uydurma_blok");
+  assert.equal(result.ok, false);
+});
+
+test("kaldırılmış eski veri değeri sözdizimi reddedilir", async () => {
+  // fill'in dört aşırı yüklemesinin hiçbiri blok adından sonra tam sayı
+  // kabul etmiyor — eski `<data>` argümanı kaldırılmış.
+  //
+  // Bu vaka, doğrulayıcının ilk gününde ELLE YAZILMIŞ bir eval fixture'ındaki
+  // hatayı yakalamasıyla ortaya çıktı. Yani kendi test verimiz yanlıştı ve
+  // ölçüm onu düzeltti.
+  const result = await check("/fill ~-5 ~ ~-5 ~5 ~3 ~5 minecraft:glass 0 hollow");
+  assert.equal(result.ok, false);
 });

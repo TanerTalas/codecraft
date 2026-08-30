@@ -23,7 +23,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { resolveVersion } from "@codecraft/knowledge";
+import { blockStates, normalizeId, resolveVersion } from "@codecraft/knowledge";
 
 export type CommandParam = {
   name: string;
@@ -212,6 +212,7 @@ export const CHECKED_TYPES = new Set([
   "postfix_s",
   "postfix_d",
   "postfix_l",
+  "BLOCK_STATE_ARRAY",
 ]);
 
 const OPERATORS = new Set(["=", "+=", "-=", "*=", "/=", "%=", "<", ">", "><"]);
@@ -279,6 +280,109 @@ function checkSelector(value: string): string | null {
 }
 
 // --------------------------------------------------------------------------
+// Blok durumları
+// --------------------------------------------------------------------------
+
+/** Virgülle böler ama tırnak içindekileri saymaz. */
+function splitTop(text: string): string[] {
+  const parts: string[] = [];
+  let current = "";
+  let quote: string | null = null;
+
+  for (const char of text) {
+    if (quote !== null) {
+      current += char;
+      if (char === quote) quote = null;
+      continue;
+    }
+    if (char === '"' || char === "'") {
+      quote = char;
+      current += char;
+      continue;
+    }
+    if (char === ",") {
+      parts.push(current);
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+  if (current.trim() !== "") parts.push(current);
+  return parts;
+}
+
+const unquote = (value: string): string =>
+  value.length >= 2 && (value.startsWith('"') || value.startsWith("'")) && value.at(-1) === value[0]
+    ? value.slice(1, -1)
+    : value;
+
+export type BlockStatePair = { key: string; value: string };
+
+/**
+ * `["facing_direction"=3,"open_bit"=true]` → çiftler.
+ * Biçim tanınmazsa null döner ve çağıran "ayrıştıramadım" der, hata uydurmaz.
+ */
+export function parseBlockStates(text: string): BlockStatePair[] | null {
+  const trimmed = text.trim();
+  if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) return null;
+
+  const inner = trimmed.slice(1, -1).trim();
+  if (inner === "") return [];
+
+  const pairs: BlockStatePair[] = [];
+  for (const part of splitTop(inner)) {
+    const eq = part.indexOf("=");
+    if (eq === -1) return null;
+    pairs.push({
+      key: unquote(part.slice(0, eq).trim()),
+      value: unquote(part.slice(eq + 1).trim()),
+    });
+  }
+  return pairs;
+}
+
+/**
+ * Blok durumlarını `data/<sürüm>/blocks.json` indeksine karşı doğrular.
+ *
+ * Bu boşluk `docs/COMMANDS.md` içinde "kapatılabilir" diye kayıtlıydı: veri
+ * zaten elimizdeydi, her bloğun durum adları ve alabildiği değerlerle birlikte.
+ *
+ * Blok bilinmiyorsa (özel namespace, ya da indekste yok) **sessizce geçilir** —
+ * kimlik kontrolü zaten ayrı bir eksende bunu yakalıyor ve burada ikinci kez
+ * hata üretmek kullanıcıya aynı sorunu iki kez gösterirdi.
+ */
+async function checkBlockStates(
+  raw: string,
+  blockId: string | null,
+  version: string | undefined,
+): Promise<string | null> {
+  const pairs = parseBlockStates(raw);
+  if (pairs === null) return 'blok durumu biçimi tanınmadı — ["ad"=değer] bekleniyor';
+  if (pairs.length === 0 || blockId === null) return null;
+
+  const states = await blockStates(normalizeId(blockId), version);
+  // Blok indekste yok: kimlik kontrolünün işi, burada tekrar edilmiyor.
+  if (states === null) return null;
+
+  for (const { key, value } of pairs) {
+    const property = states[key];
+    if (property === undefined) {
+      const known = Object.keys(states);
+      return known.length === 0
+        ? `"${blockId}" bloğunun hiç durumu yok, "${key}" verilemez`
+        : `"${key}" ${blockId} bloğunun durumu değil. Durumları: ${known.join(", ")}`;
+    }
+
+    const allowed = property.values.map((v) => String(v));
+    if (!allowed.includes(value)) {
+      return `"${key}" için "${value}" geçerli değil. Kabul edilenler: ${allowed.join(", ")}`;
+    }
+  }
+
+  return null;
+}
+
+// --------------------------------------------------------------------------
 // Aşırı yükleme eşleştirme
 // --------------------------------------------------------------------------
 
@@ -313,18 +417,32 @@ type Attempt = {
  */
 function matchesEnum(values: readonly string[], value: string): boolean {
   if (values.includes(value)) return true;
-  const bare = value.startsWith("minecraft:") ? value.slice("minecraft:".length) : null;
-  return bare !== null && values.includes(bare);
+
+  if (value.startsWith("minecraft:")) {
+    return values.includes(value.slice("minecraft:".length));
+  }
+
+  // Başka bir namespace: eklenti kimliği. Komut grameri bunu bilemez — paketin
+  // kendi bloğu, item'ı ya da entity'si olabilir ve oyunda geçerlidir. Kabul
+  // ediliyor; var olup olmadığı checkCommandIdentities'in ayrı ekseni.
+  //
+  // Ölçülerek eklendi: `/setblock ~ ~ ~ codecraft:ruby_ore` reddediliyordu,
+  // yani kullanıcının kendi bloğu "geçersiz" görünüyordu.
+  return value.includes(":");
 }
 
 /** Tek bir aşırı yüklemeyi dener. */
-function tryOverload(
+async function tryOverload(
   overload: CommandOverload,
   args: readonly string[],
   index: CommandIndex,
-): Attempt {
+  version: string | undefined,
+): Promise<Attempt> {
   const errors: CommandError[] = [];
   let cursor = 0;
+  // Blok durumları hangi bloğa ait olduğunu bilmeden doğrulanamıyor; aynı
+  // aşırı yüklemede kendinden önce gelen BLOCK parametresi o bloğu veriyor.
+  let lastBlock: string | null = null;
 
   for (const param of overload.params) {
     if (cursor >= args.length) {
@@ -350,10 +468,21 @@ function tryOverload(
       return { consumed: cursor, errors };
     }
 
+    if (param.type === "BLOCK_STATE_ARRAY") {
+      const problem = await checkBlockStates(slice[0] as string, lastBlock, version);
+      if (problem !== null) {
+        errors.push({ kind: "argument", message: `${param.name}: ${problem}`, index: cursor + 1 });
+        return { consumed: cursor, errors };
+      }
+      cursor += width;
+      continue;
+    }
+
     const values = index.enums[param.type.toLowerCase()];
     if (values !== undefined) {
       const value = slice[0] as string;
       if (matchesEnum(values, value)) {
+        if (param.type === "BLOCK") lastBlock = value;
         cursor += width;
         continue;
       }
@@ -461,7 +590,10 @@ export async function validateCommand(
   }
 
   const args = tokens.slice(1);
-  const attempts = definition.overloads.map((overload) => tryOverload(overload, args, index));
+  const attempts: Attempt[] = [];
+  for (const overload of definition.overloads) {
+    attempts.push(await tryOverload(overload, args, index, options.version));
+  }
   const matched = attempts.find((attempt) => attempt.errors.length === 0);
 
   if (matched !== undefined || definition.overloads.length === 0) {
