@@ -15,7 +15,7 @@
  * Fixture'lar olduğu gibi kopyalanır, "yüklensin diye" düzeltilmez — test
  * edilen şey doğrulayıcının onayladığı içerik.
  */
-import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { access, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -30,16 +30,46 @@ const PACK_DIR = "codecraft-test-bp";
 /** test-worlds/ .gitignore içinde — üretilen paket repoya girmez. */
 const OUT_DIR = join(ROOT, "test-worlds", PACK_DIR);
 
-/** Oyunun geliştirme paketi klasörü. UWP (Store) kurulumu. */
-const DEV_PACKS = join(
-  process.env["LOCALAPPDATA"] ?? "",
-  "Packages",
-  "Microsoft.MinecraftUWP_8wekyb3d8bbwe",
-  "LocalState",
-  "games",
-  "com.mojang",
-  "development_behavior_packs",
-);
+/**
+ * Oyunun com.mojang klasörü. İki düzen dolaşıyor ve hangisinin kullanıldığı
+ * kurulu sürüme bağlı — tahmin edilmiyor, var olan aranıyor:
+ *
+ *   yeni  %APPDATA%\Minecraft Bedrock\Users\Shared\games\com.mojang
+ *         Çok profilli düzen. Dünyalar profil klasöründe ama geliştirme
+ *         paketleri Shared altında, profiller arasında ortak.
+ *   eski  %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\
+ *         LocalState\games\com.mojang
+ *
+ * 30-08-2026'da 1.26.45 kurulumunda ölçüldü: UWP LocalState altında sadece
+ * bootstrapStorage var, gerçek veri yeni konumda.
+ */
+const COM_MOJANG_CANDIDATES = [
+  join(process.env["APPDATA"] ?? "", "Minecraft Bedrock", "Users", "Shared", "games", "com.mojang"),
+  join(
+    process.env["LOCALAPPDATA"] ?? "",
+    "Packages",
+    "Microsoft.MinecraftUWP_8wekyb3d8bbwe",
+    "LocalState",
+    "games",
+    "com.mojang",
+  ),
+];
+
+async function findDevPacksDir(): Promise<string> {
+  for (const candidate of COM_MOJANG_CANDIDATES) {
+    try {
+      await access(candidate);
+      return join(candidate, "development_behavior_packs");
+    } catch {
+      // sıradaki düzene bak
+    }
+  }
+  throw new Error(
+    "com.mojang klasörü bulunamadı. Bakılan yerler:\n" +
+      COM_MOJANG_CANDIDATES.map((path) => `  ${path}`).join("\n") +
+      "\nMinecraft en az bir kez açılıp ana menüye ulaşmadıysa bu klasör oluşmaz.",
+  );
+}
 
 /** Fixture -> paket içindeki yol + doğrulanacağı doküman tipi. */
 const FILES: { fixture: string; target: string; type: string }[] = [
@@ -187,16 +217,12 @@ async function main(): Promise<void> {
   }
 
   // 3. Oyunun geliştirme klasörüne kopyala.
-  const target = join(DEV_PACKS, PACK_DIR);
-  try {
-    await cp(OUT_DIR, target, { recursive: true, force: true });
-  } catch (error) {
-    throw new Error(
-      `Geliştirme klasörüne kopyalanamadı: ${DEV_PACKS}\n` +
-        "Minecraft en az bir kez açılıp ana menüye ulaşmadıysa bu klasör oluşmaz.\n" +
-        `Ayrıntı: ${error instanceof Error ? error.message : String(error)}`,
-    );
-  }
+  const devPacks = await findDevPacksDir();
+  const target = join(devPacks, PACK_DIR);
+  await mkdir(devPacks, { recursive: true });
+  // Bayat dosya kalmasın: kopyalamadan önce eski kurulum siliniyor.
+  await rm(target, { recursive: true, force: true });
+  await cp(OUT_DIR, target, { recursive: true });
   console.log(`kuruldu -> ${target}`);
   console.log("\nDünya oluştururken davranış paketleri arasında 'CodeCraft' görünmeli.");
 }
