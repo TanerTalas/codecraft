@@ -24,6 +24,10 @@ const toRelative = (root: string, path: string): string =>
 
 async function readTree(root: string, dir: string, out: GeneratedFile[]): Promise<void> {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
+    // Nokta ile baslayan girdiler atlanir: model onbellegi kendi ustverisini
+    // (.codecraft-cache.json) vaka klasorune yaziyor ve o bir paket dosyasi
+    // degil. Dogrulayiciya verilirse "tip cozumlenemedi" hatasi uretir.
+    if (entry.name.startsWith(".")) continue;
     const path = join(dir, entry.name);
     if (entry.isDirectory()) {
       await readTree(root, path, out);
