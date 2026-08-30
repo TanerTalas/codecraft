@@ -292,6 +292,16 @@ async function run(): Promise<void> {
     console.log(RECONNECT_HELP);
   }
 
+  // Kapanış açıkça duyuruluyor. Script bitince sunucu kapanıyor ve oyun bunu
+  // "Could not connect to the server" diye gösteriyor — başarılı bitişin
+  // görüntüsü, başarısızlığın değil. Bu satır olmadan ölçüm başarılı olsa bile
+  // kullanıcı ekranında hata görüp koşunun düştüğünü sanıyor (30-08-2026'da
+  // tam olarak böyle oldu).
+  console.log(
+    '\nÖlçüm bitti, sunucu kapanıyor. Oyunda "Could not connect to the server"\n' +
+      "görmen NORMAL — bağlantıyı biz kapattık.",
+  );
+
   socket.close();
   server.close();
 }
