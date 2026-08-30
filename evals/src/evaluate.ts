@@ -4,68 +4,26 @@
  * Saf: dosya yazmaz, terminale bir şey basmaz. Runner ve rapor bunun döndürdüğü
  * sonuçtan beslenir.
  */
+import { isScript, validateFiles } from "@codecraft/core";
 import {
   checkFileNames,
   checkIdentities,
   checkPatterns,
-  validateJson,
-  validateScript,
   type Finding,
   type PackFile,
 } from "@codecraft/validator";
 
 import type { CaseResult, EvalCase, FileResult, Generation } from "./types.ts";
 
-/** tsc'ye giden uzantılar. Üretilen paketler .js yazar, tsc ikisini de derler. */
-const SCRIPT_EXTENSIONS = [".js", ".ts", ".mjs"];
-
-const isScript = (path: string): boolean =>
-  SCRIPT_EXTENSIONS.some((extension) => path.endsWith(extension));
-
-async function validateFile(file: PackFile, version: string): Promise<FileResult> {
-  if (file.path.endsWith(".json")) {
-    try {
-      const result = await validateJson(file.content, file.path, version);
-      return {
-        path: file.path,
-        validator: "json",
-        ok: result.ok,
-        detail: result.type,
-        errors: result.errors.map((error) =>
-          error.kind === "parse" ? `JSON: ${error.message}` : `${error.path || "/"} :: ${error.message}`,
-        ),
-      };
-    } catch (error) {
-      // Tip çözümlenemedi: dosya paket içinde tanınmayan bir yerde duruyor.
-      // Bu da bir üretim hatası, sessizce atlanmaz.
-      return {
-        path: file.path,
-        validator: "json",
-        ok: false,
-        detail: "tip çözümlenemedi",
-        errors: [error instanceof Error ? error.message : String(error)],
-      };
-    }
-  }
-
-  if (isScript(file.path)) {
-    const result = await validateScript(file.content, { version });
-    const modules = Object.entries(result.modules)
-      .map(([name, release]) => `${name}@${release}`)
-      .join(", ");
-    return {
-      path: file.path,
-      validator: "script",
-      ok: result.ok,
-      detail: modules,
-      errors: result.errors.map(
-        (error) => `${error.line}:${error.column} ${error.code}: ${error.message}`,
-      ),
-    };
-  }
-
-  return { path: file.path, validator: "atlandı", ok: true, detail: "doğrulayıcı yok", errors: [] };
-}
+/**
+ * Dosya başına doğrulayıcı seçimi ve script uzantıları @codecraft/core içinde
+ * (review.ts). Üretim döngüsü de aynı fonksiyonları çağırıyor — mantık tek
+ * yerde durur (CLAUDE.md, mimari kural 1).
+ *
+ * Burada ayrı duran tek şey ek kontrollerin SEÇİCİ koşulması: eval bir ölçüm
+ * aracı ve hangi vakanın hangi hata sınıfını hedeflediği kayda geçiyor
+ * (expect.checks). Üretim tarafı hepsini koşar.
+ */
 
 /**
  * İstenen ek kontrolleri koşar.
@@ -107,10 +65,7 @@ export async function evaluateCase(
   testCase: EvalCase,
   generation: Generation,
 ): Promise<CaseResult> {
-  const files: FileResult[] = [];
-  for (const file of generation.files) {
-    files.push(await validateFile(file, testCase.version));
-  }
+  const files: FileResult[] = await validateFiles(generation.files, testCase.version);
 
   const measured = files.some((file) => file.validator !== "atlandı");
   const validation = measured && files.every((file) => file.ok);

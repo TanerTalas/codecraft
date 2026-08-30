@@ -33,10 +33,24 @@ async function readTree(root: string, dir: string, out: GeneratedFile[]): Promis
   }
 }
 
-export function recordedGenerator(dir: string = RECORDED_DIR): Generator {
+export const RECORDED_PROVENANCE =
+  "elle yazılmış kayıt (evals/recorded/) — model çıktısı değil";
+
+/**
+ * Dosya ağacını olduğu gibi döndüren üretici.
+ *
+ * `name` ve `provenance` parametre: aynı okuyucu model çıktısının önbelleğini
+ * de oynatıyor (--generator=cached) ve orada "elle yazılmış" demek yalan
+ * olurdu. Çıktının nereden geldiği hem terminale hem rapora basılıyor.
+ */
+export function recordedGenerator(
+  dir: string = RECORDED_DIR,
+  provenance: string = RECORDED_PROVENANCE,
+  name = "recorded",
+): Generator {
   return {
-    name: "recorded",
-    provenance: "elle yazılmış kayıt (evals/recorded/) — model çıktısı değil",
+    name,
+    provenance,
 
     async generate(testCase: EvalCase): Promise<Generation> {
       const root = join(dir, testCase.id);

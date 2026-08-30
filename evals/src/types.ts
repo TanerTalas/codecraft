@@ -5,6 +5,7 @@
  * packages/validator/test/fixtures/cases.json ile aynı düzeni izliyor
  * (core = ölçüt, extra = ölçüm) ve TS tipleriyle birebir eşleşiyor.
  */
+import type { FileResult } from "@codecraft/core";
 import type { Finding } from "@codecraft/validator";
 
 /**
@@ -67,17 +68,11 @@ export type Generator = {
   generate(testCase: EvalCase): Promise<Generation>;
 };
 
-/** Tek dosyanın doğrulama sonucu. */
-export type FileResult = {
-  path: string;
-  /** Hangi doğrulayıcı koştu. "atlandı": ne json ne script. */
-  validator: "json" | "script" | "atlandı";
-  ok: boolean;
-  /** Çözümlenen doküman tipi ya da derlenen modül sürümleri. */
-  detail: string;
-  /** İnsan okunur hata satırları. */
-  errors: string[];
-};
+/**
+ * Tek dosyanın doğrulama sonucu — @codecraft/core (review.ts) içinde tanımlı.
+ * Üretim döngüsü ve eval aynı tipi kullanır, ikisi ayrışamaz.
+ */
+export type { FileResult };
 
 export type CaseResult = {
   case: EvalCase;
@@ -98,6 +93,14 @@ export type CaseResult = {
    * bir istisna "geçti" gibi görünmez.
    */
   failure?: string;
+  /**
+   * Vaka sağlayıcının istek limiti yüzünden tamamlanamadı.
+   *
+   * Ayrı tutuluyor çünkü "model yanlış çıktı üretti" ile "çağrı hiç
+   * yapılamadı" aynı şey değil; ücretsiz kademede ikincisi olağan ve skoru
+   * model başarımı sanmak ölçümü yalanlar.
+   */
+  limited?: boolean;
 };
 
 export type RunResult = {
@@ -109,4 +112,6 @@ export type RunResult = {
   /** Ölçüm listesi — kapıya sayılmaz. */
   extra: CaseResult[];
   gate: { total: number; passed: number; required: number };
+  /** Kaç vaka istek limitinden tamamlanamadı. Skor bununla birlikte okunur. */
+  limited: number;
 };

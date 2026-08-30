@@ -15,17 +15,29 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { RateLimitError } from "@codecraft/core";
+
 import { GATE_REQUIRED, loadCases } from "./cases.ts";
 import { evaluateCase, failedCase } from "./evaluate.ts";
+import { cachedGenerator, modelGenerator } from "./generators/model.ts";
 import { recordedGenerator } from "./generators/recorded.ts";
 import { status, toHtml, toJson } from "./report.ts";
 import type { CaseResult, EvalCase, Generator, RunResult } from "./types.ts";
 
 const OUTPUT_DIR = fileURLToPath(new URL("../output/", import.meta.url));
 
-/** Aşama 3 buraya "model" ekleyecek; runner değişmeyecek. */
-const GENERATORS: Record<string, () => Generator> = {
+/**
+ * Üreticiler. Arayüz Aşama 2.5'te takılabilir kurulmuştu; Aşama 3 yalnızca bu
+ * tabloya iki satır ekledi, runner'ın geri kalanı değişmedi.
+ *
+ *   recorded  elle yazılmış kayıt — model çıktısı değil
+ *   model     gerçek üretim döngüsü, istek harcar
+ *   cached    son model koşusunun önbelleği, istek harcamaz
+ */
+const GENERATORS: Record<string, () => Generator | Promise<Generator>> = {
   recorded: recordedGenerator,
+  model: modelGenerator,
+  cached: cachedGenerator,
 };
 
 type Options = { generator: string; gate: boolean; only: string | null };
@@ -87,7 +99,11 @@ async function runList(generator: Generator, cases: readonly EvalCase[]): Promis
     try {
       results.push(await evaluateCase(testCase, await generator.generate(testCase)));
     } catch (error) {
-      results.push(failedCase(testCase, error));
+      const failed = failedCase(testCase, error);
+      // Limit hatası model başarısızlığı değil: ayrı işaretleniyor ki
+      // skor yanlış okunmasın (ücretsiz kademede olağan bir durum).
+      if (error instanceof RateLimitError) failed.limited = true;
+      results.push(failed);
     }
     printCase(results[results.length - 1] as CaseResult);
   }
@@ -103,7 +119,7 @@ async function main(): Promise<void> {
       `Bilinmeyen üretici: "${options.generator}". Tanınanlar: ${Object.keys(GENERATORS).join(", ")}`,
     );
   }
-  const generator = factory();
+  const generator = await factory();
 
   const cases = await loadCases();
   const pick = (list: EvalCase[]): EvalCase[] =>
@@ -128,12 +144,16 @@ async function main(): Promise<void> {
   }
 
   const passed = coreResults.filter((result) => result.ok).length;
+  const limited = [...coreResults, ...extraResults].filter(
+    (result) => result.limited === true,
+  ).length;
   const run: RunResult = {
     generator: { name: generator.name, provenance: generator.provenance },
     startedAt: new Date().toISOString(),
     core: coreResults,
     extra: extraResults,
     gate: { total: coreResults.length, passed, required: GATE_REQUIRED },
+    limited,
   };
 
   await mkdir(OUTPUT_DIR, { recursive: true });
@@ -150,6 +170,12 @@ async function main(): Promise<void> {
   if (extraResults.length > 0) {
     const measured = extraResults.filter((result) => result.measured).length;
     console.log(`ek liste: ${extraResults.length} vakanın ${measured} tanesi ölçülebildi`);
+  }
+  if (limited > 0) {
+    console.log(
+      `limit:    ${limited} vaka istek limitinden tamamlanamadı — bu skor ` +
+        "model başarımını göstermiyor, koşuyu tekrarla",
+    );
   }
   console.log(`rapor:    ${html}`);
 
