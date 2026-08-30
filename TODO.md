@@ -289,41 +289,39 @@ iki mühendislik sonucu var ve ikisi de koda girdi:
   `min_engine_version` için doğru, `format_version` için değil. Niyeti
   "pazarlama numarasını yazma" idi ama kural gibi okunuyor ve prompt'a öyle
   geçti.
-- [ ] **`format_version` düzeltmesi HÂLÂ ölçülmedi — üç koşu, üçünde de kota.**
+- [ ] **Güncel prompt'un kapı ölçümü yarım: 3 vaka eksik, 3 istek yeter.**
 
-  | | 1. koşu | 2. koşu | 3. koşu |
-  |---|---|---|---|
-  | Prompt | eski | düzeltilmiş | sıkıştırılmış |
-  | Ölçülen | 20 | 14 | 16 |
-  | Geçen | 19 | 11 | 14 |
-  | Kotaya takılan | 0 | 6 | 4 |
+  ```
+  npm run eval -- --generator=model --reuse --case=spawn-rule-01,recipe-vanilla-01,ore-gen-01
+  npm run eval -- --generator=model --gate --reuse --list=core
+  ```
 
-  **Gerileme korkusu büyük ölçüde gürültüymüş.** Düşen vakalar koşudan koşuya
-  yer değiştiriyor:
+  İlk komut eksik üçünü üretip önbelleğe alır (3 istek), ikincisi 20 vakayı
+  bedava oynatıp kapıyı hesaplar.
 
-  | Vaka | 1 | 2 | 3 |
-  |---|---|---|---|
-  | `death-coords-01` | ✓ | ✗ `entityDeath` | ✓ |
-  | `sleep-skip-night-01` | ✓ | ✗ UUID | ✓ |
-  | `kill-counter-01` | ✓ | ✓ | ✗ `worldInitialize` |
-  | `no-fall-damage-01` | ✓ | ✗ `damage_sensor` | ✗ `damage_sensor` |
+  **Durum:**
 
-  İkinci koşuda düşen iki vaka üçüncüde geçti, üçüncüde başka bir vaka düştü.
-  Bu, prompt gerilemesinin değil **model belirlenimsizliğinin** imzası
-  (`temperature: 0` Gemini'de tam belirlenimci değil). Vaka başına tek örnekle
-  prompt'u suçlamak yanlış olurdu.
+  | | Kayıtlı kapı (1. koşu) | Güncel prompt |
+  |---|---|---|
+  | Prompt | `format_version` düzeltmesinden ÖNCE | düzeltilmiş + sıkıştırılmış |
+  | Ölçülen | 20 | 17 |
+  | Geçen | **19** | 15 |
+  | Ölçülemeyen | 0 | 3 |
 
-  Tek ısrarcı vaka `no-fall-damage-01`: iki koşuda aynı `damage_sensor`
-  hatası. Birinci koşuda geçtiği için yine de kesin değil; üçüncü bir düşüş
-  gelirse gerçek bir bilgi boşluğu sayılır.
+  Eksik üçü geçerse 18/20 — **tam sınırda kapı açılır**. İkisi geçerse 17/20,
+  kapalı kalır. Yani sonuç şu an gerçekten belirsiz ve tahmin edilmeyecek.
 
-  **Yöntem kusuru:** `spawn-rule-01` listenin sonlarında ve kota hep orada
-  bitiyor — düzeltmenin hedefi olan vaka üç koşuda da modele gitmedi. Sabit
-  sıra yüzünden listenin sonu sistematik olarak aç kalıyor.
+  Güncel prompt'ta ısrarcı iki düşüş var:
+  - `no-fall-damage-01` — iki koşuda aynı `damage_sensor` şekil hatası
+  - `kill-counter-01` — `worldInitialize` diye olay yok (bir koşuda)
 
-  **Bir sonraki adım: prompt'a DOKUNMA.** 16 vaka önbellekte ve parmak izleri
-  geçerli; bir sonraki koşu onları bedava oynatıp doğrudan eksik dörde gider
-  (4-8 istek). Prompt değişirse önbellek düşer ve aynı açlık tekrarlanır.
+  **Kayıtlı 19/20 sonucu geçerliliğini koruyor**: o ölçüm bir önceki prompt'la
+  yapıldı ve o hâliyle doğru. Geçiş kapısı açılmış durumda; buradaki iş
+  düzeltmenin bedelini ölçmek, kapıyı yeniden açmak değil.
+
+  **Yöntem kusuru giderildi:** `--case=` artık virgüllü liste alıyor. Dört koşu
+  boyunca liste sonundaki aynı vakalar aç kalmıştı; artık kıt istekler
+  doğrudan eksik vakalara yönlendirilebiliyor.
 - [ ] Prompt iyileştirme turları — kapı ölçüldükten sonra. Her tur önbelleği
   geçersiz kılar, yani her turun kendi kota bütçesi var
 
