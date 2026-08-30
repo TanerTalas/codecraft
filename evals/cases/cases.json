@@ -113,7 +113,8 @@
       "request": "Bana boş bir davranış paketi iskeleti kur",
       "version": "1.26.40",
       "kind": "json",
-      "expect": { "validation": "pass", "checks": [] }
+      "expect": { "validation": "pass", "checks": ["manifest"] },
+      "note": "E sınıfı. Şema \"type\": \"javascript\" modülünü kabul ediyor ama oyun paketi hiç göstermiyor — gerçek oyunda ölçüldü"
     },
     {
       "id": "custom-block-01",

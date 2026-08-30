@@ -346,6 +346,89 @@ export async function checkIdentities(
  * kural buraya yazılmaz — bu aracın var olma sebebi tam olarak tahmine dayalı
  * çıktı üretmemek.
  */
+/**
+ * E sınıfı: şemadan geçen ama oyunun yüklemediği manifest.
+ *
+ * **30-08-2026'da gerçek oyunda ölçüldü.** Model şunu üretti:
+ *
+ *   { "type": "javascript", "entry": "scripts/main.js" }
+ *
+ * Şema bunu kabul etti — modül tipi listesinde `javascript` VAR
+ * (`["resources","data","client_data","interface","world_template",
+ * "javascript","script"]`) ve uydurma bir tip reddediliyor, yani şema
+ * gerçekten bakıyor. Ama oyun paketi hiç göstermedi: davranış paketleri
+ * listesinde çıkmadı.
+ *
+ * Tek şey değiştirilip yeniden bakıldı — `type: "script"` +
+ * `language: "javascript"` — ve paket göründü, script çalıştı. Yani sebep
+ * kesinleşti, tahmin değil.
+ *
+ * `javascript` 1.16 öncesinden kalma bir tip. Blockception geriye dönük
+ * uyumluluk için listede tutuyor; `@minecraft/server` 2.x ile çalışmıyor.
+ *
+ * Bu kontrol ÖLÇÜYOR. Üretim tarafı aynı kuralı `normalize()` ile
+ * DÜZELTİYOR — checkFileNames / normalize ikilisiyle aynı düzen.
+ */
+export function checkManifest(files: readonly PackFile[]): CheckResult {
+  const findings: Finding[] = [];
+
+  for (const file of files) {
+    if (!file.path.endsWith("manifest.json")) continue;
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(file.content);
+    } catch {
+      continue; // validateJson bunu ayrıntısıyla raporluyor
+    }
+
+    const modules = asObject(parsed)?.["modules"];
+    if (!Array.isArray(modules)) continue;
+
+    for (const [i, entry] of modules.entries()) {
+      const module = asObject(entry);
+      if (module === null) continue;
+
+      if (module["type"] === "javascript") {
+        findings.push({
+          check: "manifest",
+          severity: "error",
+          path: file.path,
+          message:
+            `/modules/${i}/type: "javascript" 1.16 öncesinden kalma bir modül ` +
+            'tipi. @minecraft/server 2.x için "script" olmalı ve yanında ' +
+            '"language": "javascript" bulunmalı',
+          evidence: `${LIMITS} · E (oyunda ölçüldü: paket listede hiç görünmedi)`,
+        });
+        continue;
+      }
+
+      if (module["type"] !== "script") continue;
+
+      if (module["language"] !== "javascript") {
+        findings.push({
+          check: "manifest",
+          severity: "error",
+          path: file.path,
+          message: `/modules/${i}: script modülünde "language": "javascript" eksik`,
+          evidence: `${LIMITS} · E`,
+        });
+      }
+      if (typeof module["entry"] !== "string") {
+        findings.push({
+          check: "manifest",
+          severity: "error",
+          path: file.path,
+          message: `/modules/${i}: script modülünde "entry" eksik`,
+          evidence: `${LIMITS} · E`,
+        });
+      }
+    }
+  }
+
+  return toResult(findings);
+}
+
 export function checkFileNames(files: readonly PackFile[]): CheckResult {
   const { parsed, findings } = parseJsonFiles(files);
 

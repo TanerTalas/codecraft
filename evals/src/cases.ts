@@ -28,7 +28,8 @@ function assertCheckName(name: string, caseId: string): void {
     name === "identity" ||
     name === "filename" ||
     name === "commandIdentity" ||
-    name === "commandSyntax"
+    name === "commandSyntax" ||
+    name === "manifest"
   ) {
     return;
   }
@@ -43,7 +44,8 @@ function assertCheckName(name: string, caseId: string): void {
 
   throw new Error(
     `${caseId}: bilinmeyen kontrol "${name}". ` +
-      "Tanınanlar: identity, filename, commandIdentity, commandSyntax, pattern:<ad>",
+      "Tanınanlar: identity, filename, manifest, commandIdentity, commandSyntax, " +
+      "pattern:<ad>",
   );
 }
 

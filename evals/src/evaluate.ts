@@ -9,6 +9,7 @@ import {
   checkCommandIdentities,
   checkFileNames,
   checkIdentities,
+  checkManifest,
   checkPatterns,
   validateCommand,
   type Finding,
@@ -47,6 +48,10 @@ async function runChecks(
     }
     if (name === "filename") {
       findings.push(...checkFileNames(files).findings);
+      continue;
+    }
+    if (name === "manifest") {
+      findings.push(...checkManifest(files).findings);
       continue;
     }
     if (name === "commandSyntax") {

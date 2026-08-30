@@ -82,3 +82,50 @@ test("feature rule olmayan JSON'lar düzeltilmez", () => {
   // Blok dosyaları için böyle bir kural ÖLÇÜLMEDİ, o yüzden uygulanmıyor.
   assert.deepEqual(normalize(input).fixes, []);
 });
+
+test("eski script modülü tipi düzeltilir", async () => {
+  // Şemadan geçen ama oyunun yüklemediği biçim. 30-08-2026'da gerçek oyunda
+  // ölçüldü: paket davranış paketleri listesinde hiç görünmedi, yalnızca bu
+  // alan düzeltilince göründü ve script çalıştı.
+  const { checkManifest } = await import("@codecraft/validator");
+
+  const input = [
+    {
+      path: "BP/manifest.json",
+      content: JSON.stringify({
+        format_version: 2,
+        header: { name: "x" },
+        modules: [{ type: "javascript", entry: "scripts/main.js", uuid: "u", version: [1, 0, 0] }],
+      }),
+    },
+  ];
+
+  // Önce kural gerçekten ihlal ediliyor olmalı, yoksa test bir şey ölçmez.
+  assert.equal(checkManifest(input).ok, false);
+
+  const result = normalize(input);
+  assert.equal(result.fixes.length, 1);
+  assert.equal(result.fixes[0]?.rule, "manifest");
+
+  // Negatif kontrol: düzeltilen çıktı artık kontrolü geçmeli.
+  assert.equal(checkManifest(result.files).ok, true);
+
+  const module = JSON.parse(result.files[0]?.content ?? "{}").modules[0];
+  assert.equal(module.type, "script");
+  assert.equal(module.language, "javascript");
+  assert.equal(module.entry, "scripts/main.js");
+});
+
+test("doğru manifest'e dokunulmaz", () => {
+  const input = [
+    {
+      path: "BP/manifest.json",
+      content: JSON.stringify({
+        modules: [{ type: "script", language: "javascript", entry: "scripts/main.js" }],
+      }),
+    },
+  ];
+  const result = normalize(input);
+  assert.deepEqual(result.fixes, []);
+  assert.deepEqual(result.files, input);
+});

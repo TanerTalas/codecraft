@@ -60,6 +60,12 @@ export function buildSystemPrompt(context: Context): string {
         "Her UUID benzersiz olmalı — header ile modül aynı olamaz.",
         "Script modülü varsa `dependencies` içine `@minecraft/server` ve " +
           "kullanılıyorsa `@minecraft/server-ui` yazılır, yukarıdaki sürümlerle.",
+        "Script modülünün biçimi **tam olarak** şöyle olmalı:\n" +
+          '  `{ "type": "script", "language": "javascript", ' +
+          '"entry": "scripts/main.js", "uuid": "...", "version": [1,0,0] }`\n' +
+          '  `"type": "javascript"` 1.16 öncesinden kalma ve artık yüklenmiyor: ' +
+          "oyun paketi davranış paketleri listesinde hiç göstermiyor " +
+          "(gerçek oyunda ölçüldü).",
       ]),
   );
 

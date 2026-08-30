@@ -131,6 +131,44 @@ yanlış olan tek şey niyetle sonuç arasındaki fark. Yakalanabilmesi için
 → Aşama 3: bilinen kalıplar (karşılama mesajı, başlangıç kurulumu) prompt'ta
 adıyla verilmeli.
 
+## E. Şemadan geçen ama oyunun hiç yüklemediği manifest
+
+**30-08-2026, Aşama 3'ün uçtan uca testinde ölçüldü.** Model şu modülü üretti:
+
+```json
+{ "type": "javascript", "entry": "scripts/main.js" }
+```
+
+Doğrulamadan geçti. Oyun paketi **davranış paketleri listesinde hiç
+göstermedi** — hata mesajı bile yok, paket sadece yok.
+
+Tek alan değiştirilip yeniden bakıldı:
+
+```json
+{ "type": "script", "language": "javascript", "entry": "scripts/main.js" }
+```
+
+Paket göründü, etkinleştirildi, script çalıştı. Sebep kesinleşti.
+
+**Şema neden yakalamadı:** modül tipi için gerçekten bir liste tutuyor ve
+uydurma bir tipi reddediyor. Ama listede `javascript` de var:
+
+```
+["resources","data","client_data","interface","world_template","javascript","script"]
+```
+
+`javascript` 1.16 öncesinden kalma. Blockception geriye dönük uyumluluk için
+listede tutuyor; `@minecraft/server` 2.x ile yüklenmiyor. Yani şema "geçerli
+bir tip" diyor, oyun "bu tiple yükleyemem" diyor — ikisi de kendi çerçevesinde
+haklı.
+
+**Bu sınıf A–D'den farklı ve daha sinsi:** diğerlerinde oyun bir hata basıyordu
+ve içerik günlüğünde görünüyordu. Burada hiçbir belirti yok. Kullanıcı paketi
+arıyor, bulamıyor, sebebini bilmiyor.
+
+→ `checkManifest` ölçüyor, `normalize()` düzeltiyor, prompt önceden anlatıyor.
+Üçü de aynı ölçümden geliyor.
+
 ---
 
 ## Özet
@@ -141,6 +179,7 @@ adıyla verilmeli.
 | B · dosya adı kuralı | **Yapısal olarak hayır** | `checkFileNames` | **Aşama 3'te düzeltiliyor** — `normalize()` dosya adını identifier'dan türetiyor |
 | C · asset referansı | Hayır | — | Aşama 4 — kapsam kararı veya uyarı |
 | D · geçerli ama yanlış | **Yapısal olarak hayır** | `checkPatterns` | **Aşama 3'te prompt'a girdi** — `patternGuide()` aynı tablodan besliyor |
+| E · yüklenmeyen manifest | Hayır — eski tip listede | `checkManifest` | **Aşama 3'te kapatıldı** — `normalize()` düzeltiyor, prompt anlatıyor |
 
 Üç kontrol de `packages/validator/src/checks.ts` içinde, saf fonksiyon, model
 çağrısı yok. Aşama 2.5'te yazıldılar ve eval seti onları koşuyor: `expect.checks`

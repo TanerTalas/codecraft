@@ -37,6 +37,7 @@ export type { ResolvedType, SchemaMapEntry } from "./schema-map.ts";
 export {
   checkCommandIdentities,
   checkFileNames,
+  checkManifest,
   checkIdentities,
   checkPatterns,
   patternGuide,

@@ -410,6 +410,33 @@ döngüsüne** bağlamak — ölçmek değil, düzeltmek.
 
 **Bitiş kriteri:** CLI uçtan uca çalışıyor. Prompt burada onlarca istekle iyileştirilir — tarayıcıda yapmak çok yavaş.
 
+> **Karşılandı (30-08-2026).** CLI gerçek bir istekle uçtan uca koşuldu:
+>
+> ```
+> npm run codecraft -- "Kırdığım bloğun aynı türden komşularını da kırsın" --install
+> ```
+>
+> İlk denemede doğrulamadan geçti (retry gerekmedi), paket
+> `development_behavior_packs` altına kuruldu, oyunda etkinleştirildi ve
+> **zincirleme kazma çalıştı**. Model `gemini-3-flash-preview` idi; kapı
+> modeli `gemini-3.6-flash`'ın kotasına dokunulmadı.
+>
+> **Ve test tam da var olma sebebini kanıtladı.** Paket ilk kurulumda oyunda
+> HİÇ GÖRÜNMEDİ. Sebep manifest'teki `"type": "javascript"` idi: şemadan
+> geçiyor (modül tipi listesinde var, eski biçim) ama `@minecraft/server`
+> 2.x ile yüklenmiyor ve oyun hiçbir hata basmıyor — paket sadece yok.
+>
+> Tek alan düzeltilip (`"type": "script"` + `"language": "javascript"`)
+> yeniden bakıldı, paket göründü. Sebep kesinleşti, tahmin değil.
+>
+> Bu, doğrulamanın yakalayamadığı **E sınıfı** olarak kaydedildi
+> (`docs/VALIDATION-LIMITS.md`) ve üç yere birden bağlandı: `checkManifest`
+> ölçüyor, `normalize()` düzeltiyor, prompt önceden anlatıyor. Eval'de
+> `manifest-01` vakası bunu istiyor ve negatif kontrolü koşuldu.
+>
+> Eval'de 20/20 alsak bu hatayı göremezdik: çıktı doğrulamadan geçiyordu.
+> Gerçek oyun testinin yerini hiçbir ölçüt tutmuyor.
+
 > **Durum (30-08-2026): kod tamam, ölçüm eksik.**
 >
 > `npm run typecheck` exit 0, `npm test` 122/122, `npm run eval` regresyonsuz
