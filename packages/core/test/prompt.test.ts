@@ -81,12 +81,15 @@ test("retry istemi hata metnini taşır", () => {
 });
 
 test("ölçülmüş 1.x kalıntıları prompt'ta adıyla yazılı", () => {
-  // İkisi de gerçek koşularda modelin ürettiği hâlleriyle görüldü:
-  // world.events (eval mob-timer-01 notu) ve runCommandAsync (CLI'ın ilk
-  // uçtan uca koşusu, retry ikinci denemede bunu soktu).
+  // Üçü de gerçek koşularda modelin ürettiği hâliyle görüldü:
+  //   world.events       eval, mob-timer-01 notu
+  //   runCommandAsync    CLI'ın ilk uçtan uca koşusu, retry ikinci denemede soktu
+  //   worldInitialize    kapı koşusu, kill-counter-01
   const prompt = buildSystemPrompt(context());
   assert.match(prompt, /world\.events/);
   assert.match(prompt, /runCommandAsync/);
+  assert.match(prompt, /worldInitialize/);
+  assert.match(prompt, /worldLoad/);
   assert.match(prompt, /afterEvents/);
 });
 

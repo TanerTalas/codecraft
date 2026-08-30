@@ -46,7 +46,8 @@ export function buildSystemPrompt(context: Context): string {
         "Script API 2.x kullanılır. Aşağıdakiler 1.x'te vardı ve **kaldırıldı** " +
           "— gerçek koşularda modelin ürettiği hâlleriyle ölçüldü:\n" +
           "  · `world.events` → `world.afterEvents` / `world.beforeEvents`\n" +
-          "  · `dimension.runCommandAsync(...)` → `dimension.runCommand(...)`",
+          "  · `dimension.runCommandAsync(...)` → `dimension.runCommand(...)`\n" +
+          "  · `worldInitialize` → `worldLoad`",
         "Doğrulama katı null denetimiyle koşuyor. `getBlock()`, `getComponent()` " +
           "ve `Array.shift()` gibi çağrılar `undefined` dönebilir; sonucu " +
           "kullanmadan önce kontrol et.",
