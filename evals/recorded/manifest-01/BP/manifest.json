@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "CodeCraft Paketi",
+    "description": "Eval kayit ciktisi",
+    "uuid": "3f9a2c14-7b58-4d6e-a012-5c8e1b4d7f30",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      26,
+      40
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "9c41e8b7-2d06-4f53-8a19-6b70de3c5a24",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}

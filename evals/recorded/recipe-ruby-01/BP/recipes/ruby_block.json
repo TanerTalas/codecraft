@@ -1,0 +1,24 @@
+{
+  "format_version": "1.21.100",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "codecraft:ruby_block"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      "RRR",
+      "RRR",
+      "RRR"
+    ],
+    "key": {
+      "R": {
+        "item": "codecraft:ruby"
+      }
+    },
+    "result": {
+      "item": "codecraft:ruby_block"
+    }
+  }
+}
