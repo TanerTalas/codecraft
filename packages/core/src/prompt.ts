@@ -34,7 +34,11 @@ export function buildSystemPrompt(context: Context): string {
   sections.push(
     `## Sürüm: ${context.version}\n\n` +
       bullet([
-        `format_version ve min_engine_version her zaman "${context.formatVersion}" biçiminde yazılır.`,
+        `Oyun sürümü "${context.engineVersion}". Pazarlama numarası (26.40 gibi) ` +
+          "hiçbir dosyaya yazılmaz.",
+        "**`format_version` oyun sürümü DEĞİLDİR.** Her dosya tipinin kendi " +
+          "şema sürümüdür ve tipe göre değişir. Oyun sürümünü buraya yazmak " +
+          "dosyayı geçersiz kılar — aşağıdaki listeye bak.",
         `manifest.json içinde min_engine_version üç parçalı dizidir: [${context.minEngineVersion.join(", ")}].`,
         "Pazarlama numarası (26.40 gibi) hiçbir dosyaya yazılmaz.",
         `@minecraft/* modül sürümleri oyun sürümünden ayrıdır: ${modules}. ` +
@@ -48,6 +52,23 @@ export function buildSystemPrompt(context: Context): string {
           "kullanmadan önce kontrol et.",
       ]),
   );
+
+  const formats = Object.entries(context.formatVersions).filter(([type]) =>
+    type.startsWith("behavior/") || type === "general/manifest",
+  );
+  if (formats.length > 0) {
+    sections.push(
+      "## format_version — dosya tipine göre\n\n" +
+        bullet(
+          formats.map(
+            ([type, values]) =>
+              `${type}: ${values.map((value) => `\`${value}\``).join(" veya ")}`,
+          ),
+        ) +
+        "\n\nListede olmayan bir tip üretiyorsan o tipin kendi şema sürümünü " +
+        "yaz; oyun sürümünü yazma.",
+    );
+  }
 
   sections.push(`## Dosya yerleşimi\n\n${LAYOUT}`);
 

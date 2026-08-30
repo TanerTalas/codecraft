@@ -16,7 +16,7 @@ Genel modellerden iki farkı var: sürekli güncellenen resmi veri kaynaklarına
 
 ## Sürüm numaralandırma (dikkat)
 
-Bedrock'ta **dört** ayrı sürüm biçimi dolaşıyor ve sürekli karıştırılıyor:
+Bedrock'ta **beş** ayrı sürüm biçimi dolaşıyor ve sürekli karıştırılıyor:
 
 | Numara | Örnek | Nerede kullanılır |
 |---|---|---|
@@ -24,9 +24,22 @@ Bedrock'ta **dört** ayrı sürüm biçimi dolaşıyor ve sürekli karıştırı
 | Oyun / veri sürümü | `1.26.40.5` | `data/` klasör adı, veri indeksleri. Kaynağı `bedrock-samples/version.json` |
 | `min_engine_version` | `[1, 26, 40]` | `manifest.json`. Üç parçalı dizi, dördüncü hane düşer |
 | `@minecraft/server` modül sürümü | `2.9.0` | `manifest.json` → `dependencies` |
+| `format_version` | `1.21.100`, `1.13.0`, `2` | İçerik dosyaları. **Oyun sürümüyle ilgisi yok** |
 
-`format_version` ve `min_engine_version` alanlarına **her zaman** `1.26.xx` biçimi
-yazılır. Pazarlama numarasını dosyaya yazma.
+`min_engine_version` oyun sürümüdür ve `1.26.xx` biçiminde yazılır. Pazarlama
+numarasını hiçbir dosyaya yazma.
+
+**`format_version` bunlardan tamamen ayrı bir eksen** ve en çok can yakan
+karışıklık burada. O, dosya tipinin **kendi şema sürümü**: blok `1.21.100`,
+feature rule `1.13.0`, spawn rule `1.8.0`, manifest `2`. Oyun sürümü değişince
+değişmez; o dosya biçiminin şeması değiştiğinde değişir.
+
+> Bu satır önce yanlış yazılmıştı ("format_version ve min_engine_version
+> alanlarına her zaman 1.26.xx yazılır"). Niyeti "pazarlama numarasını yazma"
+> idi ama kural gibi okundu, prompt'a öyle geçti, model uydu ve şema reddetti
+> — ilk gerçek kapı koşusunda ölçüldü (`spawn-rule-01`). Doğru değerler artık
+> şemadan ve ölçülmüş fixture'lardan okunup prompt'a tipe özel yazılıyor
+> (`packages/core/src/context.ts`).
 
 Dördüncü satır en çok tuzak olan yer: `@minecraft/server` npm'de kendi semver'iyle
 yayınlanıyor ve oyun sürümü prerelease etiketinin **içine gömülü** geliyor:

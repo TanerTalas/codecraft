@@ -11,7 +11,7 @@ export { validateJson } from "./json.ts";
 export type { JsonError, JsonErrorKind, JsonResult } from "./json.ts";
 export { validateScript } from "./script.ts";
 export type { ScriptChannel, ScriptDiagnostic, ScriptOptions, ScriptResult } from "./script.ts";
-export { listTypes, resolveType } from "./schema-map.ts";
+export { listTypes, resolveType, schemaFormatVersions } from "./schema-map.ts";
 export {
   CHECKED_TYPES,
   loadCommandIndex,

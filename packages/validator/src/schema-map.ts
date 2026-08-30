@@ -127,3 +127,64 @@ const schemaPath = (catalog: Catalog, entry: SchemaMapEntry): string =>
 export async function listTypes(version?: string): Promise<string[]> {
   return (await loadCatalog(version)).entries.map((entry) => entry.type);
 }
+
+/**
+ * Doküman tipi -> şemanın kabul ettiği `format_version` değerleri.
+ *
+ * Var olma sebebi ölçüm: ilk gerçek kapı koşusunda model
+ * `"format_version": "1.26.40"` yazdı ve spawn rules şeması reddetti
+ * (yalnızca 1.8.0 / 1.10.0 / 1.12.0 kabul ediyor). Sebep prompt'tu —
+ * `format_version` OYUN SÜRÜMÜ DEĞİL, o dosya tipinin kendi şema sürümü.
+ *
+ * Değerler şemadan okunuyor, elle yazılmıyor: sürüm değişince kendiliğinden
+ * güncellenir. Şemaların çoğu bu alanı kısıtlamıyor; kısıtlayanlar döner.
+ */
+export async function schemaFormatVersions(
+  version?: string,
+): Promise<Record<string, string[]>> {
+  const catalog = await loadCatalog(version);
+  const out: Record<string, string[]> = {};
+
+  for (const entry of catalog.entries) {
+    let schema: unknown;
+    try {
+      schema = JSON.parse(await readFile(schemaPath(catalog, entry), "utf8"));
+    } catch {
+      continue; // eksik şema schema-map'te zaten "missing" olarak kayıtlı
+    }
+
+    const found = new Set<string>();
+    collectFormatVersions(schema, found, 0);
+    if (found.size > 0) out[entry.type] = [...found].sort();
+  }
+
+  return out;
+}
+
+/**
+ * Şema ağacında `properties.format_version` arar.
+ *
+ * Düz aramak yetmiyor: değerler çoğu zaman `oneOf` dalları içinde duruyor,
+ * o yüzden ağaç geziliyor. Derinlik sınırlı — döngüsel şemada asılı kalmasın.
+ */
+function collectFormatVersions(node: unknown, out: Set<string>, depth: number): void {
+  if (depth > 30 || node === null || typeof node !== "object") return;
+
+  if (Array.isArray(node)) {
+    for (const child of node) collectFormatVersions(child, out, depth + 1);
+    return;
+  }
+
+  const record = node as Record<string, unknown>;
+  const properties = record["properties"];
+  if (properties !== null && typeof properties === "object") {
+    const field = (properties as Record<string, unknown>)["format_version"];
+    if (field !== null && typeof field === "object") {
+      const spec = field as Record<string, unknown>;
+      if (Array.isArray(spec["enum"])) for (const value of spec["enum"]) out.add(String(value));
+      if (spec["const"] !== undefined) out.add(String(spec["const"]));
+    }
+  }
+
+  for (const child of Object.values(record)) collectFormatVersions(child, out, depth + 1);
+}

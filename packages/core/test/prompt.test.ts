@@ -17,7 +17,8 @@ import type { Review } from "../src/review.ts";
 const context = (overrides: Partial<Context> = {}): Context => ({
   version: "1.26.40.5",
   minEngineVersion: [1, 26, 40],
-  formatVersion: "1.26.40",
+  engineVersion: "1.26.40",
+  formatVersions: { "behavior/spawn_rules/spawn_rules": ["1.8.0"] },
   modules: { "@minecraft/server": "2.9.0" },
   documentTypes: ["behavior/blocks/blocks"],
   patterns: [{ name: "bir-kalip", guidance: "şöyle yaz", evidence: "ölçüldü" }],
@@ -94,4 +95,20 @@ test("null denetimi uyarısı prompt'ta", () => {
   // dönebiliyor ve kontrolsüz kullanım oyunda çöküyor. Model bunu önceden
   // bilmeli, retry'da öğrenmek zorunda kalmamalı.
   assert.match(buildSystemPrompt(context()), /undefined/);
+});
+
+test("format_version oyun sürümüyle karıştırılmıyor", () => {
+  // İlk gerçek kapı koşusunun bulduğu hata: prompt "format_version her zaman
+  // 1.26.xx" diyordu, model uydu, spawn rules şeması reddetti. format_version
+  // dosya tipinin kendi şema sürümü, oyun sürümü değil.
+  const prompt = buildSystemPrompt(context());
+  assert.match(prompt, /`format_version` oyun sürümü DEĞİL/);
+  // Tipe özel değerler listeleniyor ve veriden geliyor.
+  assert.match(prompt, /behavior\/spawn_rules\/spawn_rules: `1\.8\.0`/);
+});
+
+test("format_version listesi boşsa bölüm hiç basılmıyor", () => {
+  // Uydurma değer üretmektense hiç söylememek yeğ.
+  const prompt = buildSystemPrompt(context({ formatVersions: {} }));
+  assert.equal(prompt.includes("## format_version"), false);
 });
