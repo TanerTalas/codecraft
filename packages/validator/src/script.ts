@@ -44,7 +44,21 @@ export type ScriptResult = {
   errors: ScriptDiagnostic[];
 };
 
-const ENTRY = "main.ts";
+/**
+ * Giriş dosyası `.js` — çünkü doğrulanan şey JavaScript.
+ *
+ * Bedrock davranış paketleri düz `.js` çalıştırıyor ve üretilen çıktı da öyle.
+ * Kodu `.ts` olarak denetlemek, TypeScript'in yazım kurallarını Bedrock
+ * kuralıymış gibi dayatıyordu:
+ *
+ *   const blocksToBreak = [];      // .ts'te never[], .js'te any[]
+ *   blocksToBreak.push(location);  // .ts'te TS2345, oyunda sorunsuz
+ *
+ * İkisi de gerçek model çıktısında ölçüldü (30-08-2026 kapı koşuları) ve
+ * ikisi de oyunda çalışan kodu düşürüyordu. `checkJs` ile TypeScript aynı tip
+ * tanımlarını kullanır ama çıkarımı JavaScript'e göre yapar.
+ */
+const ENTRY = "main.js";
 
 /**
  * Bedrock script çalışma zamanı console veriyor ama hiçbir .d.ts onu
@@ -56,15 +70,22 @@ const ENTRY = "main.ts";
  * eklemek ise fetch, document, window gibi Bedrock'ta olmayan her şeyi kabul
  * ederdi — yani uydurulmuş API'yi geçirirdi, ki bu aracın var olma sebebi tam
  * olarak onu engellemek. Bu yüzden sadece kanıtı olan üç metot tanımlanıyor.
+ *
+ * Ayrı bir .d.ts dosyasında duruyor, kullanıcının kodunun başına eklenmiyor:
+ * giriş dosyası artık .js ve `declare` orada sözdizimi hatası (TS8009). Ayrı
+ * dosya olmasının ikinci faydası, satır numaralarının kaymaması — eskiden
+ * kaydırma elle geri alınıyordu.
  */
-const AMBIENT = `declare const console: {
+const GLOBALS = "codecraft-globals.d.ts";
+
+const GLOBALS_SOURCE = `declare const console: {
   log(...data: unknown[]): void;
   warn(...data: unknown[]): void;
   error(...data: unknown[]): void;
 };
 `;
 
-/** main.ts(12,5): error TS2339: mesaj */
+/** main.js(12,5): error TS2339: mesaj */
 const DIAGNOSTIC_RE = /^(.+?)\((\d+),(\d+)\): error (TS\d+): (.*)$/;
 
 const require_ = createRequire(import.meta.url);
@@ -114,20 +135,25 @@ function buildTsconfig(paths: Record<string, string>): string {
         moduleResolution: "bundler",
         types: [],
         strict: true,
-        // Üretilen paketler düz JavaScript gönderiyor ve Bedrock onu öyle
-        // çalıştırıyor. Tip yazılmamış bir parametre (TS7006) orada geçerli
-        // koddur — bu kural Bedrock API'sinin doğru kullanılıp
-        // kullanılmadığına dair hiçbir şey söylemez, yalnızca TypeScript
-        // yazım stiline bakar.
+        // JavaScript'i JavaScript olarak denetle. Aynı @minecraft/* tip
+        // tanımları kullanılır, ama çıkarım TypeScript yazım kurallarına değil
+        // JS'e göre yapılır.
         //
-        // İlk gerçek kapı koşusunda (30-08-2026) ölçüldü: model oyunda
-        // çalışacak bir zincirleme kazma script'i üretti, doğrulama yalnızca
-        // yardımcı fonksiyonun parametreleri tipsiz diye reddetti. Yani
-        // doğrulayıcı çalışan çıktıyı düşürüyordu.
+        // Gerekçe ölçümle geldi: iki ayrı kapı koşusunda model, oyunda
+        // çalışacak kod üretti ve doğrulama onu TypeScript'e özgü iki kuralla
+        // düşürdü — tipsiz parametre (TS7006) ve boş dizinin `never[]`
+        // çıkarımı (TS2345/TS2339). Hiçbiri Bedrock API'sinin yanlış
+        // kullanıldığını göstermiyordu.
         //
-        // strict'in geri kalanı AÇIK kalıyor: strictNullChecks, tip uyuşmazlığı,
-        // olmayan modül ve 2.x'te kaldırılmış çağrılar hâlâ yakalanıyor —
-        // gerçek API hatalarını gösteren şeyler onlar.
+        // strict AÇIK kalıyor: strictNullChecks, tip uyuşmazlığı, olmayan
+        // modül ve 2.x'te kaldırılmış çağrılar hâlâ yakalanıyor — gerçek API
+        // hatalarını gösteren şeyler onlar. Testte negatif kontrolü var.
+        allowJs: true,
+        checkJs: true,
+        // checkJs tek başına yetmiyor: strict altında noImplicitAny .js
+        // dosyalarında da uygulanıyor ve tipsiz parametreyi (TS7006)
+        // reddediyor. İkisi ayrı kurallar, ikisi de gevşetilmeli — testte
+        // ikisinin de örneği var.
         noImplicitAny: false,
         noEmit: true,
         skipLibCheck: true,
@@ -135,7 +161,7 @@ function buildTsconfig(paths: Record<string, string>): string {
         // yetkisi ister ve geliştirme ortamı Windows.
         paths: Object.fromEntries(Object.entries(paths).map(([name, file]) => [name, [file]])),
       },
-      files: [ENTRY],
+      files: [GLOBALS, ENTRY],
     },
     null,
     2,
@@ -159,7 +185,7 @@ function runTsc(cwd: string): Promise<{ code: number; output: string }> {
 /**
  * Kodu @minecraft/* tiplerine karşı derler.
  *
- * Sadece main.ts kaynaklı tanılar kullanıcı hatası sayılır. Başka bir dosyadan
+ * Sadece giriş dosyasından gelen tanılar kullanıcı hatası sayılır. Başka bir dosyadan
  * veya dosyasız gelen bir tanı bizim tsconfig'imizin bozuk olduğu anlamına
  * gelir; sessizce kullanıcıya yazılmaz, istisna fırlatılır.
  */
@@ -171,7 +197,8 @@ export async function validateScript(
   const dir = await mkdtemp(join(tmpdir(), "codecraft-tsc-"));
 
   try {
-    await writeFile(join(dir, ENTRY), `${AMBIENT}${code}`, "utf8");
+    await writeFile(join(dir, ENTRY), code, "utf8");
+    await writeFile(join(dir, GLOBALS), GLOBALS_SOURCE, "utf8");
     await writeFile(join(dir, "tsconfig.json"), buildTsconfig(paths), "utf8");
 
     const { code: exit, output } = await runTsc(dir);
@@ -188,9 +215,9 @@ export async function validateScript(
         throw new Error(`tsc ${file} dosyasından hata verdi — doğrulama ortamı bozuk: ${message}`);
       }
       errors.push({
-        // AMBIENT satırları kullanıcının kodundan önce yazılıyor, satır
-        // numaraları geri kaydırılır ki kullanıcının gördüğü kodla eşleşsin.
-        line: Number(row) - AMBIENT.split("\n").length + 1,
+        // Kullanıcının kodu dosyaya olduğu gibi yazılıyor: satır numaraları
+        // doğrudan eşleşiyor, kaydırma düzeltmesi gerekmiyor.
+        line: Number(row),
         column: Number(column),
         code: errorCode as string,
         message: message as string,

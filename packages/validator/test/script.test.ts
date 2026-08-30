@@ -97,7 +97,7 @@ test("console kabul edilir", async () => {
   assert.equal(result.ok, true, JSON.stringify(result.errors));
 });
 
-test("tipsiz parametre reddedilmez, gerçek API hatası hâlâ reddedilir", async () => {
+test("JavaScript kuralları geçerli, gerçek API hatası hâlâ reddedilir", async () => {
   // İlk gerçek kapı koşusunun bulduğu kusur: doğrulayıcı oyunda çalışan bir
   // script'i yalnızca yardımcı fonksiyonun parametreleri tipsiz diye
   // düşürüyordu (TS7006). Bedrock düz JavaScript çalıştırıyor, orada bu
@@ -125,4 +125,34 @@ world.afterEvents.playerBreakBlock.subscribe((event) => {
 });
 `);
   assert.equal(wrong.ok, false);
+});
+
+test("boş dizi never[] sayılmaz — JS'te geçerli, oyunda çalışıyor", async () => {
+  // İkinci kapı koşusunun bulduğu kusur. `const x = []` TypeScript'te
+  // never[] çıkarımı alıyor ve push() TS2345 veriyor; JavaScript'te any[].
+  // Model tam olarak bu kalıbı üretti ve kod Bedrock'ta sorunsuz çalışır.
+  const result = await validateScript(`
+import { world } from "@minecraft/server";
+
+world.afterEvents.playerBreakBlock.subscribe((event) => {
+  const found = [];
+  found.push(event.block.location);
+  for (const loc of found) {
+    console.log(loc.x, loc.y, loc.z);
+  }
+});
+`);
+  assert.equal(result.ok, true, result.errors.map((e) => `${e.code}: ${e.message}`).join("; "));
+});
+
+test("uydurulmuş modül hâlâ reddedilir", async () => {
+  // Gevşetmenin sınırını çizen negatif kontrol: JS olarak denetlemek
+  // olmayan bir API'yi kabul etmeye dönüşmemeli.
+  const result = await validateScript(`
+import { world } from "@minecraft/server";
+world.afterEvents.playerBreakBlock.subscribe((event) => {
+  event.player.uydurulmusMetot();
+});
+`);
+  assert.equal(result.ok, false);
 });
