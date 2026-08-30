@@ -6,5 +6,9 @@
   "description": "Test vakalari ve runner",
   "exports": {
     ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@codecraft/knowledge": "*",
+    "@codecraft/validator": "*"
   }
 }

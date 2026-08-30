@@ -5,6 +5,7 @@
     "packages/*/test/**/*.ts",
     "packages/*/scripts/**/*.ts",
     "pipeline/src/**/*.ts",
-    "evals/src/**/*.ts"
+    "evals/src/**/*.ts",
+    "evals/test/**/*.ts"
   ]
 }
