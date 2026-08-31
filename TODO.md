@@ -534,17 +534,16 @@ en büyük şema tipi (`entities`) sınırın altında anlamlı bir yanıt dönd
   M1'de ölçülen iki kırığın sebebi
 - [ ] Kimlik doğrulama v1'de yok — araçlar salt okunur, gizli veri yok. **Kötüye
   kullanım ve istek sınırı açık madde olarak burada durur**, sessizce atlanmaz.
-  Karar (01-09-2026): M4'te rate limit **kodu yazılmıyor**. Vercel
-  Authentication kapalı kalmak **zorunda** — bağlantıyı Anthropic'in bulut
-  altyapısı kuruyor, SSO'nun arkasına geçemez; M1'in "açık kalan" maddesi bu
-  cümleyle kapanıyor. Vercel'in Firewall rate limiting'i ücretli plan özelliği,
-  yani "Yapılmayacaklar" tablosuna giriyor. Süreç-içi bir sayaç serverless'ta
-  örnek başına sıfırlandığı için gerçek bir sınır değil, ölçülmemiş bir
-  güvenlik hissi verirdi. **Vercel Authentication kapalı — kullanıcı proje
-  ayarlarından bakıp doğruladı (01-09-2026).** Yani uç herkese açık olacak; bu
-  bir eksiklik değil, gereklilik. **Açık kalan:** ücretsiz kademedeki diğer
-  mekanizmalar (Attack Challenge Mode, kullanım uyarısı) henüz kontrol
-  edilmedi, sonucu buraya yazılacak
+  Karar (01-09-2026): M4'te rate limit **kodu yazılmıyor**.
+  **Vercel Authentication kapalı ve kapalı kalmak zorunda** — bağlantıyı
+  Anthropic'in bulut altyapısı kuruyor, SSO'nun arkasına geçemez. Kullanıcı
+  proje ayarlarından bakıp doğruladı; M1'in "açık kalan" maddesi böylece
+  kapanıyor. Uç herkese açık, bu bir eksiklik değil gereklilik. Vercel'in
+  Firewall rate limiting'i ücretli plan özelliği, yani "Yapılmayacaklar"
+  tablosuna giriyor. Süreç-içi bir sayaç serverless'ta örnek başına
+  sıfırlandığı için gerçek bir sınır değil, ölçülmemiş bir güvenlik hissi
+  verirdi. **Açık kalan:** ücretsiz kademedeki diğer mekanizmalar (Attack
+  Challenge Mode, kullanım uyarısı) henüz kontrol edilmedi
 
 **Bitiş kriteri:** İnternetten erişilebilir HTTPS `/mcp` ucu `tools/list`
 çağrısına araç listesini döndürüyor. Localhost sayılmaz — bağlantı Anthropic'in
@@ -554,11 +553,43 @@ Bir madde eklendi: aynı uçtan `validate_script` de gerçek `tsc` tanısı
 döndürmeli. Yalnızca `tools/list` yeşil olsaydı, `tsc`'si olmayan yarım bir
 sunucu da bu kriteri geçerdi.
 
-> **YARIM, 01-09-2026. Bitiş kriteri HENÜZ KARŞILANMADI.** Kod yazıldı ve
-> yerelde uçtan uca ölçüldü; **dağıtılmış uçta ölçülmedi** çünkü `vercel deploy`
-> bu oturumda çalıştırılamadı (izin reddedildi). Ölçüm, deploy koşulduğunda
-> `npm run mcp:probe -- https://<host>/mcp` ile tamamlanacak ve sonucu — yeşil
-> de olsa kırmızı da olsa — buraya yazılacak.
+> **YEŞİL, 01-09-2026. Bitiş kriteri karşılandı.** İnternetten erişilebilir
+> HTTPS bir uç `tools/list` çağrısına sekiz aracı döndürüyor **ve** aynı uçtan
+> `validate_script` gerçek `tsc` tanısı veriyor.
+>
+> **Adres:** `https://codecraft-ashy-seven.vercel.app/mcp` (production alias;
+> deploy `codecraft-hji72csi6`, Ready 41 sn). M5'te bağlayıcıya girecek adres bu.
+>
+> **Dağıtılmış ölçüm** (`npm run mcp:probe -- https://codecraft-ashy-seven.vercel.app/mcp`,
+> gerçek SDK istemcisi):
+>
+> | Adım | Sonuç | Süre |
+> |---|---|---|
+> | bağlantı (initialize) | 200 | 1.666 ms (soğuk) |
+> | `tools/list` | 8 araç, 9.036 bayt, hepsi `readOnlyHint` | 736 ms soğuk / **320 ms sıcak** |
+> | `validate_script` (kaldırılmış API) | `ok:false`, 285 bayt | 589 ms |
+> | `validate_script` (geçerli) | `ok:true`, 144 bayt | 427 ms |
+> | `get_schema` (390 alanlı düğüm) | **15.898 bayt**, kesilmedi | 202 ms |
+> | `get_version_info` | `1.26.40.5` | — |
+> | `GET` / `DELETE` | 405 + JSON gövde | — |
+>
+> On kontrolün onu da yeşil. Dönen tanı M1'dekiyle **birebir aynı**, yani
+> Linux'ta `/mcp` fonksiyon paketinin içinden gerçek tsgo koşuyor:
+>
+> ```
+> 2:33  TS2551  Property 'runCommandAsync' does not exist on type 'Dimension'.
+>               Did you mean 'runCommand'?
+> ```
+>
+> **Kritik olan `tools/list` değildi.** `/mcp` kendi fonksiyon paketini alıyor
+> (Next izlemeyi rota başına yapıyor), yani M1'in `/api/review` için ölçtüğü
+> "alt süreç açılıyor, `/tmp` yazılabilir, tsc paketlenmiş" yeşili buraya
+> **taşınmıyordu**. Bozuk payload'ın gerçek bir tanı döndürmesi onu ölçtü:
+> yalnızca `ok:true` görmek, sessizce hiçbir şey derlemeyen bir yoldan da
+> gelebilirdi.
+>
+> **Vercel Authentication kapalı**, kullanıcı ayarlardan doğruladı. Uç herkese
+> açık ve öyle kalmak zorunda.
 >
 > `npm run typecheck` exit 0, `npm test` **211/211** (M3'te 206'ydı, beş yeni
 > test).
@@ -620,8 +651,8 @@ sunucu da bu kriteri geçerdi.
 > yani MCP katmanı ~0,1 MB ekliyor. M1'de `/api/review` **47,3 MB** ölçülmüştü;
 > fark Windows'tan geliyor, `@typescript/` altında hem `tsc` hem `tsc.exe`
 > paketleniyor (50,4 MB'ın yarısı). Linux build'inde tek ikili kuruluyor, yani
-> dağıtılan paket M1'in rakamına yakın kalmalı. **Bu son cümle tahmin,
-> dağıtılmış ölçümle doğrulanacak.**
+> dağıtılan paket M1'in rakamına yakın kalmalı. **Bu son cümle hâlâ tahmin** —
+> dağıtılmış paketin boyutu ölçülmedi, yalnızca çalıştığı ölçüldü.
 >
 > `@modelcontextprotocol` izleme manifestinde **0 dosya**: Turbopack SDK'yı
 > rota chunk'ına gömüyor. Gömüldüğü ayrıca doğrulandı (SDK'nın hata metni
@@ -644,10 +675,13 @@ sunucu da bu kriteri geçerdi.
 > localhost sayılmıyor. Ölçtüğü tek şey Next'in rotayı gerçekten bağladığı ve
 > üretim build'inin içinden tsc'nin koştuğu.
 >
-> **Kalan tek soru barındırma.** `/mcp` kendi fonksiyon paketini alıyor, yani
-> M1'in `/api/review` için ölçtüğü yeşil buraya **taşınmıyor**: alt süreç,
-> `/tmp` ve paketlenmiş dosyalar o pakette de ayrıca ölçülmeli. `probe.ts`'in
-> ikinci maddesi (bozuk payload'a gerçek tsc tanısı) tam olarak bunu ölçüyor.
+> **Ücretsiz kademe yine yetti.** Hiçbir ücretli plana geçilmedi, hiçbir araç
+> üründen çıkarılmadı, container tabanlı barındırmaya inilmedi. M0'ın merdiveni
+> ikinci kez hiç kullanılmadı.
+>
+> **Ölçülmeyen:** dağıtılmış fonksiyon paketinin gerçek boyutu. Ölçülen şey
+> dosyaların orada olduğu (uç koşuyor), kaç MB tuttuğu değil — bunun için
+> dashboard gerekiyor ve bir karara bağlı değil.
 
 ---
 
