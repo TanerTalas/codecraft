@@ -1,0 +1,14 @@
+// @codecraft/mcp — MCP araç katmanı (Aşama M2, bkz. TODO.md)
+//
+// Bu paket ARAÇLARI ve sunucu kurulumunu taşır; transport'u taşımaz.
+// Transport Aşama M4'te `app/src/app/mcp/route.ts` olacak.
+//
+// BAĞIMLILIK SINIRI — buradan `@codecraft/core` (barrel) import EDİLMEZ,
+// yalnızca `@codecraft/core/server`. Barrel model.ts'i dışa açıyor ve o
+// `ai` + `@ai-sdk/google`'ı çekiyor; MCP sunucusunun bir LLM SDK'sına
+// ihtiyacı yok, modeli kullanıcı getiriyor (mimari kural 2).
+//
+// Kural laf olarak değil ölçüyle duruyor: `test/layers.test.ts`.
+
+export { createServer, SERVER_VERSION, tools } from "./server.ts";
+export { getVersionInfo, versionInput } from "./tools/version.ts";

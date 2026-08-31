@@ -1,0 +1,17 @@
+{
+  "name": "@codecraft/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP arac katmani. Transport app/ tarafinda, mantik burada",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@codecraft/core": "*",
+    "@codecraft/knowledge": "*",
+    "@codecraft/validator": "*",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.5.4"
+  }
+}
