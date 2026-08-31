@@ -80,12 +80,20 @@ bir ortamda bu üçünün hiçbiri garanti değil.
 
 - [ ] Dağıtılmış Vercel Node runtime'da `POST /api/review` gerçekten koşuyor mu.
   Uç nokta zaten var (`app/src/app/api/review/route.ts`, `runtime = "nodejs"`,
-  `maxDuration = 60`) — ölçüm için yeni kod yazmaya gerek yok, sadece deploy
-- [ ] Üç şey ayrı ayrı ölçülür, tek "çalıştı" cümlesi yetmez:
-  - [ ] süreç spawn edilebiliyor mu
-  - [ ] `os.tmpdir()` yazılabilir mi
-  - [ ] `outputFileTracingIncludes` ile paketlenen `node_modules/typescript/**`
-    ve `data/**` çalışma zamanında bulunuyor mu
+  `maxDuration = 60`) — ~~ölçüm için yeni kod yazmaya gerek yok, sadece deploy~~
+  **Yanlış çıktı, 31-08-2026.** Deploy'dan önce üç kırık bulundu ve üçü de ilk
+  koşuyu barındırmayla ilgisi olmayan bir sebeple kırmızıya düşürecekti; böyle
+  bir yanlış kırmızı projeyi gereksiz yere ücretli container barındırmaya
+  iterdi. Ayrıntı aşağıdaki blokquote'ta
+- [x] Üç şey ayrı ayrı ölçülür, tek "çalıştı" cümlesi yetmez — **mekanizma
+  yazıldı ve yerelde koştu, dağıtılmış ölçüm bekliyor.** `scriptRuntimeReport()`
+  (`packages/validator/src/script.ts`) altı ön koşulu ayrı ayrı, her biri kendi
+  `try/catch`'inde ölçüyor; `GET /api/review` onu dışarı veriyor
+  - [x] süreç spawn edilebiliyor mu — `spawn` kontrolü
+  - [x] `os.tmpdir()` yazılabilir mi — `tmpdir` kontrolü
+  - [x] `outputFileTracingIncludes` ile paketlenen `node_modules/typescript/**`
+    ve `data/**` çalışma zamanında bulunuyor mu — `data`, `tscShim`, `tscExe`
+    kontrolleri, artı build çıktısındaki `.nft.json` manifestinin okunması
 - [ ] **Düşerse sıra şu — ücretsiz kalmak öncelikli (M0 kararı):**
   1. Başka bir **ücretsiz** kademe denenir; kök `CODECRAFT_ROOT` ortam
      değişkeniyle sabitlenir (`packages/knowledge/src/paths.ts` bunu zaten
@@ -100,6 +108,69 @@ bir ortamda bu üçünün hiçbiri garanti değil.
 **Bitiş kriteri:** Dağıtılmış bir uçta gerçek bir script doğrulaması gerçek
 `tsc` çıktısı döndürüyor. Sonuç yeşil de olsa kırmızı da olsa buraya blokquote
 olarak yazılır.
+
+> **Yarım, 31-08-2026. Yerel ölçüm bitti, dağıtılmış ölçüm Vercel oturumu
+> bekliyor.** Bitiş kriteri KARŞILANMADI — dağıtılmış bir uçta hâlâ koşulmadı.
+>
+> **Deploy'dan önce bulunan üç kırık.** Üçü de yerelde ölçüldü, üçü de ilk
+> dağıtılmış koşuyu düşürürdü ve hiçbiri Vercel'in yeteneğiyle ilgili değil:
+>
+> 1. **`codecraft.config.json` paketlenmiyordu.** `knowledge/src/paths.ts`
+>    içindeki `isRoot()` iki işaretçiyi **birden** arıyor (`data` VE
+>    `codecraft.config.json`); izleme haritasında yalnızca `data/**` vardı.
+>    Eski yapılandırmayla alınan `.nft.json` manifestinde
+>    `codecraft.config.json` **0 dosya**. `ROOT` modül yüklenirken
+>    hesaplandığı için uç nokta daha ilk istekte "Repo kökü bulunamadı" ile
+>    düşerdi.
+> 2. **tsgo'nun standart kütüphanesi paketlenmiyordu.** `typescript@7` bir
+>    kabuk (3,2 MB, `bin/tsc` 44 bayt); asıl derleyici platforma özel bir Go
+>    ikilisi (`@typescript/typescript-<platform>-<arch>/lib/tsc`, 24,5 MB).
+>    Next ikilinin **kendisini zaten izliyordu** — eski manifestte
+>    `@typescript/` altından tam olarak 1 dosya vardı, `tsc.exe` — ama
+>    yanındaki `lib.*.d.ts` dosyalarını bırakıyordu. Yalnızca ikili kopyalanıp
+>    çalıştırıldığında ölçülen sonuç:
+>
+>    ```
+>    panic: bundled: .../lib/lib.d.ts does not exist;
+>           this executable may be misplaced
+>    ```
+>
+>    tsgo standart kütüphaneyi ikilinin yanındaki `lib/` dizininden okuyor;
+>    ikili ile o dosyalar ayrılamaz. İlk tahminim ("ikili hiç paketlenmiyor")
+>    yanlıştı, manifest karşılaştırması düzeltti.
+> 3. **`next build` zaten kırıktı.** `app/src/app/page.tsx` içindeki Adım 0.2
+>    ölçüm literali `Context` tipinin sonradan kazandığı `textures` alanını
+>    taşımıyordu. Kök `tsconfig.json` `app/` dizinini kapsamadığı için
+>    `npm run typecheck` bunu hiç görmüyor — sessizce çürümüştü. Deploy build
+>    adımında düşerdi.
+>
+> **Ölçülen rakamlar (yerel, Windows, Node 24.13.0):**
+>
+> | Ne | Değer |
+> |---|---|
+> | `/api/review` fonksiyon paketi | 4.148 dosya, **47,3 MB** |
+> | └ `data/` (izlenen) | 14,0 MB — `schemas/` 11 MB, `script-types/` 1,7 MB |
+> | └ typescript kabuğu | 3,2 MB |
+> | └ tsgo ikilisi + `lib.*.d.ts` | 28 MB (`tsc` 24,5 MB) |
+> | `tsc --version` alt süreci | 77–218 ms |
+> | `npm test` | 175/175 |
+>
+> Altı kontrolün hepsi yerelde yeşil: `root`, `data`, `tmpdir`, `tscShim`,
+> `tscExe`, `spawn`. Yerel kurulumda yalnızca `win32-x64` paketi var, yani bu
+> koşu **Linux ikilisini kanıtlamıyor**; `package-lock.json` içinde
+> `@typescript/typescript-linux-x64` kayıtlı (`os: linux, cpu: x64`), Vercel'in
+> Linux build'i onu kuracak.
+>
+> **Elenen alternatif.** "Alt süreçten kurtulmak için `typescript/unstable/*`
+> JS API'sine geçilsin" fikri ölçüldü ve işe yaramaz:
+> `dist/api/async/client.js` ve `dist/api/syncChannel.js` `child_process`
+> kullanıyor, yani JS API de aynı native ikiliyi alt süreç olarak açıyor. Bu
+> yol kapalı, tekrar denenmesin.
+>
+> **Kalan iş:** `vercel login` → `vercel link` → deploy → `GET /api/review`
+> (altı kontrol) ve `POST /api/review` (biri geçerli, biri bozuk payload).
+> Bozuk payload `TS2551` + `runCommandAsync` döndürmeli — yalnızca `ok: true`
+> görmek tsc'nin gerçekten koştuğunu kanıtlamaz.
 
 ---
 
