@@ -1,6 +1,19 @@
-# CodeCraft — Yapılacaklar
+# CodeCraft — İleride dönülecek yapılacaklar
 
-Bu dosya `docs/ROADMAP.md`'nin yürütülebilir hâli. Gerekçeler ve sıralamanın **neden** böyle olduğu orada; burada sadece işaretlenecek adımlar var.
+> **Bu dosya arşiv.** 31-08-2026'da kökten `docs/` altına taşındı, adı
+> değiştirildi ve yürütülmeyi bıraktı. Yürürlükteki liste kökteki `TODO.md`.
+>
+> Kararın kaynağı `docs/anlik_karar_degisikligi.md`: web arayüzü ertelendi,
+> öncelik MCP sunucusuna kaydı.
+>
+> **Ne bitti.** Aşama 0–3 ve Geçiş Kapısı tamamlandı; ölçüm kayıtları aşağıda
+> olduğu gibi duruyor, hiçbiri değiştirilmedi. Kod içindeki
+> `bkz. TODO.md Aşama N` yorumları bu dosyayı kastediyor.
+>
+> **Ne ertelendi.** Aşama 4 (web arayüzü) — **iptal değil.** MCP oturduktan
+> sonra buraya dönülecek; "ileride dönülecek" adı bunun için.
+
+Bu dosya `docs/ROADMAP.md`'nin yürütülebilir hâliydi. Gerekçeler ve sıralamanın **neden** böyle olduğu orada; burada işaretlenen adımlar var.
 
 **Nasıl kullanılır**
 
