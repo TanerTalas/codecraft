@@ -35,8 +35,8 @@ container tabanlı barındırmaya geçilir.
 MCP kodu yazılmadan önce, çünkü son iki madde `CLAUDE.md`'nin "Takıldığında dur
 ve sor" tablosuna giriyor.
 
-- [ ] `docs/anlik_karar_degisikligi.md` commit edilsin — şu an untracked, yani
-  yönü değiştiren karar depoda yok
+- [x] `docs/anlik_karar_degisikligi.md` commit edildi (31-08-2026) — yönü
+  değiştiren karar artık depoda, listeden önce geliyor
 - [ ] `docs/ROADMAP.md` MCP'yi bilmiyor, Aşama 4 = web arayüzü diye bitiyor.
   "Neden" dokümanı o olduğu için MCP aşaması oraya yazılmalı; bu liste onun
   yürütülebilir hâli
