@@ -13,15 +13,48 @@ const config: NextConfig = {
   // packages/knowledge/src/paths.ts.
   transpilePackages: ["@codecraft/core", "@codecraft/validator", "@codecraft/knowledge"],
 
-  // Doğrulama iki şeyi ÇALIŞMA ZAMANINDA dinamik yolla okuyor: data/ altındaki
-  // şemalar ve tip tanımları, ve typescript'in bin/tsc ikilisi. Next bunları
-  // statik olarak izleyemiyor — `next build` zaten uyarıyor — o yüzden
-  // fonksiyon paketine elle dahil ediliyorlar. Aksi hâlde yerelde çalışıp
-  // dağıtımda ENOENT veren bir uç nokta çıkardı.
+  // Doğrulama üç şeyi ÇALIŞMA ZAMANINDA dinamik yolla okuyor: data/ altındaki
+  // şemalar ve tip tanımları, repo kökünü belli eden işaretçi dosya, ve
+  // typescript derleyicisi. Next bunları statik olarak izleyemiyor —
+  // `next build` zaten uyarıyor — o yüzden fonksiyon paketine elle dahil
+  // ediliyorlar. Aksi hâlde yerelde çalışıp dağıtımda ENOENT veren bir uç
+  // nokta çıkardı.
+  //
+  // İki girdi "gereksiz" görünüyor ama değil, ikisi de 31-08-2026'da ölçüldü
+  // (Aşama M1):
+  //
+  //   codecraft.config.json — knowledge/src/paths.ts'teki isRoot() İKİ
+  //     işaretçiyi birden arıyor (`data` VE `codecraft.config.json`). Yalnızca
+  //     data/ paketlenirse ROOT modül yüklenirken çözülemiyor ve uç nokta daha
+  //     ilk istekte "Repo kökü bulunamadı" ile düşüyor.
+  //
+  //   @typescript/** — typescript@7 bir kabuk paketi (3,2 MB), derleyici değil.
+  //     bin/tsc 44 bayt; asıl derleyici platforma özel bir Go ikilisi
+  //     (@typescript/typescript-<platform>-<arch>/lib/tsc, ~24,5 MB) ve
+  //     lib/getExePath.js onu çalışma zamanında import.meta.resolve ile
+  //     buluyor.
+  //
+  //     Next ikilinin KENDİSİNİ zaten izliyordu — eski yapılandırmayla alınan
+  //     manifestte @typescript/ altından tam olarak 1 dosya vardı, tsc.exe.
+  //     Eksik olan yanındaki lib.*.d.ts dosyalarıydı ve onlarsız ikili
+  //     çalışmıyor, PANİK EDİYOR (ölçüldü, 31-08-2026):
+  //
+  //       panic: bundled: .../lib/lib.d.ts does not exist;
+  //              this executable may be misplaced
+  //
+  //     tsgo standart kütüphaneyi ikilinin yanındaki lib/ dizininden okuyor,
+  //     yani ikili ile o dosyalar ayrılamaz. Glob geniş görünse de npm
+  //     yalnızca çalışılan platformun opsiyonel bağımlılığını kuruyor: Linux
+  //     build'inde tek paket dahil oluyor, 20 tanesi değil.
   outputFileTracingRoot: join(import.meta.dirname, ".."),
   outputFileTracingIncludes: {
-    "/api/context": ["../data/**"],
-    "/api/review": ["../data/**", "../node_modules/typescript/**"],
+    "/api/context": ["../data/**", "../codecraft.config.json"],
+    "/api/review": [
+      "../data/**",
+      "../codecraft.config.json",
+      "../node_modules/typescript/**",
+      "../node_modules/@typescript/**",
+    ],
   },
 };
 
