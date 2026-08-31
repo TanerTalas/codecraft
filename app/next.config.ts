@@ -11,7 +11,12 @@ const config: NextConfig = {
   // sembolik bağlarını proje kaynağı sayıp yine de paketliyor. Bu yüzden
   // paketlenmeye dayanıklı olmak paketlerin kendi işi — bkz.
   // packages/knowledge/src/paths.ts.
-  transpilePackages: ["@codecraft/core", "@codecraft/validator", "@codecraft/knowledge"],
+  transpilePackages: [
+    "@codecraft/core",
+    "@codecraft/validator",
+    "@codecraft/knowledge",
+    "@codecraft/mcp",
+  ],
 
   // Doğrulama üç şeyi ÇALIŞMA ZAMANINDA dinamik yolla okuyor: data/ altındaki
   // şemalar ve tip tanımları, repo kökünü belli eden işaretçi dosya, ve
@@ -50,6 +55,17 @@ const config: NextConfig = {
   outputFileTracingIncludes: {
     "/api/context": ["../data/**", "../codecraft.config.json"],
     "/api/review": [
+      "../data/**",
+      "../codecraft.config.json",
+      "../node_modules/typescript/**",
+      "../node_modules/@typescript/**",
+    ],
+    // /mcp AYRI bir fonksiyon paketi. Next izlemeyi rota başına yapıyor, yani
+    // /api/review'un yeşili buraya taşınmıyor: validate_script aracı tsc'yi
+    // burada da açıyor ve dört yolun dördü de tekrar gerekiyor. TODO'nun M4
+    // maddesi yalnızca ikisini yazıyordu; eksik olan ikisi tam olarak M1'de
+    // ölçülen iki kırığın sebebiydi (yukarıdaki blokta anlatılıyor).
+    "/mcp": [
       "../data/**",
       "../codecraft.config.json",
       "../node_modules/typescript/**",
