@@ -17,6 +17,7 @@ export default function Page() {
     patterns: [],
     formatVersions: {},
     identities: [],
+    textures: { item: 0, terrain: 0 },
   }).length;
 
   // Barrel'in tamami paketlenmeli: agac budamasi generate/callModel/normalize'i
