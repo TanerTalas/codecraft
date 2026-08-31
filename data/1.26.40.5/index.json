@@ -30,6 +30,37 @@
       "index": "schemas-index.json",
       "files": 1313
     },
+    "commands": {
+      "file": "commands.json",
+      "commands": 83,
+      "overloads": 270,
+      "enums": 225,
+      "structuralTypes": [
+        "BLOCK_STATE_ARRAY",
+        "CODEBUILDERARGS",
+        "COMPAREOPERATOR",
+        "EXECUTECHAINEDOPTION_0",
+        "FULLINTEGERRANGE",
+        "ID",
+        "INT",
+        "JSON_OBJECT",
+        "MESSAGE_ROOT",
+        "OPERATOR",
+        "PATHCOMMAND",
+        "POSITION",
+        "POSITION_FLOAT",
+        "RAWTEXT",
+        "RVAL",
+        "SELECTION",
+        "VAL",
+        "WILDCARDINT",
+        "WILDCARDSELECTION",
+        "postfix_d",
+        "postfix_l",
+        "postfix_s",
+        "postfix_t"
+      ]
+    },
     "blockception": {
       "repo": "Blockception/Minecraft-bedrock-json-schemas",
       "ref": "main",
