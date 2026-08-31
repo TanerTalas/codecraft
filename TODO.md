@@ -41,16 +41,29 @@ ve sor" tablosuna giriyor.
   sunucusu", kapıdan sonra ve Aşama 4'ten önce. Aşama 4 numarasını koruyup
   "ertelendi" notu aldı; arşiv ve kod yorumları o numaraya gönderme yapıyor,
   yeniden numaralandırmak onları kırardı
-- [ ] **SOR — mimari kural 2.** "Üretim tarayıcıda, doğrulama sunucuda" diyor.
-  MCP'de tarayıcı yok; üretimi kullanıcının kendi modeli, kendi arayüzünde
-  yapıyor. Kural MCP'yi kapsayacak biçimde yeniden yazılmalı. Kural
-  değiştirmek izne tabi
-- [ ] **SOR — "Ücretli API, tier veya hosting kullanmak".** Karar dokümanının
-  kendi risk bölümü barındırma maliyetinin kaldığını yazıyor. Ücretsiz kademe
-  yetmezse bu kural esner mi, yoksa mimari mi değişir
+- [x] **Mimari kural 2 genelleştirildi (31-08-2026).** Eski hâli "Üretim
+  tarayıcıda, doğrulama sunucuda" idi ve tek bir dünyayı, web arayüzünü
+  anlatıyordu — MCP'de tarayıcı da yok, anahtar da yok. Yeni hâli iki istemciyi
+  birden kapsıyor: CodeCraft modeli kendi çalıştırmaz, kullanıcının anahtarını
+  görmez; doğrulama her iki durumda da sunucuda. Niyet değişmedi, kelimeler
+  değişti. `CLAUDE.md` içinde gerekçesiyle yazılı
+- [x] **Barındırma kuralı yerinde kaldı (31-08-2026).** "Ücretli API, tier veya
+  hosting kullanmak" maddesi esnetilmedi. Karar: **projeyi ücretsiz tutmak için
+  elden gelen yapılır.** Önce Aşama M1 ölçülür; ücretsiz kademe `tsc`'yi
+  koşturamıyorsa önce ücretsiz kalmayı koruyan alternatifler denenir, ancak
+  ondan sonra ve gerçek rakamla birlikte tekrar sorulur. `CLAUDE.md`
+  "Yapılmayacaklar" satırına bu şekilde işlendi
 
 **Bitiş kriteri:** Karar dokümanı commit'li, iki soru cevaplanmış, `CLAUDE.md`
-ve `docs/ROADMAP.md` MCP'yi anlatıyor.
+ve `docs/ROADMAP.md` MCP'yi anlatıyor. ✅
+
+> **Kapandı, 31-08-2026.** Dört madde de bitti: karar dokümanı commit'lendi
+> (`52a7ef2`), `docs/ROADMAP.md`'ye "Aşama M: MCP sunucusu" yazıldı ve Aşama 4
+> "ertelendi" notu aldı (`58cacaa`), mimari kural 2 genelleştirildi ve
+> barındırma kuralı yerinde bırakıldı.
+>
+> Bu aşamada ölçülen bir şey yok — hepsi karar ve doküman işi. Ölçüm Aşama
+> M1'de başlıyor.
 
 ---
 
@@ -73,9 +86,15 @@ bir ortamda bu üçünün hiçbiri garanti değil.
   - [ ] `os.tmpdir()` yazılabilir mi
   - [ ] `outputFileTracingIncludes` ile paketlenen `node_modules/typescript/**`
     ve `data/**` çalışma zamanında bulunuyor mu
-- [ ] Düşerse: container tabanlı barındırmaya geçilir ve kök `CODECRAFT_ROOT`
-  ortam değişkeniyle sabitlenir — `packages/knowledge/src/paths.ts` bunu zaten
-  destekliyor, yukarı yürüyen kök arayışına güvenilmez
+- [ ] **Düşerse sıra şu — ücretsiz kalmak öncelikli (M0 kararı):**
+  1. Başka bir **ücretsiz** kademe denenir; kök `CODECRAFT_ROOT` ortam
+     değişkeniyle sabitlenir (`packages/knowledge/src/paths.ts` bunu zaten
+     destekliyor, yukarı yürüyen kök arayışına güvenilmez)
+  2. Olmuyorsa ürün esnetilir: `validate_script` MCP'den çıkarılır, alt süreç
+     gerektirmeyen araçlarla (JSON, komut, lookup, şema) sınırlı bir sunucu
+     yayınlanır
+  3. İkisi de olmuyorsa **durulur ve gerçek rakamla sorulur.** Kendiliğinden
+     ücretli plana geçilmez
 - [ ] Deploy hesabı gerekiyor (Vercel). Bağlantı kurulmadan bu aşama ölçülemez
 
 **Bitiş kriteri:** Dağıtılmış bir uçta gerçek bir script doğrulaması gerçek
@@ -264,5 +283,8 @@ açık soru olarak duruyor.
 
 `CLAUDE.md`'deki tablo bağlayıcı. Özetle: vektör DB / embedding / RAG yok,
 kullanıcı hesabı ve veritabanı yok, kendi JSON şemamızı yazmıyoruz (Blockception
-var), model ID'leri koda gömülmüyor, ücretli API / tier / hosting yok — bu
-sonuncusu Aşama M0'da sorulacak.
+var), model ID'leri koda gömülmüyor, ücretli API / tier / hosting yok.
+
+Sonuncusu Aşama M0'da soruldu ve **esnetilmedi**: proje ücretsiz kalacak,
+barındırma için elden gelen yapılacak. Ücretsiz kademe yetmezse önce ürün
+esnetilir, ücretli plana kendiliğinden geçilmez.

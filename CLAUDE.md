@@ -81,9 +81,16 @@ app/                  # Next.js
 ## Mimari kurallar
 
 1. **Çekirdek mantık `packages/core` içinde.** CLI ve web arayüzü ince kabuklar. Mantığı arayüz koduna gömme.
-2. **Üretim tarayıcıda, doğrulama sunucuda.** LLM çağrısı kullanıcının anahtarıyla client tarafında yapılır, anahtar sunucuya hiç uğramaz. `tsc` ve şema doğrulaması sunucuda.
+2. **CodeCraft modeli kendi çalıştırmaz, kullanıcının anahtarını görmez.** Model çağrısı istemci tarafında olur: web'de tarayıcıda, kullanıcının kendi anahtarıyla (anahtar sunucuya hiç uğramaz); MCP'de kullanıcının kendi Claude istemcisinde (ortada anahtar yok). `tsc` ve şema doğrulaması her iki durumda da sunucuda.
 3. **Validator LLM'siz.** `packages/validator` saf fonksiyonlardan oluşur, hiçbir model çağrısı yapmaz.
 4. **`data/` git içinde durur.** Veritabanı yok, dosya olarak tutulur ve versiyonlanır.
+
+> **2. kural 31-08-2026'da genelleştirildi.** Önce "Üretim tarayıcıda,
+> doğrulama sunucuda" yazıyordu. Yanlış değildi ama tek bir dünyayı, web
+> arayüzünü anlatıyordu; MCP'de tarayıcı da yok, anahtar da yok. Niyet
+> değişmedi — CodeCraft araya girip modeli kendi çalıştırmaz, kullanıcının
+> anahtarını tutmaz — sadece kelimeleri iki istemciyi birden kapsayacak hâle
+> geldi. Karar: `docs/anlik_karar_degisikligi.md`.
 
 ## Yapılmayacaklar
 
@@ -93,7 +100,7 @@ app/                  # Next.js
 | Kullanıcı hesabı, oturum, veritabanı | v1'de sıfır kişisel veri. Anahtar tarayıcıda, geçmiş yerelde |
 | Kendi JSON şemalarını yazmak | Blockception zaten yazmış, BSD-3-Clause |
 | Model ID'lerini koda gömmek | Yapılandırmadan oku, ekosistem sık değişiyor |
-| Ücretli API, tier veya hosting kullanmak | Bütçe yok. Ücretsiz kademe bir kısıt değil, gereksinim — istek limiti de tasarıma girer |
+| Ücretli API, tier veya hosting kullanmak | Bütçe yok. Ücretsiz kademe bir kısıt değil, gereksinim — istek limiti de tasarıma girer. **MCP sunucusunun barındırılması da buna dahil** (31-08-2026): ücretsiz kademede `tsc` alt sürecinin koşup koşmadığı önce ölçülür (`TODO.md` Aşama M1), koşmuyorsa ücretsiz kalmayı koruyan alternatifler denenir ve sonuç rakamıyla birlikte sorulur |
 | ~~Komut sözdizimi doğrulayıcısı (v1'de)~~ | **Kaldırıldı, 30-08-2026.** Gerekçesi "makine okunur resmi kaynak yok" idi ve yanlıştı: `bedrock-samples` içinde `metadata/command_modules/mojang-commands.json` var (83 komut, 270 aşırı yükleme, 225 enum). Yapıldı — `packages/validator/src/command.ts` |
 
 ## Takıldığında dur ve sor
