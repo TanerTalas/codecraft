@@ -39,6 +39,11 @@ export type {
 } from "./command.ts";
 export type { ResolvedType, SchemaMapEntry } from "./schema-map.ts";
 
+// Asama M3 — MCP get_schema araci icin sema ozeti. Ham sema dondurulemez:
+// entities.json 585.237 bayt. Olcum ve kademeli daralma schema-summary.ts'te.
+export { summarizeSchema } from "./schema-summary.ts";
+export type { Detail, SchemaProperty, SchemaSummary, SummaryOptions } from "./schema-summary.ts";
+
 // Asama 2.5 — semanin ve tsc'nin yapisal olarak yakalayamadigi kontroller.
 // Olcum ve gerekce: docs/VALIDATION-LIMITS.md
 export {
