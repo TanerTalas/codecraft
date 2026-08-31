@@ -540,9 +540,11 @@ en büyük şema tipi (`entities`) sınırın altında anlamlı bir yanıt dönd
   cümleyle kapanıyor. Vercel'in Firewall rate limiting'i ücretli plan özelliği,
   yani "Yapılmayacaklar" tablosuna giriyor. Süreç-içi bir sayaç serverless'ta
   örnek başına sıfırlandığı için gerçek bir sınır değil, ölçülmemiş bir
-  güvenlik hissi verirdi. **Açık kalıyor:** ücretsiz kademede gerçekten var
-  olan mekanizmalar (Attack Challenge Mode, kullanım uyarısı) proje
-  ayarlarından kontrol edilip sonucu buraya yazılacak
+  güvenlik hissi verirdi. **Vercel Authentication kapalı — kullanıcı proje
+  ayarlarından bakıp doğruladı (01-09-2026).** Yani uç herkese açık olacak; bu
+  bir eksiklik değil, gereklilik. **Açık kalan:** ücretsiz kademedeki diğer
+  mekanizmalar (Attack Challenge Mode, kullanım uyarısı) henüz kontrol
+  edilmedi, sonucu buraya yazılacak
 
 **Bitiş kriteri:** İnternetten erişilebilir HTTPS `/mcp` ucu `tools/list`
 çağrısına araç listesini döndürüyor. Localhost sayılmaz — bağlantı Anthropic'in
