@@ -19,14 +19,16 @@ Aşama 4 (web arayüzü) ertelendi — iptal değil.
 
 Dosyalara yazılan biçim her zaman `1.26.xx`. Pazarlama numarası (`26.40`) hiçbir JSON alanına yazılmaz. Bkz. `CLAUDE.md`.
 
-**Yerleşim kararı (31-08-2026)**
+**Yerleşim kararı (31-08-2026, M1 ile doğrulandı)**
 
 Araç mantığı yeni bir `packages/mcp` workspace'inde, transport mevcut Next
 uygulamasında `app/src/app/mcp/route.ts` olarak. Mimari kural 1: mantık
 çekirdekte, arayüz ince kabuk. Vercel Node runtime ve `data/` dosya izleme
 zaten kurulu (`app/next.config.ts`), sıfırdan bir dağıtım hedefi açılmıyor.
-**Bu karar Aşama M1'in ölçümüne bağlı** — `tsc` alt süreci orada koşmazsa
-container tabanlı barındırmaya geçilir.
+~~**Bu karar Aşama M1'in ölçümüne bağlı** — `tsc` alt süreci orada koşmazsa
+container tabanlı barındırmaya geçilir.~~ **Ölçüldü ve tuttu (31-08-2026):**
+dağıtılmış Vercel Node runtime'da alt süreç açılıyor, `/tmp` yazılabilir ve
+native `tsc` ikilisi exec izniyle birlikte paketleniyor. Ayrıntı Aşama M1.
 
 ---
 
@@ -78,15 +80,15 @@ etkiler". Yerleşim kararı verildi ama ayakta kalması bu ölçüme bağlı.
 ve `data/<sürüm>/script-types/` altındaki `.d.ts` dosyalarını okuyor. Serverless
 bir ortamda bu üçünün hiçbiri garanti değil.
 
-- [ ] Dağıtılmış Vercel Node runtime'da `POST /api/review` gerçekten koşuyor mu.
+- [x] Dağıtılmış Vercel Node runtime'da `POST /api/review` gerçekten koşuyor mu.
   Uç nokta zaten var (`app/src/app/api/review/route.ts`, `runtime = "nodejs"`,
   `maxDuration = 60`) — ~~ölçüm için yeni kod yazmaya gerek yok, sadece deploy~~
   **Yanlış çıktı, 31-08-2026.** Deploy'dan önce üç kırık bulundu ve üçü de ilk
   koşuyu barındırmayla ilgisi olmayan bir sebeple kırmızıya düşürecekti; böyle
   bir yanlış kırmızı projeyi gereksiz yere ücretli container barındırmaya
   iterdi. Ayrıntı aşağıdaki blokquote'ta
-- [x] Üç şey ayrı ayrı ölçülür, tek "çalıştı" cümlesi yetmez — **mekanizma
-  yazıldı ve yerelde koştu, dağıtılmış ölçüm bekliyor.** `scriptRuntimeReport()`
+- [x] Üç şey ayrı ayrı ölçülür, tek "çalıştı" cümlesi yetmez — **dağıtılmış
+  uçta altısı da yeşil.** `scriptRuntimeReport()`
   (`packages/validator/src/script.ts`) altı ön koşulu ayrı ayrı, her biri kendi
   `try/catch`'inde ölçüyor; `GET /api/review` onu dışarı veriyor
   - [x] süreç spawn edilebiliyor mu — `spawn` kontrolü
@@ -94,7 +96,8 @@ bir ortamda bu üçünün hiçbiri garanti değil.
   - [x] `outputFileTracingIncludes` ile paketlenen `node_modules/typescript/**`
     ve `data/**` çalışma zamanında bulunuyor mu — `data`, `tscShim`, `tscExe`
     kontrolleri, artı build çıktısındaki `.nft.json` manifestinin okunması
-- [ ] **Düşerse sıra şu — ücretsiz kalmak öncelikli (M0 kararı):**
+- [x] **Düşerse sıra şu — ücretsiz kalmak öncelikli (M0 kararı).** Gerek
+  kalmadı, hiçbir basamağa inilmedi:
   1. Başka bir **ücretsiz** kademe denenir; kök `CODECRAFT_ROOT` ortam
      değişkeniyle sabitlenir (`packages/knowledge/src/paths.ts` bunu zaten
      destekliyor, yukarı yürüyen kök arayışına güvenilmez)
@@ -103,14 +106,48 @@ bir ortamda bu üçünün hiçbiri garanti değil.
      yayınlanır
   3. İkisi de olmuyorsa **durulur ve gerçek rakamla sorulur.** Kendiliğinden
      ücretli plana geçilmez
-- [ ] Deploy hesabı gerekiyor (Vercel). Bağlantı kurulmadan bu aşama ölçülemez
+- [x] Deploy hesabı gerekiyor (Vercel). Bağlandı (`tanertalas`,
+  `taner-s-team/codecraft`), production deploy `Ready`
 
 **Bitiş kriteri:** Dağıtılmış bir uçta gerçek bir script doğrulaması gerçek
 `tsc` çıktısı döndürüyor. Sonuç yeşil de olsa kırmızı da olsa buraya blokquote
 olarak yazılır.
 
-> **Yarım, 31-08-2026. Yerel ölçüm bitti, dağıtılmış ölçüm Vercel oturumu
-> bekliyor.** Bitiş kriteri KARŞILANMADI — dağıtılmış bir uçta hâlâ koşulmadı.
+> **YEŞİL, 31-08-2026. Bitiş kriteri karşılandı.** Dağıtılmış bir uçta gerçek
+> bir script doğrulaması gerçek `tsc` çıktısı döndürdü. Yerleşim kararı
+> (`packages/mcp` + `app/src/app/mcp/route.ts`) ayakta kalıyor; container
+> tabanlı barındırmaya geçilmiyor, merdivenin hiçbir basamağına inilmedi.
+>
+> **Dağıtılmış ölçüm** — `codecraft-8bed0yz8k`, production, `linux-x64`,
+> Node v24.18.0, bölge `iad1`:
+>
+> ```
+> GET /api/review                                    HTTP 200, 1,78 s (soğuk)
+>   root     ROOT=/var/task  data=var  codecraft.config.json=var  cwd=/var/task/app
+>   data     sürüm=1.26.40.5  server@2.9.0 734.924 bayt  common@1.3.0  server-ui@2.1.0
+>   tmpdir   /tmp yazılabilir
+>   tscShim  /var/task/node_modules/typescript/bin/tsc (44 bayt)
+>   tscExe   .../@typescript/typescript-linux-x64/lib/tsc (24.101.026 bayt)
+>            lib.d.ts var, exec izni var
+>   spawn    Version 7.0.2 (exit 0), 211 ms
+> ```
+>
+> Altı kontrolün altısı da yeşil. Üç kritik cevap: **alt süreç açılabiliyor**,
+> **`/tmp` yazılabilir**, **paketlenen dosyalar çalışma zamanında bulunuyor** —
+> exec biti dahil, ki bu ölçülene kadar bilinmiyordu.
+>
+> **Gerçek doğrulama** (`POST /api/review`, 0,64 s ve 0,57 s):
+>
+> | Payload | Sonuç |
+> |---|---|
+> | `runCommandAsync` (2.x'te kaldırılmış) | `ok:false` — `2:33 TS2551: Property 'runCommandAsync' does not exist on type 'Dimension'. Did you mean 'runCommand'?` |
+> | `playerBreakBlock` aboneliği | `ok:true` |
+>
+> Bozuk payload'ın gerçek bir tanı döndürmesi kritik: yalnızca `ok:true`
+> görmek, sessizce hiçbir şey derlemeyen bir yoldan da gelebilirdi.
+>
+> **Ücretsiz kademe yetti.** Hiçbir ücretli plana geçilmedi, `validate_script`
+> üründen çıkarılmadı.
 >
 > **Deploy'dan önce bulunan üç kırık.** Üçü de yerelde ölçüldü, üçü de ilk
 > dağıtılmış koşuyu düşürürdü ve hiçbiri Vercel'in yeteneğiyle ilgili değil:
@@ -167,10 +204,21 @@ olarak yazılır.
 > kullanıyor, yani JS API de aynı native ikiliyi alt süreç olarak açıyor. Bu
 > yol kapalı, tekrar denenmesin.
 >
-> **Kalan iş:** `vercel login` → `vercel link` → deploy → `GET /api/review`
-> (altı kontrol) ve `POST /api/review` (biri geçerli, biri bozuk payload).
-> Bozuk payload `TS2551` + `runCommandAsync` döndürmeli — yalnızca `ok: true`
-> görmek tsc'nin gerçekten koştuğunu kanıtlamaz.
+> **Deploy sürtünmesi, kayda değer iki tanesi.** (1) Vercel'in "preview
+> comments" adımı Next 16.3.3'ün immutable static upload'ıyla çakışıyor ve
+> deploy'u çıktı yükleme aşamasında düşürüyordu — CLI preview, CLI production,
+> `--archive=tgz` ve git-tetiklemeli deploy, dördü de aynı satırda düştü, yani
+> hedefle veya yükleme biçimiyle ilgisi yok. Çözüm: proje ayarlarında Vercel
+> Toolbar → Comments, Preview ve Production için Off. (2) Monorepo yerleşimi
+> `vercel.json` ile çözüldü: dağıtım kökü repo kökü, `buildCommand` workspace'i
+> hedefliyor. Böylece "Include files outside root directory" ayarına hiç
+> ihtiyaç olmadı ve `data/` ile `@typescript` doğal olarak paket içinde kaldı.
+>
+> **Açık kalan:** ölçüm için Vercel Authentication kapatıldı, yani uç şu an
+> herkese açık. Salt okunur ve gizli veri döndürmüyor ama `tsc` koşturuyor;
+> istek sınırı Aşama M4'te zaten açık madde. M4 bunu kalıcı olarak public
+> istiyor (bağlantı Anthropic'in bulut altyapısından kuruluyor, SSO'nun
+> arkasına geçemez), o yüzden karar M4'e devredildi.
 
 ---
 
