@@ -224,27 +224,107 @@ olarak yazılır.
 
 ## Aşama M2 — `packages/mcp` iskeleti ve bağımlılık sınırı
 
-- [ ] `packages/mcp` workspace'i — `package.json`, `exports: "./src/index.ts"`.
+- [x] `packages/mcp` workspace'i — `package.json`, `exports: "./src/index.ts"`.
   Derleme adımı yok; depoda hiçbir paketin derleme adımı yok, Node `.ts`
-  dosyalarını doğrudan çalıştırıyor
-- [ ] `@modelcontextprotocol/sdk` bağımlılığı. Depoda şu an **hiç** MCP kodu
-  veya bağımlılığı yok, sıfırdan başlanıyor
-- [ ] **Bağımlılık sızıntısı.** Araçların ihtiyacı olan `review`,
-  `checkFeasibility`, `buildContext` `@codecraft/core` içinde; ama core
-  barrel'ı (`packages/core/src/index.ts`) `model.ts`'i de dışa açıyor ve o
-  `ai` + `@ai-sdk/google`'ı çekiyor. MCP sunucusunun LLM SDK'sına ihtiyacı yok
-  ve olmamalı — modeli kullanıcı getiriyor
-  - Çözüm: core'a `@codecraft/core/server` alt yolu. `review.ts`,
-    `feasibility.ts`, `context.ts`, `normalize.ts` dışa açılır; `model.ts` ve
-    `generate.ts` açılmaz. `src/browser.ts` ile aynı dikiş, aynı gerekçe
-- [ ] Testi `packages/core/test/layers.test.ts` kalıbıyla yazılır: **geçişli**
-  import grafiği yürünür, `@codecraft/core/server`'dan `ai` veya `@ai-sdk/*`'a
-  ulaşılamadığı ölçülür. Tek dosyanın kendi import satırlarına bakan test
-  yetmez — o hata bir kez yapıldı ve iki sızıntıyı kaçırdı
-  (arşiv, Aşama 4 Adım 1)
+  dosyalarını doğrudan çalıştırıyor. Kök `package.json` ve `tsconfig.json`
+  değişmedi: `workspaces: ["packages/*"]`, test glob'u ve `include` yeni paketi
+  kendiliğinden kapsıyor
+- [x] `@modelcontextprotocol/sdk` bağımlılığı — **1.30.0** kuruldu
+- [x] **Bağımlılık sızıntısı** — `@codecraft/core/server` alt yolu açıldı
+  (`packages/core/src/server.ts`). `review.ts`, `feasibility.ts`, `context.ts`,
+  `normalize.ts` dışa açıldı; `model.ts` ve `generate.ts` açılmadı. Ayrıca
+  `errors.ts` (`UserError`, hata eşlemesi için) ve `output.ts`
+  (`generatedFileSchema`, M3'te `review_pack`'in girdi şeması) — ikisi de saf,
+  `ai` çekmiyor. `src/browser.ts` ile aynı dikiş, aynı gerekçe
+- [x] Testi `packages/core/test/layers.test.ts` kalıbıyla yazıldı: **geçişli**
+  import grafiği yürünüyor. `packages/mcp` tarafında **ikinci bir test** var,
+  gerekçesi aşağıda
+- [x] `packages/mcp` `@codecraft/core`'a değil `@codecraft/core/server`'a
+  bağlanıyor; `@codecraft/validator` ve `@codecraft/knowledge`'a doğrudan
+  (emsal: `evals/package.json` aynı üçlüyü bildiriyor — mcp bir kabuk değil,
+  core ile aynı katmanda bir mantık paketi; kabuk M4'te `app/` tarafında olacak)
+- [x] Tek canlı araç: `get_version_info`. M2'nin yazılı bitiş kriteri hiçbir şey
+  **koşmadan** da karşılanıyordu; boş bir iskelet de yeşil görünürdü
 
 **Bitiş kriteri:** `npm run typecheck` exit 0, yeni katman testi yeşil,
-`npm test` düşmüyor.
+`npm test` düşmüyor. ✅
+
+> **YEŞİL, 31-08-2026.** `npm run typecheck` exit 0, `npm test` **184/184**
+> (M1'de 175'ti, dokuz yeni test). Sızıntı dikişi yerinde ve **ölçülerek**
+> yerinde.
+>
+> **Beş test, üçü bilerek kırılarak doğrulandı.** Arşivdeki Aşama 4 Adım 1'de
+> "yeşil ama hiçbir şey ölçmeyen test" hatası bir kez yapıldı, o yüzden her
+> yeni testin kırmızıya döndüğü görülmeden yazıldı sayılmadı:
+>
+> | Enjekte edilen hata | Kırmızıya dönen |
+> |---|---|
+> | `server.ts`'e `export { callModel } from "./model.ts"` | *LLM SDK'sına ulaşılamıyor*, *LLM'e bağlı modüller grafikte değil* |
+> | `validator/package.json`'a `@ai-sdk/google` bağımlılığı | *workspace paketleri LLM SDK'sı bildirmiyor* |
+> | `version.ts`'te `@codecraft/core/server` → `@codecraft/core` | mcp'nin iki katman testi de |
+>
+> Üçüncüsü ayrı bir test gerektirdi ve gerekçesi şu: core tarafındaki dikiş,
+> mcp'nin o dikişi **kullandığını** ölçmüyor. Tek satırlık bir barrel import'u
+> sızıntıyı geri getirir ve `packages/core`'un testleri yeşil kalırdı.
+>
+> İkinci kör nokta manifest testiyle kapatıldı: yürüyücü paket sınırını
+> geçmiyor (`layers.test.ts` bunu kendi yorumunda söylüyor), yani
+> `@codecraft/validator`'ın **içindeki** bir `ai` import'unu göremezdi. O yüzden
+> grafikte adı geçen workspace paketlerinin `package.json`'ları ayrıca
+> okunuyor.
+>
+> **`layers.test.ts`'in 4. testi `server.ts` eklenince kırılıyordu.** `known`
+> set'i `[...graph.keys(), ...NODE_BOUND, "index.ts", "browser.ts"]` ve `src/`
+> tam 16 dosyaydı — sıfır boşluk. `"server.ts"` elle eklendi. Yeni bir giriş
+> noktası açan herkes aynı yere bakacak.
+>
+> **`get_version_info` ölçüldü** (`InMemoryTransport`, gerçek `tools/list` +
+> `tools/call`, gerçek `data/`):
+>
+> | Alan | Bayt |
+> |---|---|
+> | **toplam (compact)** | **3.290** |
+> | toplam (girintili) | 4.025 |
+> | └ `documentTypes` (60 tip) | 1.936 |
+> | └ `formatVersions` | 640 |
+> | └ `patterns` | 435 |
+> | └ `modules` | 88 |
+> | └ kalanı (sürüm alanları, textures, identities) | ~60 |
+>
+> ~30.000 token sınırının kat kat altında. **M3'ün token tavanı maddesinin ilk
+> gerçek rakamı bu** — ve bu araç en küçüğü; `get_schema` ham şemayı
+> döndüremez (`commands.json` tek başına 650.454 bayt).
+>
+> Dönen sürüm `resolveVersion()` ile ikinci bir yoldan karşılaştırıldı: yalnızca
+> "hata atmadı" görmek, sessizce boş dönen bir yoldan da gelebilirdi. Ayrıca
+> pazarlama numarası (`26.40`) verildiğinde araç **hata döndürüyor**, sessizce
+> en yeni sürüme düşmüyor.
+>
+> **Yanlış varsayım, ölçümle düzeldi.** Test önce `tool.annotations.title`'a
+> bakıyordu ve kırmızıydı. `title` `Tool`'un **üst düzey** alanı;
+> `ToolAnnotations` içinde de aynı adlı bir alan var ve ikisi karıştırılıyor.
+> SDK 1.30.0 üst düzeyde veriyor — araç doğruydu, test yanlıştı.
+>
+> **M4'ü etkileyen iki ölçüm.** İkisi de M2'nin işi değil ama burada bulundu:
+>
+> 1. **M4'ün "bilinen sürtünme" maddesi çözülmüş.** SDK 1.30.0
+>    `WebStandardStreamableHTTPServerTransport` taşıyor
+>    (`dist/esm/server/webStandardStreamableHttp.js`) ve imzası
+>    `handleRequest(req: Request): Promise<Response>` — Next App Router'ın
+>    verdiği şeklin aynısı. Durumsuz bir `POST /mcp` elle yazmaya gerek yok.
+>    M4'e gelindiğinde o madde bu ölçümle güncellenir
+> 2. **Paket ağırlığı sorun değil.** SDK `node_modules`'a 5,7 MB koyuyor ve
+>    `express`, `hono`, `jose`, `eventsource` gibi ağır bağımlılıkları var — ama
+>    `server/mcp.js`'in geçişli import kapanışı yürünüp ölçüldü: **14 yerel
+>    dosya**, çıplak bağımlılık olarak yalnızca `ajv`, `ajv-formats`, `zod`,
+>    `zod-to-json-schema`. Express ve hono kapanışta **yok**; ilk ikisi zaten
+>    validator üzerinden pakette. Yani M4'te `/mcp` fonksiyon paketi
+>    `/api/review`'un 47,3 MB'ının üstüne kayda değer bir şey eklemeyecek
+>
+> **Açık kalan (M2 kapsamı dışı, kayda geçiyor):** `SERVER_VERSION`
+> `packages/mcp/src/server.ts` içinde elle tutuluyor ve `package.json` ile
+> eşleşmesi test edilmiyor. Tek bir sürüm dizesi için `package.json` okumak
+> gereksiz göründü; M6'da doküman yazılırken tekrar bakılır.
 
 ---
 
@@ -314,12 +394,15 @@ en büyük şema tipi (`entities`) sınırın altında anlamlı bir yanıt dönd
   SSE ile yazılmaz
 - [ ] `app/src/app/mcp/route.ts` — `runtime = "nodejs"`, `maxDuration`
   `validate_script` alt süreci için yükseltilmiş
-- [ ] **Bilinen sürtünme:** MCP SDK'sının `StreamableHTTPServerTransport`'u Node
-  `req`/`res` bekliyor, Next App Router ise Web `Request`/`Response` veriyor.
-  Önce bir Web adaptörü araştırılır (SDK'nın kendi desteği veya hazır bir Next
-  adaptörü); bulunamazsa araçlar salt okunur ve sunucu→istemci bildirimi
-  olmadığı için **durumsuz** bir `POST /mcp` elle yazılır — `initialize`,
-  `tools/list`, `tools/call`. Hangisi seçildiyse gerekçesi buraya yazılır
+- [ ] ~~**Bilinen sürtünme:** MCP SDK'sının `StreamableHTTPServerTransport`'u
+  Node `req`/`res` bekliyor, Next App Router ise Web `Request`/`Response`
+  veriyor.~~ **Çözülmüş, M2'de ölçüldü (31-08-2026).** SDK 1.30.0
+  `WebStandardStreamableHTTPServerTransport` taşıyor
+  (`dist/esm/server/webStandardStreamableHttp.js`), imzası
+  `handleRequest(req: Request): Promise<Response>` — App Router'ın verdiği
+  şeklin aynısı. Elle durumsuz `POST /mcp` yazılmayacak. Yine de bu ölçüm
+  yalnızca **tipin** uyduğunu söylüyor; dağıtılmış uçta koştuğu M4'te ayrıca
+  ölçülür
 - [ ] `app/next.config.ts` → `outputFileTracingIncludes` haritasına `/mcp`
   girdisi: `../data/**` ve `../node_modules/typescript/**`. İkisi de dinamik
   yolla okunuyor, Next kendiliğinden bulmuyor (gerekçe dosyada yazılı)
