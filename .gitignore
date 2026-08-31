@@ -7,6 +7,8 @@
 secrets/
 config.local.*
 codecraft.config.local.json
+# Vercel CLI'in yazdigi proje baglantisi (.env.local'a OIDC token da koyuyor)
+.vercel
 
 # --- Bagimlilik ve derleme ciktisi ---
 node_modules/
