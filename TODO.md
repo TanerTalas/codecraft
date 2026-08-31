@@ -344,7 +344,13 @@ hepsinin açık bir başlığı var. Yazma işlemi yok.
 
 Altısı da yazılmış ve testli fonksiyonlar. Bu sarmalama işi, sıfırdan iş değil.
 
-- [ ] Altı aracın girdi şeması, başlığı ve `readOnlyHint`'i
+- [ ] Kalan yedi aracın girdi şeması, başlığı ve `readOnlyHint`'i.
+  `get_version_info` M2'de bitti ve kalıbı kurdu: `registerTool(ad, {title,
+  description, inputSchema, annotations}, cb)`, sürüm parametresi her araçta
+  tek biçim (opsiyonel `version` dizesi), `annotations: {readOnlyHint: true,
+  openWorldHint: false}`. **Dikkat:** `title` `Tool`'un üst düzey alanı,
+  `annotations`'ın içinde değil — ikisi de spec'te var ve M2'de bir kez
+  karıştırıldı
 - [ ] **Token sınırı bu aşamanın asıl işi.** Karar dokümanı bunu optimizasyon
   değil zorunluluk sayıyor (özel bağlayıcılar için ~30.000 token). Ölçülmüş
   dosya boyutları:
@@ -372,7 +378,9 @@ Altısı da yazılmış ve testli fonksiyonlar. Bu sarmalama işi, sıfırdan i�
   üretiyor; arşivdeki Adım 3.5 ölçümü tam olarak bunun bir vakayı kurtardığını
   gösteriyor (`ore-gen-01`)
 
-**Karar dokümanında olmayan iki araç önerisi — onay bekliyor:**
+**Karar dokümanında olmayan iki araç önerisi — ~~onay bekliyor~~ ONAYLANDI
+(31-08-2026).** İkisi de M3 kapsamına girdi. Yani araç sayısı altı değil sekiz,
+biri (`get_version_info`) M2'de bitti:
 
 - [ ] `validate_command(satır, sürüm)` — `validateCommand`,
   `packages/validator/src/command.ts`. 83 komut, 270 aşırı yükleme, 225 enum.
@@ -380,7 +388,9 @@ Altısı da yazılmış ve testli fonksiyonlar. Bu sarmalama işi, sıfırdan i�
 - [ ] `review_pack(dosyalar, sürüm)` — `review()`, `packages/core/src/review.ts`.
   Bütün doğrulayıcıları ve semantik kontrolleri bir pakete birden koşturan
   toplayıcı. Tek çağrıda en çok değer üreten araç bu;
-  `app/src/app/api/review/route.ts` zaten aynı şekli kullanıyor
+  `app/src/app/api/review/route.ts` zaten aynı şekli kullanıyor.
+  `@codecraft/core/server` bunu M2'de dışa açtı, girdi şeması için
+  `generatedFileSchema` de orada
 
 **Bitiş kriteri:** Her aracın girdi şeması, `readOnlyHint`'i ve bayt tavanı var;
 en büyük şema tipi (`entities`) sınırın altında anlamlı bir yanıt döndürüyor —
