@@ -512,28 +512,140 @@ en büyük şema tipi (`entities`) sınırın altında anlamlı bir yanıt dönd
 
 ## Aşama M4 — Transport ve rota
 
-- [ ] **Streamable HTTP.** SSE Mart 2025 spesifikasyonunda kaldırıldı, yeni kod
-  SSE ile yazılmaz
-- [ ] `app/src/app/mcp/route.ts` — `runtime = "nodejs"`, `maxDuration`
-  `validate_script` alt süreci için yükseltilmiş
-- [ ] ~~**Bilinen sürtünme:** MCP SDK'sının `StreamableHTTPServerTransport`'u
+- [x] **Streamable HTTP.** SSE Mart 2025 spesifikasyonunda kaldırıldı, yeni kod
+  SSE ile yazılmaz. Durumsuz mod (`sessionIdGenerator: undefined`) ve
+  `enableJsonResponse: true` — ikisinin de gerekçesi ölçüldü, aşağıda
+- [x] `app/src/app/mcp/route.ts` — `runtime = "nodejs"`, `maxDuration = 60`
+  (`/api/review` ile aynı, sebebi `validate_script`'in tsc alt süreci).
+  **Sapma:** bağlantı mantığı route dosyasında değil
+  `packages/mcp/src/http.ts` içinde; gerekçesi aşağıda
+- [x] ~~**Bilinen sürtünme:** MCP SDK'sının `StreamableHTTPServerTransport`'u
   Node `req`/`res` bekliyor, Next App Router ise Web `Request`/`Response`
   veriyor.~~ **Çözülmüş, M2'de ölçüldü (31-08-2026).** SDK 1.30.0
   `WebStandardStreamableHTTPServerTransport` taşıyor
   (`dist/esm/server/webStandardStreamableHttp.js`), imzası
   `handleRequest(req: Request): Promise<Response>` — App Router'ın verdiği
-  şeklin aynısı. Elle durumsuz `POST /mcp` yazılmayacak. Yine de bu ölçüm
-  yalnızca **tipin** uyduğunu söylüyor; dağıtılmış uçta koştuğu M4'te ayrıca
-  ölçülür
-- [ ] `app/next.config.ts` → `outputFileTracingIncludes` haritasına `/mcp`
-  girdisi: `../data/**` ve `../node_modules/typescript/**`. İkisi de dinamik
-  yolla okunuyor, Next kendiliğinden bulmuyor (gerekçe dosyada yazılı)
+  şeklin aynısı. Elle durumsuz `POST /mcp` yazılmadı. M2'nin ölçümü yalnızca
+  **tipin** uyduğunu söylüyordu; M4'te gerçek JSON-RPC round-trip'i de ölçüldü
+- [x] `app/next.config.ts` → `outputFileTracingIncludes` haritasına `/mcp`
+  girdisi. **Madde eksik yazılmıştı:** iki yol diyordu (`../data/**`,
+  `../node_modules/typescript/**`), dördü de gerekli. Eksik ikisi
+  (`../codecraft.config.json`, `../node_modules/@typescript/**`) tam olarak
+  M1'de ölçülen iki kırığın sebebi
 - [ ] Kimlik doğrulama v1'de yok — araçlar salt okunur, gizli veri yok. **Kötüye
-  kullanım ve istek sınırı açık madde olarak burada durur**, sessizce atlanmaz
+  kullanım ve istek sınırı açık madde olarak burada durur**, sessizce atlanmaz.
+  Karar (01-09-2026): M4'te rate limit **kodu yazılmıyor**. Vercel
+  Authentication kapalı kalmak **zorunda** — bağlantıyı Anthropic'in bulut
+  altyapısı kuruyor, SSO'nun arkasına geçemez; M1'in "açık kalan" maddesi bu
+  cümleyle kapanıyor. Vercel'in Firewall rate limiting'i ücretli plan özelliği,
+  yani "Yapılmayacaklar" tablosuna giriyor. Süreç-içi bir sayaç serverless'ta
+  örnek başına sıfırlandığı için gerçek bir sınır değil, ölçülmemiş bir
+  güvenlik hissi verirdi. **Açık kalıyor:** ücretsiz kademede gerçekten var
+  olan mekanizmalar (Attack Challenge Mode, kullanım uyarısı) proje
+  ayarlarından kontrol edilip sonucu buraya yazılacak
 
 **Bitiş kriteri:** İnternetten erişilebilir HTTPS `/mcp` ucu `tools/list`
 çağrısına araç listesini döndürüyor. Localhost sayılmaz — bağlantı Anthropic'in
 bulut altyapısından kuruluyor. Geliştirme sırasında ngrok veya Cloudflare Tunnel.
+
+Bir madde eklendi: aynı uçtan `validate_script` de gerçek `tsc` tanısı
+döndürmeli. Yalnızca `tools/list` yeşil olsaydı, `tsc`'si olmayan yarım bir
+sunucu da bu kriteri geçerdi.
+
+> **YARIM, 01-09-2026. Bitiş kriteri HENÜZ KARŞILANMADI.** Kod yazıldı ve
+> yerelde uçtan uca ölçüldü; **dağıtılmış uçta ölçülmedi** çünkü `vercel deploy`
+> bu oturumda çalıştırılamadı (izin reddedildi). Ölçüm, deploy koşulduğunda
+> `npm run mcp:probe -- https://<host>/mcp` ile tamamlanacak ve sonucu — yeşil
+> de olsa kırmızı da olsa — buraya yazılacak.
+>
+> `npm run typecheck` exit 0, `npm test` **211/211** (M3'te 206'ydı, beş yeni
+> test).
+>
+> **Transport `packages/mcp/src/http.ts` içinde, route dosyasında değil.**
+> TODO'nun M4 maddesi route'u işaret ediyordu; sapmanın iki gerekçesi de
+> ölçülmüş bir hataya dayanıyor:
+>
+> 1. Kök `tsconfig.json` `app/` dizinini **kapsamıyor**. M1'de tam bu yüzden
+>    `app/src/app/page.tsx` sessizce çürüdü ve deploy'un build adımını
+>    düşürdü. `http.ts` `npm run typecheck` altında; route.ts olsaydı değildi
+> 2. Düz bir `new Request(...)` ile çağrılabiliyor, yani JSON-RPC round-trip'i
+>    `npm test` içinde Next ayağa kalkmadan ölçülüyor
+>
+> `createServer()` hâlâ hiçbir transport bilmiyor — `server.ts`'in kuralı
+> bozulmadı, yalnızca çağıranın yeri değişti. Yorum ve bu satır güncellendi.
+>
+> **Üç tasarım kararı, üçü de ölçülerek:**
+>
+> | Karar | Ölçüm |
+> |---|---|
+> | Her istekte **yeni** transport ve **yeni** server | Tercih değil, SDK kısıtı: durumsuz transport ikinci `handleRequest`'te atıyor ("Stateless transport cannot be reused across requests", `webStandardStreamableHttp.js:172`) |
+> | `enableJsonResponse: true` | JSON modda `handleRequest` **tam materyalize** bir `Response` ile çözülüyor, yani `finally`'deki `close()` gövdeyi kesmiyor. SSE modda fonksiyon 15 sn'lik keep-alive frame'leriyle açık kalırdı |
+> | `GET`/`DELETE` → **405**, transport'a devredilmiyor | Devredilirse GET durumsuz modda 200 + `text/event-stream` dönüyor ve akış **hiç veri vermeden hiç bitmiyor** — ölçüldü, 5 sn sonra hâlâ açık. Vercel'de fonksiyon `maxDuration`'a (60 sn) kadar asılı kalırdı, ücretsiz kademede doğrudan kota yakardı |
+>
+> **`initialize`'ın kaybolması sorun değil.** Durumsuz modda `tools/list` kendi
+> isteğinde initialize'ı hiç görmemiş bir sunucuya düşüyor. SDK kaynağı okundu:
+> `server/index.js` gelen istekleri "initialize edilmedi" diye reddetmiyor,
+> `_clientCapabilities` yalnızca sunucu→istemci çağrıları (sampling,
+> elicitation) için kullanılıyor ve bu sunucu hiç öyle çağrı yapmıyor. Test
+> bunu uçtan uca doğruluyor.
+>
+> **Beş yeni test, üçü bilerek kırılarak doğrulandı** (M2/M3'teki
+> enjekte-et-ve-kırmızıya-dön yönteminin aynısı):
+>
+> | Enjekte edilen hata | Kırmızıya dönen |
+> |---|---|
+> | `enableJsonResponse` kaldırıldı | *initialize düz JSON dönüyor* ve iki test daha (3 kırmızı) |
+> | Modül seviyesinde tek transport | *ardışık iki istek çalışıyor* ve iki test daha (3 kırmızı) |
+> | POST guard'ı kaldırıldı, GET transport'a devredildi | *GET ve DELETE 405* (1 kırmızı) |
+>
+> **Dosya izleme ölçüldü, `/mcp` `/api/review` ile eşit** (`next build`
+> sonrası `.next/server/app/mcp/route.js.nft.json`, M1'in yöntemi):
+>
+> | | `/mcp` | `/api/review` |
+> |---|---|---|
+> | toplam dosya | 4.152 | 4.151 |
+> | `data/` | 3.372 | 3.372 |
+> | `codecraft.config.json` | 1 | 1 |
+> | `typescript/` | 417 | 417 |
+> | `@typescript/` | 114 (107'si `lib.*.d.ts`) | 114 |
+> | tsc ikilisi | 2 | 2 |
+>
+> Dördü de yerinde. `codecraft.config.json`'ın 0 olmadığını görmek kritik —
+> M1'de tam orada kırılmıştı ve uç daha ilk istekte "Repo kökü bulunamadı" ile
+> düşerdi.
+>
+> **Paket ağırlığı (yerel, Windows):** `/mcp` 70,8 MB, `/api/review` 70,7 MB —
+> yani MCP katmanı ~0,1 MB ekliyor. M1'de `/api/review` **47,3 MB** ölçülmüştü;
+> fark Windows'tan geliyor, `@typescript/` altında hem `tsc` hem `tsc.exe`
+> paketleniyor (50,4 MB'ın yarısı). Linux build'inde tek ikili kuruluyor, yani
+> dağıtılan paket M1'in rakamına yakın kalmalı. **Bu son cümle tahmin,
+> dağıtılmış ölçümle doğrulanacak.**
+>
+> `@modelcontextprotocol` izleme manifestinde **0 dosya**: Turbopack SDK'yı
+> rota chunk'ına gömüyor. Gömüldüğü ayrıca doğrulandı (SDK'nın hata metni
+> `.next/server/chunks/` içinde bulundu). `express` ve `hono` yine yok —
+> M2'nin kapanış ölçümü tuttu.
+>
+> **Yerel uçtan uca koşu** (`next start`, gerçek üretim build'i, gerçek SDK
+> istemcisi — `npm run mcp:probe`):
+>
+> | Adım | Sonuç |
+> |---|---|
+> | bağlantı (initialize) | 72 ms |
+> | `tools/list` | 15 ms soğuk / 6 ms sıcak, 9.036 bayt, 8 araç, hepsi `readOnlyHint` |
+> | `validate_script` (kaldırılmış API) | 146 ms, 285 bayt, gerçek TS tanısı |
+> | `validate_script` (geçerli) | 117 ms, 144 bayt, `ok:true` |
+> | `get_schema` (390 alanlı düğüm) | 15 ms, **15.898 bayt** — M3'teki rakamın aynısı, tavan uçta da tutuyor |
+> | `GET` / `DELETE` | 405 + JSON gövde |
+>
+> **Bu koşu bitiş kriterini karşılamıyor** ve karşıladığı iddia edilmiyor:
+> localhost sayılmıyor. Ölçtüğü tek şey Next'in rotayı gerçekten bağladığı ve
+> üretim build'inin içinden tsc'nin koştuğu.
+>
+> **Kalan tek soru barındırma.** `/mcp` kendi fonksiyon paketini alıyor, yani
+> M1'in `/api/review` için ölçtüğü yeşil buraya **taşınmıyor**: alt süreç,
+> `/tmp` ve paketlenmiş dosyalar o pakette de ayrıca ölçülmeli. `probe.ts`'in
+> ikinci maddesi (bozuk payload'a gerçek tsc tanısı) tam olarak bunu ölçüyor.
 
 ---
 
