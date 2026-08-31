@@ -251,4 +251,5 @@ Gereksinimler: dünyada hileler açık (bağlantı kurmak için), Ayarlar > Gene
 
 Sağlık kontrolü **pipeline'a eklenmedi ve Aşama 3'e taşındı**: çalışan bir
 Minecraft istemcisi gerektiriyor, GitHub Actions'ta oyun çalıştırılamıyor.
-Yerelden koşan bir script olarak yazılacak (`TODO.md`, Aşama 3).
+Yerelden koşan bir script olarak yazılacak
+(`docs/ileride-donulecek-todo.md`, Aşama 3).

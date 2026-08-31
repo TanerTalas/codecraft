@@ -3,6 +3,17 @@
 Sıralamayı bozma, her aşama öncekinin üstüne oturuyor.
 Mimari kurallar ve stack için `CLAUDE.md` dosyasına bak.
 
+> **Yön değişikliği, 31-08-2026.** Geçiş kapısından sonra sıra web arayüzüne
+> değil, bir **MCP sunucusuna** geçti. Gerekçesi aşağıda "Aşama M" bölümünde,
+> kararın kendisi `docs/anlik_karar_degisikligi.md` içinde.
+>
+> Aşama 4 numarasını koruyor ama **ertelendi** — arşiv ve kod yorumları o
+> numaraya gönderme yapıyor, yeniden numaralandırmak onları kırardı. Yürütme
+> sırası: kapı → **M** → 4.
+>
+> Yürütülebilir liste kökteki `TODO.md`. Aşama 1–4'ün işaretlenmiş hâli
+> `docs/ileride-donulecek-todo.md` içinde.
+
 ---
 
 ## Aşama 1: Veri pipeline'ı
@@ -121,7 +132,8 @@ tiplerden oluşur: `script` (tsc) ve `json` (ajv). Komut ve Python çıktıları
 doğrulayıcısı yok — altyapıda Python çalıştırılmıyor.
 Komut tarafı Aşama 3'te kazanıldı (`docs/COMMANDS.md`) ama kapı listesi
 sabit kaldı: ölçüt değiştirilmiyor. O vakalar `extra` listesinde
-durur, ölçülür ama sayılmaz. Erteleme gerekçeleri `TODO.md` Aşama 2.5 bölümünde.
+durur, ölçülür ama sayılmaz. Erteleme gerekçeleri
+`docs/ileride-donulecek-todo.md` Aşama 2.5 bölümünde.
 
 Ölçüt `npm run eval -- --gate`: kapı sağlanmazsa `exit 1`.
 
@@ -131,7 +143,90 @@ Kapıya ulaşılmadığında ne üzerinde çalışılacağı da belli olur, çü
 
 ---
 
+## Aşama M: MCP sunucusu
+
+Kapıdan sonra gelen aşama bu. Kendi ekseninde numaralandı çünkü Aşama 4'ün
+numarası arşivde ve kod yorumlarında geçiyor, kaydırmak onları kırardı.
+
+### Neden arayüzden önce
+
+Tıkanma noktası şuydu: kullanıcı Claude aboneliğiyle giriş yapamıyor, sadece
+API anahtarı kullanabiliyor, anahtar da para demek. Aşama 4 bu yüzden BYOK ile
+çıkmak zorundaydı ve BYOK, oyuncu kitlesi için gerçek bir sürtünme.
+
+MCP sorunu çözmüyor, **yön değiştiriyor**:
+
+| | |
+|---|---|
+| Yasak olan | Benim sitem kullanıcının Claude aboneliğini harcıyor, ben aracı oluyorum |
+| MCP | Kullanıcı zaten Claude'un içinde, kendi aboneliğiyle. CodeCraft sadece bağlanılan bir araç sunucusu, çıkarım Anthropic'in kendi ürününde |
+
+İkincisi protokolün var olma sebebi.
+
+### Ürünün değeri zaten LLM değildi
+
+CodeCraft'ın farkı güncel veri ve doğrulama katmanında; model herkeste aynı.
+MCP tam olarak o katmanı paketlemeye izin veriyor, modeli kullanıcı getiriyor.
+Sonucu: token maliyeti sıfır, kullanıcının ek maliyeti sıfır, anahtar yapıştırma
+adımı yok, arayüz yazmaya gerek yok.
+
+Ve bu sıfırdan iş değil. `packages/validator` ve `packages/knowledge` zaten saf
+fonksiyonlardan oluşuyor (mimari kural 3), araca dönüşmeleri sarmalama işi.
+
+### Açığa çıkarılacak araçlar
+
+```
+validate_json(içerik, tip, sürüm)
+validate_script(kod, apiSürümü)
+lookup_block(id, sürüm)
+get_schema(tip, sürüm)
+get_version_info()
+check_feasibility(niyet)
+```
+
+Hepsi salt okunur ve hepsine `readOnlyHint` konuyor. Yazma işlemi olmaması hem
+güvenliği hem onay akışını basitleştiriyor.
+
+### Kısıtlar
+
+**Transport Streamable HTTP.** SSE Mart 2025 spesifikasyonunda kaldırıldı.
+Sunucu internetten erişilebilir bir HTTPS ucu olmak zorunda — bağlantı
+Anthropic'in bulut altyapısından kuruluyor, localhost veya firewall arkası
+bağlanmaz. Geliştirme sırasında tünel gerekiyor.
+
+**Token sınırı bir tasarım kısıtı, optimizasyon değil.** Özel bağlayıcılar için
+yaklaşık 30.000 token. `data/` içindeki indeksler ve derlenmiş şemalar bunu
+rahat aşıyor — en büyüğü yarım megabaytın üstünde. Yani araçlar tüm registry'yi
+değil **hedefe yönelik sonuç** döndürmek zorunda. Bu, Aşama 2'nin "lookup tek
+kimliğin sonucunu döndürür" kararının aynısı, yeni bir yerde.
+
+**Bir kez yaz, birden fazla platforma ulaş.** MCP bağlayıcıları yalnızca
+Claude'da değil; sunucu tek, istemci çok.
+
+### Bilinen riskler
+
+**Barındırma maliyeti kalıyor.** Token maliyeti sıfır ama sunucuyu birinin
+çalıştırması gerekiyor, ve doğrulama `tsc`'yi alt süreç olarak koşuyor.
+Serverless bunu koşturamazsa container tabanlı barındırma gerekir. Bu ölçüm
+erken yapılır çünkü mimariyi etkiler. Ücretsiz kademe yetmezse `CLAUDE.md`'nin
+"ücretli hosting yok" maddesiyle çelişir — o zaman durulup sorulur.
+
+**Kitle hâlâ teknik.** MCP bağlayıcı ekleyebilen oyuncu, API anahtarı alabilen
+oyuncudan çok daha fazla ama yine de genel kitle değil. MCP web arayüzünün
+yerini almıyor, önüne geçiyor.
+
+**Bitiş kriteri:** Sunucu dağıtılmış, kendi Claude hesabıma bağlı, ve gerçek bir
+Bedrock isteği baştan sona MCP üzerinden doğrulanmış çıktı üretiyor.
+
+---
+
 ## Aşama 4: Web arayüzü
+
+> **Ertelendi (31-08-2026), iptal değil.** Aşama M'den sonraya bırakıldı.
+> MCP'den gelen gerçek kullanım verisi hangi araçların işe yaradığını
+> gösterecek, arayüz tasarımı o veriyle bilgilenmiş olarak yazılacak.
+> Doğrulama rozeti maddesinin karşılığı MCP'de zaten var: araç çıktısının
+> kendisi rozetin işlevini görüyor. Tasarım brief'i `docs/UI.md`.
 
 - Kalıcı sürüm seçici
 - Sohbet alanı
@@ -171,4 +266,5 @@ O çalıştığında gerisi mekanik iş.
 3. Eval altyapısı ve HTML rapor
 4. CLI, çekirdek paket ayrımıyla
 5. **Geçiş kapısı: 20'de 18**
-6. Web arayüzü
+6. MCP sunucusu
+7. Web arayüzü — ertelendi, MCP oturunca dönülecek

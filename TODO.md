@@ -37,9 +37,10 @@ ve sor" tablosuna giriyor.
 
 - [x] `docs/anlik_karar_degisikligi.md` commit edildi (31-08-2026) — yönü
   değiştiren karar artık depoda, listeden önce geliyor
-- [ ] `docs/ROADMAP.md` MCP'yi bilmiyor, Aşama 4 = web arayüzü diye bitiyor.
-  "Neden" dokümanı o olduğu için MCP aşaması oraya yazılmalı; bu liste onun
-  yürütülebilir hâli
+- [x] `docs/ROADMAP.md`'ye MCP aşaması yazıldı (31-08-2026) — "Aşama M: MCP
+  sunucusu", kapıdan sonra ve Aşama 4'ten önce. Aşama 4 numarasını koruyup
+  "ertelendi" notu aldı; arşiv ve kod yorumları o numaraya gönderme yapıyor,
+  yeniden numaralandırmak onları kırardı
 - [ ] **SOR — mimari kural 2.** "Üretim tarayıcıda, doğrulama sunucuda" diyor.
   MCP'de tarayıcı yok; üretimi kullanıcının kendi modeli, kendi arayüzünde
   yapıyor. Kural MCP'yi kapsayacak biçimde yeniden yazılmalı. Kural
