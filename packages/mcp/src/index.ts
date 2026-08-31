@@ -1,4 +1,4 @@
-// @codecraft/mcp — MCP araç katmanı (Aşama M2, bkz. TODO.md)
+// @codecraft/mcp — MCP araç katmanı (Aşama M2–M3, bkz. TODO.md)
 //
 // Bu paket ARAÇLARI ve sunucu kurulumunu taşır; transport'u taşımaz.
 // Transport Aşama M4'te `app/src/app/mcp/route.ts` olacak.
@@ -11,4 +11,6 @@
 // Kural laf olarak değil ölçüyle duruyor: `test/layers.test.ts`.
 
 export { createServer, SERVER_VERSION, tools } from "./server.ts";
-export { getVersionInfo, versionInput } from "./tools/version.ts";
+export { BYTE_LIMIT, byteLength, capText, jsonResult } from "./limit.ts";
+export { READ_ONLY, versionField } from "./tool.ts";
+export type { ToolModule } from "./tool.ts";

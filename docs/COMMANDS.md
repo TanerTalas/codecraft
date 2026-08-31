@@ -178,3 +178,40 @@ geçerli komutlar geçmeli, bozuk komutlar düşmeli, ve kapsam sınırı (hangi
 tipler denetlenmiyor) sabitlenmiş. Eval tarafında `command-give-01` ve
 `command-fill-01` vakaları `commandSyntax` kontrolünü istiyor; negatif kontrol
 koşuldu — koordinat bileşeni silinince vaka kırmızıya döndü.
+
+## Bilinen boşluk: `execute ... run <komut>` zincirlemesi
+
+**Ölçüldü 01-09-2026, Aşama M3'te `validate_command` MCP'ye açılırken.**
+
+Doğrulayıcı `execute`'un zincirleme biçimini çözmüyor. `run` sonrasındaki
+gerçek komutu fazladan argüman sayıyor, yani **geçerli bir komutu geçersiz
+raporluyor** — yanlış pozitif:
+
+```
+/execute as @a run say hi          ok=false  arity: fazladan argüman: "say hi"
+/execute as @a at @s run say hi    ok=false  arity: fazladan argüman: "@s run say hi"
+/execute as @a run                 ok=true
+/give @p diamond 1                 ok=true
+```
+
+**Veri eksik değil.** `execute`'un 18 aşırı yüklemesinin hepsinde son parametre
+`chainedCommand: EXECUTECHAINEDOPTION_0` olarak duruyor. Doğrulayıcı o
+parametreye özyinelemiyor, tek bir jeton gibi tüketip duruyor. Yani düzeltme
+sınırlı ve belirli bir yerde: zincirleme parametresi görüldüğünde kalan
+jetonlar yeni bir komut satırı gibi yeniden ayrıştırılmalı.
+
+Aynı biçime sahip başka komutlar da var ve hepsi taranarak bulundu —
+`function`, `place`, `schedule` (`PATHCOMMAND`), `help` (`COMMANDNAME`),
+`locate`, `project`. Bunlar `execute` kadar sık kullanılmıyor ama aynı yoldan
+geçiyorlar.
+
+**Neden yanlış pozitif özellikle kötü:** `execute ... run` Bedrock'un en yaygın
+komut biçimlerinden biri. Model doğru yazdığı bir komutu "hatalı" görüp
+bozmaya çalışır — CodeCraft'ın önlemek için var olduğu hatanın aynısı, ters
+yönden.
+
+**Bugünkü durum:** boşluk kapatılmadı, gizlenmedi. İki yerde yazılı:
+`validate_command` aracının açıklamasında (model o biçimdeki arity hatasını
+yok saysın diye) ve `packages/mcp/test/tools.test.ts` içinde bugünkü davranışı
+sabitleyen bir testte. Doğrulayıcı düzeltilince o test kırmızıya döner ve
+boşluğun kapandığı görülür — `cases.json`'daki `expect: "gap"` kalıbının aynısı.

@@ -1,9 +1,9 @@
 /**
  * get_version_info — sürüm ve şema bağlamı (Aşama M2).
  *
- * Altı aracın ilki ve en ucuzu: alt süreç açmıyor, büyük bir indeks
- * döndürmüyor. M2'de tek başına duruyor çünkü işi araç yazmak değil, MCP
- * SDK'sının bu repoya gerçekten oturduğunu ÖLÇMEK — bir araç uçtan uca
+ * Sekiz aracın ilki ve en ucuzu: alt süreç açmıyor, büyük bir indeks
+ * döndürmüyor. M2'de tek başına duruyordu çünkü oradaki iş araç yazmak değil,
+ * MCP SDK'sının bu repoya gerçekten oturduğunu ÖLÇMEKTİ — bir araç uçtan uca
  * çalışmadan "iskelet hazır" cümlesi bir şey söylemiyor.
  *
  * Neden buildContext: CodeCraft'ın var olma sebebi bu tablo. Bedrock'ta beş
@@ -15,46 +15,30 @@
  * request parametresi yok, boş dize geçiliyor: buildContext bu argümanı
  * yalnızca collectIdentities'e veriyor ve o boş dizede hiçbir kimlik
  * bulamayıp [] döndürüyor (packages/core/src/context.ts). Kimlik doğrulaması
- * lookup_block'un işi (Aşama M3), bu aracın değil.
+ * lookup_id'nin işi, bu aracın değil.
  */
-import { z } from "zod";
-
 import { buildContext } from "@codecraft/core/server";
 
-/**
- * Sürüm parametresi tek biçim: her araçta opsiyonel bir `version` dizesi.
- *
- * Sarmalanan fonksiyonlar bunu üç ayrı şekilde alıyor — zorunlu konumsal,
- * opsiyonel konumsal, ya da options nesnesi içinde. Bu tutarsızlık araç
- * yüzeyine taşınmıyor; modele tek bir alan gösteriliyor.
- */
-export const versionInput = {
-  version: z
-    .string()
-    .optional()
-    .describe(
-      "data/ altındaki oyun sürümü, örn. 1.26.40 veya 1.26.40.5. " +
-        "Verilmezse en yeni sürüm kullanılır. Pazarlama numarası (26.40) geçersiz.",
-    ),
-};
+import { jsonResult } from "../limit.ts";
+import { READ_ONLY, versionField, type ToolModule } from "../tool.ts";
 
-export const getVersionInfo = {
+export const getVersionInfo: ToolModule = {
   name: "get_version_info",
-  config: {
-    title: "Bedrock sürüm ve şema bağlamı",
-    description:
-      "Bu sürümde hangi sürüm numarasının nereye yazıldığını döndürür: " +
-      "min_engine_version (üç parçalı dizi), @minecraft/server modül sürümleri, " +
-      "her belge tipi için geçerli format_version değerleri, ve tanınan belge " +
-      "tiplerinin listesi. format_version oyun sürümünden bağımsız bir eksendir.",
-    inputSchema: versionInput,
-    // Salt okunur: dosya yazmıyor, dışarı istek atmıyor, data/'yı okuyor.
-    annotations: { readOnlyHint: true, openWorldHint: false },
-  },
-  run: async ({ version }: { version?: string }) => {
-    const context = await buildContext("", { version });
-    return {
-      content: [{ type: "text" as const, text: JSON.stringify(context, null, 2) }],
-    };
+  register: (server) => {
+    server.registerTool(
+      "get_version_info",
+      {
+        title: "Bedrock sürüm ve şema bağlamı",
+        description:
+          "Bu sürümde hangi sürüm numarasının nereye yazıldığını döndürür: " +
+          "min_engine_version (üç parçalı dizi), @minecraft/server modül sürümleri, " +
+          "her belge tipi için geçerli format_version değerleri, ve tanınan belge " +
+          "tiplerinin listesi. format_version oyun sürümünden bağımsız bir eksendir. " +
+          "Bir behavior pack dosyası yazmadan önce bunu çağır.",
+        inputSchema: { version: versionField },
+        annotations: READ_ONLY,
+      },
+      async ({ version }) => jsonResult(await buildContext("", { version })),
+    );
   },
 };
