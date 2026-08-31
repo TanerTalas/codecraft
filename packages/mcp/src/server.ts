@@ -1,12 +1,15 @@
 /**
  * MCP sunucusunun kurulumu (Aşama M2, araçlar M3).
  *
- * TRANSPORT BURADA YOK ve olmayacak. Yerleşim kararı (TODO.md): araç mantığı
- * bu workspace'te, transport mevcut Next uygulamasında
- * `app/src/app/mcp/route.ts` olarak (Aşama M4). Mimari kural 1'in aynısı —
- * mantık çekirdekte, arayüz ince kabuk. createServer() bir McpServer
+ * TRANSPORT BU DOSYADA YOK ve olmayacak. createServer() bir McpServer
  * döndürüyor, ona neyin bağlanacağına çağıran karar veriyor: uçta HTTP
  * transport'u, testte SDK'nın in-memory transport'u.
+ *
+ * Bağlantı Aşama M4'te `src/http.ts` içine yazıldı (`handleMcpRequest`),
+ * `app/src/app/mcp/route.ts` yalnızca onu dışa veren ince kabuk. TODO'nun M4
+ * maddesi transport'u route dosyasına koyuyordu; sapmanın gerekçesi
+ * `src/http.ts`'in başında — kök tsconfig `app/` dizinini kapsamıyor ve orada
+ * duran kod `npm run typecheck`'e girmiyor.
  *
  * SÜRÜM NUMARASI — buradaki `version` SUNUCUNUN kendi sürümü, MCP protokol
  * sürümü değil, Bedrock sürümü hiç değil. Bedrock'ta zaten beş ayrı sürüm
