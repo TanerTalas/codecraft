@@ -330,8 +330,9 @@ olarak yazılır.
 
 ## Aşama M3 — Araçlar
 
-Karar dokümanındaki altı araç. Hepsi salt okunur, hepsine `readOnlyHint`,
-hepsinin açık bir başlığı var. Yazma işlemi yok.
+Karar dokümanındaki altı araç, artı sonradan onaylanan ikisi — **toplam
+sekiz.** Hepsi salt okunur, hepsine `readOnlyHint`, hepsinin açık bir başlığı
+var. Yazma işlemi yok.
 
 | Araç | Sarmaladığı |
 |---|---|
@@ -344,14 +345,14 @@ hepsinin açık bir başlığı var. Yazma işlemi yok.
 
 Altısı da yazılmış ve testli fonksiyonlar. Bu sarmalama işi, sıfırdan iş değil.
 
-- [ ] Kalan yedi aracın girdi şeması, başlığı ve `readOnlyHint`'i.
+- [x] Kalan yedi aracın girdi şeması, başlığı ve `readOnlyHint`'i.
   `get_version_info` M2'de bitti ve kalıbı kurdu: `registerTool(ad, {title,
   description, inputSchema, annotations}, cb)`, sürüm parametresi her araçta
   tek biçim (opsiyonel `version` dizesi), `annotations: {readOnlyHint: true,
   openWorldHint: false}`. **Dikkat:** `title` `Tool`'un üst düzey alanı,
   `annotations`'ın içinde değil — ikisi de spec'te var ve M2'de bir kez
   karıştırıldı
-- [ ] **Token sınırı bu aşamanın asıl işi.** Karar dokümanı bunu optimizasyon
+- [x] **Token sınırı bu aşamanın asıl işi.** Karar dokümanı bunu optimizasyon
   değil zorunluluk sayıyor (özel bağlayıcılar için ~30.000 token). Ölçülmüş
   dosya boyutları:
 
@@ -366,14 +367,14 @@ Altısı da yazılmış ve testli fonksiyonlar. Bu sarmalama işi, sıfırdan i�
   Bayt sayıları ölçüldü, token karşılıkları ölçülmedi — ama en büyüğü sınırın
   kat kat üstünde ve bunu görmek için dönüştürmeye gerek yok. Yani `get_schema`
   ham şemayı **döndüremez**
-- [ ] `get_schema` tasarımı: zorunlu alanlar + `format_version` için izin
+- [x] `get_schema` tasarımı: zorunlu alanlar + `format_version` için izin
   verilen değerler (`schemaFormatVersions`) + istenen alt yol (`yol?`
   parametresi). Tüm registry değil, hedefe yönelik sonuç
-- [ ] Her araç çıktısına sert bayt tavanı ve kesildi bildirimi. Sessiz kesme
+- [x] Her araç çıktısına sert bayt tavanı ve kesildi bildirimi. Sessiz kesme
   yok — model neyin eksik olduğunu bilmeli
-- [ ] `lookup_block` tek kimliğin sonucunu döndürür, indeksi değil. Mevcut
+- [x] ~~`lookup_block`~~ `lookup_id` tek kimliğin sonucunu döndürür, indeksi değil. Mevcut
   `lookup()` zaten öyle çalışıyor, korunmalı
-- [ ] Hata çıktısı düzleştirilmeden geçirilir. `json.ts`'teki `describe()` ve
+- [x] Hata çıktısı düzleştirilmeden geçirilir. `json.ts`'teki `describe()` ve
   `checks.ts`'teki `Finding.evidence` zaten eyleme dönüştürülebilir mesaj
   üretiyor; arşivdeki Adım 3.5 ölçümü tam olarak bunun bir vakayı kurtardığını
   gösteriyor (`ore-gen-01`)
@@ -382,10 +383,10 @@ Altısı da yazılmış ve testli fonksiyonlar. Bu sarmalama işi, sıfırdan i�
 (31-08-2026).** İkisi de M3 kapsamına girdi. Yani araç sayısı altı değil sekiz,
 biri (`get_version_info`) M2'de bitti:
 
-- [ ] `validate_command(satır, sürüm)` — `validateCommand`,
+- [x] `validate_command(satır, sürüm)` — `validateCommand`,
   `packages/validator/src/command.ts`. 83 komut, 270 aşırı yükleme, 225 enum.
   Yazıldı ve `CLAUDE.md`'de "yapıldı" diye işaretli; dışarı açılmaması kayıp
-- [ ] `review_pack(dosyalar, sürüm)` — `review()`, `packages/core/src/review.ts`.
+- [x] `review_pack(dosyalar, sürüm)` — `review()`, `packages/core/src/review.ts`.
   Bütün doğrulayıcıları ve semantik kontrolleri bir pakete birden koşturan
   toplayıcı. Tek çağrıda en çok değer üreten araç bu;
   `app/src/app/api/review/route.ts` zaten aynı şekli kullanıyor.
@@ -394,7 +395,118 @@ biri (`get_version_info`) M2'de bitti:
 
 **Bitiş kriteri:** Her aracın girdi şeması, `readOnlyHint`'i ve bayt tavanı var;
 en büyük şema tipi (`entities`) sınırın altında anlamlı bir yanıt döndürüyor —
-ölçülerek.
+ölçülerek. ✅
+
+> **YEŞİL, 01-09-2026.** `npm run typecheck` exit 0, `npm test` **206/206**
+> (M2'de 184'tü, 22 yeni test). Sekiz aracın sekizi de bağlı ve ölçüldü.
+>
+> **Sekiz aracın gerçek çıktısı** (`InMemoryTransport`, gerçek istemci, gerçek
+> `data/`, sıkıştırılmış JSON):
+>
+> | Araç | Bayt | Süre |
+> |---|---|---|
+> | `lookup_id` (`oak_stairs`, durumlarıyla) | 199 | 4 ms |
+> | `review_pack` (1 dosya) | 192 | 272 ms |
+> | `validate_script` (kaldırılmış API) | 285 | 140 ms |
+> | `validate_json` (bozuk manifest) | 458 | 77 ms |
+> | `get_schema` (kök) | 695 | 2 ms |
+> | `check_feasibility` (engellendi) | 773 | 2 ms |
+> | `validate_command` (`/execute`) | 2.683 | 3 ms |
+> | `get_version_info` | 3.290 | 36 ms |
+> | **`get_schema` (`minecraft:entity/components`)** | **15.898** | 8 ms |
+>
+> Tavan 24.000 bayt. En büyük çıktı onun **%66'sı**, geri kalan sekizi %14'ün
+> altında.
+>
+> **Sınır tek bir araçta baskı yapıyor, ölçümden önce bu bilinmiyordu.** TODO
+> "token sınırı bu aşamanın asıl işi" diyordu ve doğruydu — ama iş sekiz araca
+> yayılmış bir optimizasyon değil, `get_schema`'nın tasarımı çıktı. Diğer yedi
+> araç hiç dokunulmadan sığıyor.
+>
+> **`tools/list` 8.857 bayt** (~2.214 token) — karar dokümanının andığı
+> ~30.000 token bütçesinin **%7'si**. O sınır araç TANIMLARI için ve orada
+> sıkışıklık yok; asıl sınır sonuçlarda.
+>
+> **`get_schema` şema özetleyicisi** `packages/validator/src/schema-summary.ts`
+> içinde — MCP'ye bağlı değil, saf fonksiyon (mimari kural 3). Tasarımı üç
+> ölçüme dayanıyor:
+>
+> 1. **Bütün `$ref`'ler içsel** — `blocks.json`'daki 76 ref'in 76'sı
+>    `#/definitions/…`. "compiled" dış ref'leri zaten gömmüş, yani alt ağaç
+>    çıkarmak için başka dosya okumak gerekmiyor
+> 2. **Ham şema büyük olmasa bile işe yaramazdı** — derleme tanım adlarını tek
+>    harfe indirmiş (`#/definitions/A`, `B`, `B_components_ref`)
+> 3. **Patlama derinlerde** — kök özetleri 700-830 bayt, ama
+>    `minecraft:entity/components` düğümünde **390 alan** var ve tam özeti
+>    59.763 bayt
+>
+> Daralma kademeli ve her basamak adıyla bildiriliyor: `full` →
+> `no-descriptions` → `names-only` → `clipped`. **"İlk 60 alanı göster, sus"
+> yapılmadı** — o yol modele geri kalan 330 alanın var olmadığını düşündürürdü.
+> `names-only` basamağında 390 adın hepsi duruyor, model sonra `path` ile tek
+> bir bileşene inip tam ayrıntıyı alıyor (644 bayt).
+>
+> **İki ölçülmüş küçültme, ikisi de tahminle değil rakamla:**
+>
+> | Değişiklik | Önce | Sonra |
+> |---|---|---|
+> | `required: false` alanını hiç yazmamak (390 alanlı düğüm) | 22.528 B | 15.898 B |
+> | Girintiyi bırakmak (`get_schema`, aynı düğüm) | 22.966 B | 15.898 B |
+>
+> İkincisi aynı zamanda bir **hatayı kapattı**: `summarizeSchema` daralmasını
+> sıkıştırılmış bayt üzerinden ölçüyor. Girintili yazsaydık tam da tavana göre
+> daraltılmış bir özet girintiyle tavanı tekrar aşar ve sert kesmeye
+> yakalanırdı — yani geçerli JSON bozulurdu. Ölçüm olmasa fark edilmezdi.
+>
+> **Tavanın gerçekten ölçtüğü kanıtlandı.** Tavan geçici olarak 300 bayta
+> çekildi: üç aracın üçü de tam 300 baytta kesildi, üçü de `[KESİLDİ]`
+> bildirdi, araç testlerinden 7'si kırmızıya döndü. Geri alındı. M2'deki
+> enjekte-et-ve-kırmızıya-dön yönteminin aynısı.
+>
+> **`lookup_block` → `lookup_id`, karar dokümanından sapma.** Doküman aracı
+> blokla sınırlıyordu ama lookup katmanı on iki türü tanıyor (blok, eşya,
+> varlık, biyom, efekt, büyü, feature, boyut, kamera ön ayarı,
+> cooldown-category, potion-effect, potion-type). Blokla sınırlamak
+> `minecraft:blaze` sorusunu hiç sorulamaz yapardı. Kapsam ölçümle de serbestti:
+> tek sonuç 74 bayt. Blok çıkarsa durumları da ekleniyor.
+>
+> **Uçtan uca senaryo koşuldu** (M5'in provası): `check_feasibility` →
+> `get_version_info` → `get_schema` → `lookup_id` → `validate_json` →
+> `review_pack`. Araçların verdiği `format_version` (`1.21.100`) ve zorunlu
+> alanlarla (`description`, `components`) kurulan blok dosyası hem şemadan hem
+> paket incelemesinden temiz geçti.
+>
+> ---
+>
+> ### Bulunan boşluk: `execute ... run <komut>` yanlış pozitif veriyor
+>
+> **M3'ün işi değildi, `validate_command` açılırken çıktı.** Doğrulayıcı
+> `execute`'un zincirleme biçimini çözmüyor ve `run` sonrasındaki gerçek komutu
+> "fazladan argüman" sayıyor — yani **geçerli bir komutu geçersiz raporluyor:**
+>
+> ```
+> /execute as @a run say hi        ok=false   arity: fazladan argüman: "say hi"
+> /execute as @a run               ok=true
+> /give @p diamond 1               ok=true
+> ```
+>
+> Veri eksik değil: execute'un 18 aşırı yüklemesinin hepsinde
+> `chainedCommand: EXECUTECHAINEDOPTION_0` duruyor, doğrulayıcı o parametreye
+> özyinelemiyor. Aynı biçim `function`, `place`, `schedule`, `help`, `locate`
+> ve `project` komutlarında da var (tarandı).
+>
+> Yanlış pozitif burada özellikle kötü: `execute … run` en yaygın biçimlerden
+> biri ve model doğru yazdığı komutu bozmaya çalışır — CodeCraft'ın önlemek
+> için var olduğu hatanın ters yönden aynısı.
+>
+> **Kapatılmadı, gizlenmedi.** Üç yerde yazılı: `docs/COMMANDS.md`'de ölçümüyle,
+> `validate_command`'ın açıklamasında (model o arity hatasını yok saysın diye),
+> ve `packages/mcp/test/tools.test.ts` içinde bugünkü davranışı sabitleyen bir
+> testte — düzeltilince o test kırmızıya döner (`cases.json`'daki
+> `expect: "gap"` kalıbı).
+>
+> **Düzeltme M3'ün kapsamında değil ve kendiliğinden yapılmadı:** bu
+> `packages/validator` işi, sarmalama değil. Karar açık madde olarak duruyor.
 
 ---
 
@@ -463,6 +575,10 @@ Arşivde `- [ ]` olarak duran ve MCP yolunu da ilgilendiren maddeler.
 - [ ] **Pipeline'ın hiç koşmamış iki yolu:** (1) veri gerçekten değiştiğinde
   bot'un commit + push atması, (2) başarısızlıkta GitHub issue açılması.
   İlki Mojang bir sonraki sürümü yayınladığında kendiliğinden ölçülür
+- [ ] **`execute ... run <komut>` zincirlemesi** — `validateCommand` geçerli
+  komutu geçersiz raporluyor (yanlış pozitif). M3'te bulundu ve ölçüldü,
+  kapsamı dışı olduğu için kapatılmadı: bu `packages/validator` işi. Ölçüm ve
+  düzeltmenin nereye gireceği `docs/COMMANDS.md` sonunda
 - [ ] Python doğrulayıcısı kararı (arşiv, Aşama 2.5)
 - [ ] Opsiyonel: Bedrock Dedicated Server (arşiv, Aşama 0)
 
