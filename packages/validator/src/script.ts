@@ -12,13 +12,13 @@
  * (docs/SOURCES.md).
  */
 import { spawn } from "node:child_process";
-import { existsSync } from "node:fs";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { constants, existsSync } from "node:fs";
+import { access, mkdtemp, rm, stat, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
-import { ROOT, resolveVersion } from "@codecraft/knowledge";
+import { MARKERS, ROOT, resolveVersion } from "@codecraft/knowledge";
 
 /** Kararlı modül sürümü mü, beta mı. index.json ikisini de kaydediyor. */
 export type ScriptChannel = "stable" | "beta";
@@ -85,6 +85,9 @@ const GLOBALS_SOURCE = `declare const console: {
   error(...data: unknown[]): void;
 };
 `;
+
+/** Satir sonu, CRLF ve LF. */
+const NEWLINE_RE = /\r?\n/;
 
 /** main.js(12,5): error TS2339: mesaj */
 const DIAGNOSTIC_RE = /^(.+?)\((\d+),(\d+)\): error (TS\d+): (.*)$/;
@@ -193,9 +196,12 @@ function buildTsconfig(paths: Record<string, string>): string {
   );
 }
 
-function runTsc(cwd: string): Promise<{ code: number; output: string }> {
+/** Varsayılan argümanlar doğrulama koşusu; `scriptRuntimeReport` --version geçiyor. */
+const TSC_ARGS = ["-p", "tsconfig.json", "--pretty", "false"];
+
+function runTsc(cwd: string, args: string[] = TSC_ARGS): Promise<{ code: number; output: string }> {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [tscBin(), "-p", "tsconfig.json", "--pretty", "false"], {
+    const child = spawn(process.execPath, [tscBin(), ...args], {
       cwd,
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -277,4 +283,166 @@ export async function validateScript(
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
+}
+
+
+/* ------------------------------------------------------------------------ *
+ * Çalışma zamanı raporu — Aşama M1 (bkz. TODO.md)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Tek bir ön koşulun ölçümü. `detail` hem yeşilde hem kırmızıda dolu:
+ * yeşilde ne bulunduğu (yol, boyut, sürüm), kırmızıda hata mesajı.
+ */
+export type RuntimeCheck = { ok: boolean; detail: string; ms: number };
+
+/** Kontrol adı -> sonuç. Sıra anlamlı: ucuzdan pahalıya, bağımlıdan bağımsıza. */
+export type RuntimeReport = Record<string, RuntimeCheck>;
+
+/**
+ * Her kontrolü kendi try/catch'inde koşturur.
+ *
+ * Ayrı ayrı olması şart: tek bir "çalıştı/çalışmadı" cümlesi hangi ön koşulun
+ * düştüğünü söylemiyor ve ilk hata sonrakileri ölçüsüz bırakıyor. Aşama M1'in
+ * bitiş kriteri üç şeyi ayrı ayrı istiyor (süreç açma, geçici dizin, paketlenen
+ * dosyalar); burada altıya ayrılmış hâli var.
+ */
+async function check(probe: () => Promise<string>): Promise<RuntimeCheck> {
+  const started = performance.now();
+  try {
+    const detail = await probe();
+    return { ok: true, detail, ms: Math.round(performance.now() - started) };
+  } catch (error) {
+    return {
+      ok: false,
+      detail: error instanceof Error ? error.message : String(error),
+      ms: Math.round(performance.now() - started),
+    };
+  }
+}
+
+/**
+ * Native derleyici ikilisinin yolu.
+ *
+ * typescript@7 bir kabuk: bin/tsc 44 bayt ve lib/getExePath.js asıl derleyiciyi
+ * @typescript/typescript-<platform>-<arch> paketinden çözüyor. Buradaki
+ * çözümleme onun aynısı, sırası da tscBin() ile aynı gerekçeyle aynı: önce kök
+ * node_modules, sonra require.resolve (ikincisi paketleyicide kırılıyor).
+ */
+function tscExePath(): string {
+  const pkg = `typescript-${process.platform}-${process.arch}`;
+  const bin = process.platform === "win32" ? "tsc.exe" : "tsc";
+
+  const hoisted = join(ROOT, "node_modules", "@typescript", pkg, "lib", bin);
+  if (existsSync(hoisted)) return hoisted;
+
+  const resolved = require_.resolve(`@typescript/${pkg}/package.json`);
+  if (typeof resolved !== "string") {
+    throw new Error(
+      `@typescript/${pkg} bulunamadı: require.resolve dosya yolu yerine ` +
+        `${typeof resolved} döndürdü. Beklenen yol ${hoisted}`,
+    );
+  }
+  return join(dirname(resolved), "lib", bin);
+}
+
+/**
+ * validateScript()'in ihtiyaç duyduğu her ön koşulu ayrı ayrı ölçer.
+ *
+ * Aşama M1 bunun için var: `validateScript` bir alt süreç açıyor, yazılabilir
+ * bir geçici dizin istiyor ve data/ altındaki .d.ts dosyalarını okuyor.
+ * Serverless bir ücretsiz kademede üçü de garanti değil ve hangisinin
+ * düştüğünü tek bir 500 yanıtından anlamak mümkün değil.
+ *
+ * Kasten `validateScript` ile AYNI yolları kullanıyor (`ROOT`, `tscBin`,
+ * `resolveModules`, `tmpdir`) — ayrı bir yol ölçseydi yeşil sonuç asıl
+ * fonksiyon hakkında bir şey söylemezdi.
+ *
+ * SINIR: `ROOT` modül yüklenirken hesaplanıyor. Kök hiç çözülemezse bu dosya
+ * import edilemez ve rapor hiç koşmaz — çağıran taraf 500 alır. O durumda
+ * teşhis hata mesajının kendisidir ("Repo kökü bulunamadı"), aşağıdaki `root`
+ * kontrolü değil.
+ */
+export async function scriptRuntimeReport(): Promise<RuntimeReport> {
+  const report: RuntimeReport = {};
+
+  report["root"] = await check(async () => {
+    const markers = MARKERS.map(
+      (name) => `${name}=${existsSync(join(ROOT, name)) ? "var" : "YOK"}`,
+    ).join(" ");
+    const override = process.env["CODECRAFT_ROOT"];
+    return (
+      `ROOT=${ROOT} ${markers} ` +
+      `CODECRAFT_ROOT=${override === undefined || override.trim() === "" ? "ayarsız" : override} ` +
+      `cwd=${process.cwd()} platform=${process.platform}-${process.arch} node=${process.version}`
+    );
+  });
+
+  report["data"] = await check(async () => {
+    const { version, paths, modules } = await resolveModules({});
+    const sizes: string[] = [];
+    for (const [name, file] of Object.entries(paths)) {
+      const { size } = await stat(file);
+      sizes.push(`${name}@${modules[name]} ${size} bayt`);
+    }
+    return `sürüm=${version} ${sizes.join(" | ")}`;
+  });
+
+  report["tmpdir"] = await check(async () => {
+    const dir = await mkdtemp(join(tmpdir(), "codecraft-probe-"));
+    try {
+      await writeFile(join(dir, "probe.txt"), "codecraft", "utf8");
+      return `${tmpdir()} yazılabilir (${dir})`;
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  report["tscShim"] = await check(async () => {
+    const bin = tscBin();
+    const { size } = await stat(bin);
+    return `${bin} (${size} bayt)`;
+  });
+
+  // Asıl derleyici burada. Paketlenmemişse veya exec biti düşmüşse spawn
+  // kontrolü de düşer; bu kontrol ikisini birbirinden ayırır.
+  //
+  // İkilinin varlığı YETMİYOR: tsgo standart kütüphaneyi kendi yanındaki
+  // lib/ dizininden okuyor ve lib.d.ts yoksa çalışmıyor, panik ediyor
+  // ("bundled: .../lib.d.ts does not exist; this executable may be
+  // misplaced"). Paketleyici ikiliyi alıp .d.ts'leri bırakabiliyor, o yüzden
+  // ikisi ayrı ayrı kontrol ediliyor.
+  report["tscExe"] = await check(async () => {
+    const exe = tscExePath();
+    const { size } = await stat(exe);
+
+    const libDts = join(dirname(exe), "lib.d.ts");
+    if (!existsSync(libDts)) {
+      throw new Error(
+        `${exe} var ama yanındaki lib.d.ts yok (${libDts}). tsgo standart ` +
+          "kütüphanesiz panik eder; ikili ile lib.*.d.ts dosyaları ayrılamaz.",
+      );
+    }
+
+    let exec: string;
+    try {
+      await access(exe, constants.X_OK);
+      exec = "exec izni var";
+    } catch {
+      exec = "EXEC İZNİ YOK";
+    }
+    return `${exe} (${size} bayt) lib.d.ts var ${exec}`;
+  });
+
+  // Tek başına hem süreç açmayı hem native ikiliyi çalıştırmayı kanıtlar.
+  report["spawn"] = await check(async () => {
+    const { code, output } = await runTsc(ROOT, ["--version"]);
+    const line = output.trim().split(NEWLINE_RE)[0]?.trim() ?? "";
+    if (code !== 0) {
+      throw new Error(`tsc --version ${code} koduyla çıktı: ${output.trim()}`);
+    }
+    return `${line} (exit ${code})`;
+  });
+
+  return report;
 }

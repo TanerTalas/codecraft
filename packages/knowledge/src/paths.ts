@@ -27,7 +27,7 @@ import { fileURLToPath } from "node:url";
  * Kökü ele veren işaretçiler. İkisi de yalnızca repo kökünde bulunur ve ikisi
  * de git içinde durur, yani dağıtımda da varlar.
  */
-const MARKERS = ["data", "codecraft.config.json"];
+export const MARKERS: readonly string[] = ["data", "codecraft.config.json"];
 
 const isRoot = (dir: string): boolean => MARKERS.every((name) => existsSync(join(dir, name)));
 

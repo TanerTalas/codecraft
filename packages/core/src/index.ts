@@ -62,3 +62,8 @@ export {
   validateFiles,
 } from "./review.ts";
 export type { FileResult, Review, ReviewFn } from "./review.ts";
+
+// Barındırma ölçümü (Aşama M1). Doğrudan validator'dan geçiyor: kabuklar
+// data/ ve tsc katmanına kendileri bağlanmasın (mimari kural 1).
+export { scriptRuntimeReport } from "@codecraft/validator";
+export type { RuntimeCheck, RuntimeReport } from "@codecraft/validator";
