@@ -6,7 +6,8 @@
   "description": "Uretim dongusu: veri toplama, prompt, model cagrisi, dogrulama, tek retry",
   "exports": {
     ".": "./src/index.ts",
-    "./browser": "./src/browser.ts"
+    "./browser": "./src/browser.ts",
+    "./server": "./src/server.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.57",
