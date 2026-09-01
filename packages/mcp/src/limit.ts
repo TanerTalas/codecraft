@@ -23,7 +23,9 @@
  *
  * Bu sayı araç TANIMLARININ bütçesiyle karıştırılmamalı. Karar dokümanının
  * andığı ~30.000 token oradaki sınır ve orada sıkışıklık yok: sekiz aracın
- * tools/list çıktısı ölçüldü, ~6 KB (~1.600 token).
+ * tools/list çıktısı 9.036 bayt (~2.260 token), yani bütçenin ~%7'si.
+ * Dağıtılmış uçta ölçüldü, 01-09-2026. (Bu satır önce "~6 KB" diyordu; o
+ * rakam sekiz araç bağlanmadan önce alınmıştı ve eskimişti.)
  */
 
 /** Tek bir araç çıktısının üst sınırı. Gerekçesi dosyanın başında. */

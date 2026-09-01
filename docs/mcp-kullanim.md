@@ -52,7 +52,7 @@ cevap konuşmanın kendisini okumayı gerektiriyor.
 
 Bağlayıcı takılırsa hatanın sunucuda mı istemcide mi olduğu tartışmasız olsun
 diye, bağlamadan önce ölçüldü. `npm run mcp:probe -- https://codecraft-ashy-seven.vercel.app/mcp`,
-gerçek SDK istemcisi, 10 kontrol:
+gerçek SDK istemcisi, dokuz kontrol:
 
 ```
 bağlantı (initialize)            1626 ms
@@ -514,7 +514,7 @@ kullanmak") bu tek bulguyla karşılığını verdi.
 | `/fill … glass outline` | `ok=true` | `ok=true` |
 | `/gamemode uydurmamod` | `ok=false` | `ok=false` |
 
-Dokuz kontrolün dokuzu da beklendiği gibi, `npm run mcp:probe` 10/10 yeşil.
+Dokuz kontrolün dokuzu da beklendiği gibi, `npm run mcp:probe` 9/9 yeşil.
 `npm test` **218/218**.
 
 Reddedilen komutun mesajı eyleme dönüştürülebilir:
@@ -928,7 +928,7 @@ enjekte-et-ve-kırmızıya-dön yöntemi):
 
 **Dağıtılmış uçta doğrulandı** (`codecraft-f548r62mb`, 01-09-2026): üç yolun
 üçü de yereldeki rakamların birebir aynısını döndürdü (4.342 / 1.091 / 641
-bayt), `npm run mcp:probe` on kontrolün onunda yeşil. Yani düzeltme yalnızca
+bayt), `npm run mcp:probe` dokuz kontrolün dokuzunda yeşil. Yani düzeltme yalnızca
 yerelde değil, bağlayıcının konuştuğu uçta da yürürlükte.
 
 ## Değişen açıklamalar
@@ -951,8 +951,16 @@ yukarıdaki adres. Sekiz araç listelenmeli, hepsi salt okunur.
 Beklenen ve hata olmayan üç şey: `GET /mcp` **405** döner (spec, SSE sunmayan
 sunucunun 405 dönmesine izin veriyor); OAuth keşif uçları yok, uç kimlik
 doğrulamasız (M4 kararı, Vercel Authentication kapalı kalmak zorunda); sunucu
-sürümü `0.0.0` görünür (`packages/mcp/src/server.ts`, M6'da bakılacak açık
-madde).
+sürümü ~~`0.0.0`~~ **`0.1.0`** görünür (`packages/mcp/src/server.ts`).
+
+> **Üç düzeltme, 01-09-2026, Aşama M6.** (1) Sunucu sürümü `0.0.0` idi ve
+> "M6'da bakılacak açık madde" diye buraya yazılmıştı; `0.1.0` oldu ve
+> `package.json` ile eşleştiği artık test ediliyor. (2) Bu dosyada üç yerde
+> "10 kontrol" yazıyordu, probe koşulup ekrandaki `OK` satırları sayıldı:
+> **dokuz.** `probe.ts`'te sekiz `check()` çağrı yeri var ve sonuncusu
+> `["GET","DELETE"]` döngüsünde, yani çalışma anında dokuz doğrulama oluyor.
+> Ölçümlerin kendisi değişmedi, yalnızca sayı yanlış yazılmıştı. Ayrıntı
+> `docs/MCP.md`.
 
 ## Oyun içi doğrulama — düzeltme çalıştı
 

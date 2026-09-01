@@ -573,7 +573,9 @@ sunucu da bu kriteri geçerdi.
 > | `get_version_info` | `1.26.40.5` | — |
 > | `GET` / `DELETE` | 405 + JSON gövde | — |
 >
-> On kontrolün onu da yeşil. Dönen tanı M1'dekiyle **birebir aynı**, yani
+> ~~On kontrolün onu da yeşil.~~ **Dokuz kontrolün dokuzu da yeşil** —
+> sayı M6'da probe koşulup düzeltildi, ölçümün kendisi değişmedi.
+> Dönen tanı M1'dekiyle **birebir aynı**, yani
 > Linux'ta `/mcp` fonksiyon paketinin içinden gerçek tsgo koşuyor:
 >
 > ```
