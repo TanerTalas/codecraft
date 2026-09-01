@@ -791,65 +791,12 @@ ediliyor, Vercel'in rota bazlı logu hangi ARACIN çağrıldığını göstermiy
 > kabul edeceğini söylemiyor; `prompt.ts` hâlâ "vanilla dokusu ödünç al" diyor
 > ve değiştirmek eval koşusu gerektiriyor.
 
-> **KARŞILANDI, 01-09-2026 — ama aşama kapanmadı.** Bitiş kriteri senaryo 1'de
-> karşılandı: gerçek bir Bedrock isteği ("Muhafız yaratığı gece yüzeyde
-> doğsun") bağlayıcı üzerinden yedi dosyalık, kurulabilir bir `.mcaddon`
-> üretti; `review_pack` `ok:true` döndü ve sonuç bağımsız olarak
-> dağıtılmış uçta tekrarlandı (956 bayt, sıfır bulgu).
->
-> **Aşama yine de açık:** ikinci ve üçüncü madde altı senaryonun tamamını
-> istiyor, 1'i bitti. Kriter karşılandı diye "çağrılmayan araç" ölçümü
-> yapılmış saymıyoruz.
->
-> **Beş sürüm ekseninin beşi de doğru çıktı** — manifest `format_version: 2`,
-> `min_engine_version: [1, 26, 40]`, behavior entity `1.21.100`, client
-> entity ve spawn rules `1.8.0`, render controllers `1.10.0`. Pazarlama
-> numarası hiçbir alana yazılmadı. CodeCraft'ın var olma sebebi olan karışıklık
-> bu koşuda olmadı.
->
-> **Ağın gerçekten tuttuğu ayrıca ölçüldü.** Yalnızca `ok:true` görmek hiçbir
-> şeyi denetlemeyen bir yoldan da gelebilirdi; iki uydurma bileşen enjekte
-> edildi ve ikisi de `must NOT have additional properties` ile reddedildi.
->
-> **Ölçülmeyen:** paket Minecraft'a yüklenmedi. `docs/VALIDATION-LIMITS.md`
-> tam bunun için var.
->
-> ### M5'te bulunup KAPATILAN boşluk: `get_schema` iki yerde kör
->
-> Senaryo 1'de model `minecraft:spawn_rules/conditions` yolunu **doğru**
-> istedi ve 307 bayt / sıfır alan aldı; bir alt basamakta
-> (`.../minecraft:herd`) araç `isError` verip **"Orada alan yok"** dedi —
-> kendinden emin ve yanlış. `summarizeSchema` yalnızca `properties` üzerinde
-> yürüyordu; alanlar `items` (dizi düğümleri) ve `oneOf`/`anyOf` (alternatif
-> biçimler) içindeydi. Model o bileşenleri şemadan değil belleğinden yazdı.
->
-> Kapsam ölçüldü (60 derlenmiş şema): **618** düğüm `items` taşıyor (91'inin
-> arkasında gerçek alan var), **436** `oneOf` düğümünün **144'ü** boş
-> dönüyordu. Tuple biçimi (141 düğüm) bilerek dışarıda — hiçbirinde alan yok,
-> hepsi koordinat/aralık çifti.
->
-> | Yol | Önce | Sonra |
-> |---|---|---|
-> | `.../conditions` | 307 B, 0 alan | 4.342 B, 22 alan |
-> | `.../conditions/minecraft:herd` | `isError` | 1.091 B, 6 alan |
-> | `minecraft:block/permutations` | 0 alan, `required:[]` | 2 alan, `required:["condition"]` |
-> | `minecraft:entity/components` | 15.898 B | değişmedi |
->
-> Tablonun iki yakası da aynı dağıtılmış uçtan, deploy'un iki tarafından
-> (`codecraft-f548r62mb`). `npm test` **214/214**, üç yeni test bilerek
-> kırılarak doğrulandı. Düzeltme `packages/validator/src/schema-summary.ts`,
-> MCP değil — mimari kural 3.
->
-> ### Şu ana kadarki araç gözlemi (1/6 senaryo, erken)
->
-> `review_pack` senaryo 1'in **birinci** turunda (tek dosya) çağrılmadı,
-> **ikinci** turunda (yedi dosyalık paket) kendiliğinden çağrıldı. Yani eksik
-> araçta değil, tek dosyalık istekte. Bir kez çağrılmamak "keşfedilmiyor"
-> demek değil — bu satır erken yazılsaydı yanlış olurdu.
->
-> `check_feasibility` iki turda da hiç çağrılmadı, `lookup_id` da. İkincisi
-> savunulabilir (ortada vanilla kimlik yoktu); ilki açık madde ve kontrol
-> koşusu bekliyor. Ayrıntı `docs/mcp-kullanim.md`.
+> **Ara kayıt, 01-09-2026 (üstü çizildi).** Burada senaryo 1 biter bitmez
+> yazılmış bir kapanış vardı: bitiş kriteri karşılandı ama aşama açık, çünkü
+> altı senaryonun beşi koşulmamıştı. O cümle doğruydu ve artık geçersiz —
+> altısı da koşuldu, kapanış yukarıda. Ara kaydın bütün ölçümleri (senaryo 1
+> zinciri, beş sürüm ekseni tablosu, `get_schema` önce/sonra rakamları)
+> `docs/mcp-kullanim.md` içinde ayrıntısıyla duruyor; burada tekrarlanmıyor.
 
 ---
 
