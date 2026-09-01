@@ -21,6 +21,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
 import { BYTE_LIMIT } from "../src/limit.ts";
+import { tools } from "../src/server.ts";
 
 const url = process.argv[2] ?? "http://localhost:3000/mcp";
 
@@ -71,7 +72,17 @@ try {
   const [, warmMs] = await timed(() => client.listTools());
   const listBytes = Buffer.byteLength(JSON.stringify(listed.tools), "utf8");
   console.log(`tools/list                       ${coldMs} ms (soğuk), ${warmMs} ms (sıcak), ${listBytes} bayt`);
-  check(listed.tools.length === 8, "tools/list sekiz araç döndürüyor", `${listed.tools.length} araç`);
+  // Beklenen sayı bu checkout'un kayıtlı listesinden geliyor, sabit değil.
+  // Böylece kontrol "araç sayısı doğru mu"dan "dağıtılmış uç bu checkout ile
+  // aynı mı"ya yükseliyor: eksik bir deploy burada kırmızıya döner.
+  check(
+    listed.tools.length === tools.length,
+    `tools/list ${tools.length} araç döndürüyor`,
+    `${listed.tools.length} araç` +
+      (listed.tools.length === tools.length
+        ? ""
+        : ` — yerelde ${tools.length}. Uç bayat olabilir, deploy et.`),
+  );
   check(
     listed.tools.every((tool) => tool.annotations?.readOnlyHint === true),
     "hepsi readOnlyHint taşıyor",

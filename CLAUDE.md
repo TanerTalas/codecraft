@@ -63,7 +63,17 @@ yüklenmez. Modül sürümü ile oyun sürümü asla birbirinin yerine kullanıl
   bugünkü varsayılan `@ai-sdk/google` (Gemini, ücretsiz kademe)
 - Hosting: Vercel veya Cloudflare, ücretsiz kademe
 
-Python sadece **üretilen** otomasyon script'lerinin dili. Altyapıda Python çalıştırılmıyor.
+Python sadece **üretilen** otomasyon script'lerinin dili. ~~Altyapıda Python
+çalıştırılmıyor.~~
+
+> **Bu satır 02-09-2026'da esnetildi, sorularak.** `validate_python` aracı
+> sözdizimini gerçek yorumlayıcıyla ölçüyor, yani bir alt süreç açıyor. Eski
+> hâli bunu yasaklıyordu. Gerekçe: üretilen Python çıktısı o güne kadar
+> **hiçbir** doğrulamadan geçmiyordu ve bu, aracın var olma sebebine aykırıydı.
+> Yorumlayıcı yoksa sözdizimi ayağı atlanıyor ve çıktıda söyleniyor — sessizce
+> "ok" dönmüyor. Bu bölüm dokümanın kendi tanımına göre değiştirilebilir;
+> değiştirilemez olanlar yalnızca "Mimari kurallar" ve "Yapılmayacaklar".
+> Ayrıntı: `packages/validator/src/python.ts`.
 
 ## Repo yapısı
 

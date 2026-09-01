@@ -25,6 +25,7 @@ import { lookupId } from "./tools/lookup.ts";
 import { reviewPack } from "./tools/review.ts";
 import { validateCommandTool } from "./tools/command.ts";
 import { validateJsonTool } from "./tools/json.ts";
+import { validatePythonTool } from "./tools/python.ts";
 import { validateScriptTool } from "./tools/script.ts";
 import type { ToolModule } from "./tool.ts";
 
@@ -40,7 +41,7 @@ import type { ToolModule } from "./tool.ts";
 export const SERVER_VERSION = "0.1.0";
 
 /**
- * Kayıtlı araçlar. Sekizi de salt okunur; yazma işlemi yok.
+ * Kayıtlı araçlar. Dokuzu da salt okunur; yazma işlemi yok.
  *
  * Sıra kullanım sırasını anlatıyor, alfabetik değil: önce yapılabilir mi, sonra
  * hangi sürüm ve hangi şema, sonra kimlik doğrulama, en sonda doğrulayıcılar.
@@ -57,6 +58,7 @@ export const tools: ToolModule[] = [
   validateJsonTool,
   validateCommandTool,
   validateScriptTool,
+  validatePythonTool,
   reviewPack,
 ];
 

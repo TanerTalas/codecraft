@@ -4,8 +4,8 @@
 çağrılmadığını kaydeder; **burası** sunucunun nereye bağlandığını ve yüzeyinin
 ne olduğunu anlatır. Ölçüm günlüğü orada, sözleşme burada.
 
-Uç internetten erişilebilir ve bugün ayakta. Bağlanan istemci sekiz araç
-görüyor, sekizi de salt okunur — sunucu hiçbir şey yazmıyor, hiçbir yere veri
+Uç internetten erişilebilir ve bugün ayakta. Bağlanan istemci dokuz araç
+görüyor, dokuzu da salt okunur — sunucu hiçbir şey yazmıyor, hiçbir yere veri
 göndermiyor.
 
 ## Uç ve durum
@@ -15,7 +15,7 @@ göndermiyor.
 | Uç | `https://codecraft-ashy-seven.vercel.app/mcp` |
 | Transport | Durumsuz Streamable HTTP, yalnızca `POST` |
 | Sunucu adı / sürümü | `codecraft` / `0.1.0` |
-| Araç | 8, hepsi `readOnlyHint` |
+| Araç | 9, hepsi `readOnlyHint` |
 | Çalışma ortamı | Vercel Node runtime, `maxDuration = 60`, `linux-x64`, bölge `iad1` |
 | Kimlik doğrulama | Yok — Vercel Authentication kapalı ve kapalı kalmak zorunda |
 | Veri sürümü | `1.26.40.5` (`@minecraft/server` 2.9.0) |
@@ -40,12 +40,12 @@ Eklendikten sonra görülmesi gereken üç şey — tek bir "çalıştı" cümle
 
 | Gözlem | Beklenen |
 |---|---|
-| Araç sayısı | **8**, eksiksiz |
-| İstemcinin sınıflandırması | **"read only tools: 8"** — ayrı bir izin sınıfı |
+| Araç sayısı | **9**, eksiksiz |
+| İstemcinin sınıflandırması | **"read only tools"** — ayrı bir izin sınıfı |
 | Başlıklar | Kendi `title` alanlarımız, örn. "İstek Bedrock'ta yapılabilir mi" |
 
-İkinci satır kayda değer: `annotations` uçtan uca taşınıyor ve istemci sekizini
-de ayrı bir izin sınıfına koyuyor. Bu, bağlanmadan önce bilinmiyordu
+İkinci satır kayda değer: `annotations` uçtan uca taşınıyor ve istemci
+hepsini ayrı bir izin sınıfına koyuyor (01-09-2026'da sekiz araçla ölçüldü). Bu, bağlanmadan önce bilinmiyordu
 (`docs/mcp-kullanim.md`, "Bağlayıcı bağlandı").
 
 Araç izinleri **"her seferinde sor"da bırakılabilir.** Sunucuda log yok, o
@@ -61,7 +61,7 @@ gerekiyor.
 `npm run dev` ile ayağa kalkan `http://localhost:3000/mcp` yalnızca
 `mcp:probe` içindir; yerel bir koşu bitiş kriteri sayılmaz.
 
-## Sekiz araç
+## Dokuz araç
 
 Kayıt sırası alfabetik değil, kullanım sırası — ve `tools/list` bu sırayı
 koruyor, yani modelin okuduğu ilk şey bu. Sunucu bağlanırken şu yönergeyi de
@@ -85,6 +85,7 @@ sürümü. Değerleri buradan al, hatırladığından değil.
 | `validate_json` | JSON pointer'lı şema hataları | Ürettiğin her JSON için |
 | `validate_command` | Komut, arity, seçici, blok durumu | Komut vermeden önce |
 | `validate_script` | Satır, sütun ve TS koduyla gerçek `tsc` tanısı | Her API çağrısı için |
+| `validate_python` | Sözdizimi, gömülü komutlar ve `/connect` zarfı | Dış otomasyon script'i için |
 | `review_pack` | Bütün dosyalar, artı şemanın yakalayamadıkları | Vermeden önceki son adım |
 
 Girdi alanları:
@@ -98,6 +99,7 @@ Girdi alanları:
 | `validate_json` | `content`, `type` | `version` |
 | `validate_command` | `line` | `version` |
 | `validate_script` | `code` | `version`, `channel` |
+| `validate_python` | `code` | `version` |
 | `review_pack` | `files[]` (`path`, `content`) | `version` |
 
 ### Ortak alan: `version`
@@ -122,7 +124,7 @@ onu `tools/list`'ten okuyor. Bu dosyaya ikinci bir kopya konmuyor: kopya çürü
 ve M5 tam bunu ölçtü — iki açıklama senaryolar sırasında değişti
 (`docs/mcp-kullanim.md`, "Değişen açıklamalar").
 
-Sekizinde de `annotations: {readOnlyHint: true, openWorldHint: false}`
+Dokuzunda da `annotations: {readOnlyHint: true, openWorldHint: false}`
 (`packages/mcp/src/tool.ts`).
 
 ### Araç yüzeyinde yazılıydı, kapatıldı
@@ -155,11 +157,12 @@ yakalanırdı, yani geçerli JSON bozulurdu.
 Ölçülen uç değerler (01-09-2026): en küçük çıktılar 200 baytın altında
 (`review_pack` tek dosyayla 192 B, `lookup_id` 199 B), en büyük ise
 `get_schema`'nın 390 alanlı düğümü — **15.898 bayt**, tavanın **%66**'sı.
-Kalan sekiz çağrı %14'ün altında. Yani sınır tek bir araçta baskı yapıyor.
+Kalan çağrıların hepsi %14'ün altında — sonradan eklenen `validate_python`
+da 568 bayt. Yani sınır tek bir araçta baskı yapıyor.
 
-**`tools/list` 9.036 bayt.** Karar dokümanının andığı ~30.000 token bütçesi
-araç TANIMLARI için ve orada sıkışıklık yok — bu, bütçenin yaklaşık **%7**'si.
-Asıl sınır sonuçlarda.
+**`tools/list` 10.227 bayt** (dokuz araç, ölçüldü 02-09-2026). Karar
+dokümanının andığı ~30.000 token bütçesi araç TANIMLARI için ve orada sıkışıklık
+yok — bu, bütçenin yaklaşık **%8,5**'i. Asıl sınır sonuçlarda.
 
 ### Kesme sessiz değil
 
@@ -259,8 +262,8 @@ npm run mcp:probe -- https://codecraft-ashy-seven.vercel.app/mcp
 Script kökte tanımlı (`packages/mcp` içinde script yok). Argümansız çağrılırsa
 `http://localhost:3000/mcp` denenir.
 
-Dokuz kontrol koşuyor: sekiz araç listeleniyor mu, hepsi `readOnlyHint` taşıyor
-mu, kaldırılmış bir API gerçek `tsc` tanısı döndürüyor mu, geçerli script temiz
+Dokuz kontrol koşuyor: uçtaki araç sayısı bu checkout'un kayıtlı listesiyle
+aynı mı (yani deploy bayat değil mi), hepsi `readOnlyHint` taşıyor mu, kaldırılmış bir API gerçek `tsc` tanısı döndürüyor mu, geçerli script temiz
 geçiyor mu, en kalabalık `get_schema` düğümü tavanın altında mı, sert kesmeye
 yakalanıyor mu, `get_version_info` gerçek sürüm veriyor mu, `GET` ve `DELETE`
 405 + JSON dönüyor mu. Hepsi geçerse `HEPSİ YEŞİL`, aksi hâlde

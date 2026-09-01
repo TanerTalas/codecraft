@@ -45,7 +45,7 @@ async function call(
 const fixture = async (name: string): Promise<string> =>
   readFile(fileURLToPath(new URL(`../../validator/test/fixtures/${name}`, import.meta.url)), "utf8");
 
-test("sekiz araç da listeleniyor ve hepsi salt okunur", async () => {
+test("kayıtlı araçların hepsi listeleniyor ve hepsi salt okunur", async () => {
   const client = await connect();
   try {
     const listed = (await client.listTools()).tools;

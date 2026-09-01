@@ -18,6 +18,13 @@ export type {
   ScriptOptions,
   ScriptResult,
 } from "./script.ts";
+export { pythonRuntimeReport, resetPythonCache, validatePython } from "./python.ts";
+export type {
+  PythonFinding,
+  PythonOptions,
+  PythonResult,
+  PythonRuntimeCheck,
+} from "./python.ts";
 export { listTypes, resolveType, schemaFormatVersions } from "./schema-map.ts";
 export {
   CHECKED_TYPES,

@@ -28,7 +28,9 @@ export const generatedFileSchema = z.object({
 export const generationSchema = z.object({
   /**
    * Çıktının türü. evals/src/types.ts'deki EvalKind ile aynı küme:
-   * script ve json bugün otomatik ölçülebiliyor, command ve python ölçülemiyor.
+   * script ve json baştan beri otomatik ölçülebiliyordu; python 02-09-2026'da
+   * `validate_python` ile ölçülebilir hâle geldi (sözdizimi + gömülü komutlar +
+   * /connect zarfı). command hâlâ eval tarafında sayılmıyor.
    */
   kind: z.enum(["script", "json", "command", "python"]),
   files: z.array(generatedFileSchema).min(1),
