@@ -16,7 +16,7 @@ kötü.** İkisi farklı sonuç doğurur, o yüzden ayrıştırılmadan yazılma
 ## Durum
 
 **01-09-2026 — bağlayıcı bağlı, BİTİŞ KRİTERİ KARŞILANDI.** Altı senaryodan
-ikisi bitti.
+üçü bitti.
 
 Koşulmamış senaryonun satırına sayı yazılmaz; "koşulmadı" bir eksiklik değil,
 o satırın bugünkü doğru cevabı.
@@ -100,20 +100,20 @@ sütunu kritik: araç adı telaffuz edilmeden çağrıldıysa `evet`, ancak zorl
 çağrıldıysa `hayır` — ikincisi "araç sağlam ama keşfedilmiyor" demektir ve
 açıklama işidir.
 
-**2 / 6 senaryo koşuldu.** Sayılar geçici, her senaryodan sonra güncelleniyor.
+**3 / 6 senaryo koşuldu.** Sayılar geçici, her senaryodan sonra güncelleniyor.
 Senaryo 1 iki turda koştu (tek dosya → yedi dosyalık paket) ve iki turun
 davranışı FARKLI; ayrım aşağıdaki notlarda.
 
 | Araç | Çağrıldığı senaryo | Kendiliğinden | Not |
 |---|---|---|---|
-| `check_feasibility` | 1 / 2 | evet | S1'de hiç, S2'de **iki kez**. Script isteğinde çağrılıyor |
-| `get_version_info` | 2 / 2 | evet | Her iki senaryoda da, üretimden önce |
-| `get_schema` | 1 / 2 (4 çağrı) | evet | S2'de çağrılmadı — orada JSON'u `review_pack` karşıladı |
-| `lookup_id` | **0 / 2** | — | **İki senaryoda da hiç.** En güçlü "keşfedilmiyor" adayı |
-| `validate_json` | 1 / 2 (4 çağrı) | evet | S2'de manifest tek tek değil `review_pack` içinden geçti |
-| `validate_command` | 1 / 2 | evet | **S2'de beklenmiyordu, kendiliğinden çağrıldı** — aşağıda |
-| `validate_script` | 1 / 2 (2 çağrı) | evet | S2'nin asıl aracı, gerçek `tsc` |
-| `review_pack` | 2 / 2 | evet | S1 1. turda çağrılmadı (tek dosya), sonra hep çağrıldı |
+| `check_feasibility` | 1 / 3 | evet | Yalnızca S2. Script isteğinde çağrılıyor, JSON ve komutta değil |
+| `get_version_info` | 2 / 3 | evet | Dosya üretilen iki senaryoda da, hep üretimden önce |
+| `get_schema` | 1 / 3 (4 çağrı) | evet | Yalnızca S1 |
+| `lookup_id` | **0 / 3** | — | **Üç senaryoda da hiç.** Tek gerçek "keşfedilmiyor" adayı |
+| `validate_json` | 1 / 3 (4 çağrı) | evet | S2 ve S3'te `review_pack` ya da komut yolu karşıladı |
+| `validate_command` | 2 / 3 (5 çağrı) | evet | S2'de beklenmiyordu bile; en çok çağrılan ikinci araç |
+| `validate_script` | 1 / 3 (2 çağrı) | evet | S2'nin asıl aracı, gerçek `tsc` |
+| `review_pack` | 2 / 3 | evet | S3'te dosya üretilmedi, uygulanmıyor |
 
 ## Senaryo günlükleri
 
@@ -370,13 +370,92 @@ Komut yolu ve blok kimliği.
 
 Beklenen: `validate_command`, `lookup_id`.
 
-**Ek mikro kontrol:** aynı oturumda `execute ... run <komut>` içeren bir şey
-istenecek. `validate_command` bugün geçerli komutu geçersiz raporluyor (bilinen
-yanlış pozitif, `docs/COMMANDS.md` sonu) ve araç açıklaması "o biçimdeki arity
-hatasını yok say" diyor. Ölçülecek: model bu uyarıyı okuyup doğru komutu
-koruyor mu, yoksa doğru yazdığını bozmaya mı çalışıyor.
+**Koşuldu, 01-09-2026.** İki tur, dört çağrı, **tek araç**:
 
-**Koşulmadı.**
+| Tur | Araç | Kez |
+|---|---|---|
+| 1 (kutu) | `validate_command` | 2 |
+| 2 (execute ile sarmala) | `validate_command` | 2 |
+
+Başka hiçbir araç çağrılmadı — dosya üretilmediği için `review_pack`
+uygulanmıyor, ama `lookup_id` yine yok (üçüncü senaryo).
+
+Üretilen: `/fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass 0 hollow`, sonra
+`/execute as @s at @s run fill …`.
+
+#### Bilinen boşluk gerçek kullanımda: model YANILMADI
+
+Mikro kontrolün ölçtüğü şey buydu ve sonuç net. Aynı komutlar dağıtılmış uçta
+tekrarlandı:
+
+```
+ok=true   /fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass 0 hollow
+ok=FALSE  /execute as @s at @s run fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass 0 hollow
+            arity: fazladan argüman: "@s run fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass 0 hollow"
+ok=FALSE  /execute as @a[name="…"] at @s run fill …      (aynı hata)
+ok=FALSE  /execute as @a[tag=kutucu] at @s run fill …     (aynı hata)
+```
+
+Yanlış pozitif **üç kez** tetiklendi. Model üçünde de doğru komutu kullanıcıya
+verdi, hiçbirinde "hata var" demedi, komutu bozmaya çalışmadı.
+
+`docs/COMMANDS.md` bu riski şöyle yazmıştı: "model doğru yazdığı bir komutu
+hatalı görüp bozmaya çalışır — CodeCraft'ın önlemek için var olduğu hatanın
+aynısı, ters yönden." **Olmadı.** Aracın açıklamasındaki uyarı
+(`packages/mcp/src/tools/command.ts`: "BİLİNEN BOŞLUK … o biçimdeki arity
+hatasını yok say") işini gördü. Azaltma yöntemi ölçülerek doğrulanmış oldu.
+
+Bu boşluğun kapatılması gerektiğini değiştirmiyor — yalnızca bugünkü zararının
+ölçülmüş olduğunu söylüyor.
+
+#### YENİ boşluk: boş enum her değeri reddediyor
+
+Bu M5'in aradığı türden bir bulgu — gerçek kullanımda, planlanmamış bir yerden
+çıktı. Model ikinci turda `/tag @s add kutucu` önerdi ve doğrulayıcı onu da
+reddetti, ama **farklı** bir sebeple:
+
+```
+ok=FALSE  /tag @s add kutucu
+            argument: "kutucu" name için geçerli değil. Kabul edilenler:
+```
+
+"Kabul edilenler:" satırının arkası boş. Sebep veride: `commands.json`'ın 225
+enum'undan **dördü tamamen boş** — `tagvalues`, `scoreboardobjectives`,
+`gametestname`, `gametesttag`. Bunlar oyunun **çalışma anında** doldurduğu
+listeler (dünyadaki etiketler, skorbord hedefleri); Mojang'ın metadata'sı
+onları boş yayınlıyor, çünkü değerleri dünyaya bağlı.
+
+Doğrulayıcı boş enum'u "hiçbir değer geçerli değil" diye okuyor. Doğrusu
+"serbest metin, çalışma anında dolar" olmalı.
+
+**Etkilenen dört komut** (83 komut tarandı):
+
+| Komut | Parametre |
+|---|---|
+| `/tag` | `name: TAGVALUES` |
+| `/scoreboard` | `objective`, `targetObjective: SCOREBOARDOBJECTIVES` |
+| `/execute` | `objective: SCOREBOARDOBJECTIVES` |
+| `/gametest` | `testName`, `tag` |
+
+İlk ikisi çok yaygın. Ölçüldü:
+
+```
+ok=FALSE  /scoreboard objectives add kills dummy
+ok=FALSE  /scoreboard players add @s kills 1
+ok=FALSE  /tag @s add kutucu
+ok=FALSE  /tag @s remove kutucu
+ok=true   /tag @s list          (bu aşırı yüklemede enum yok)
+ok=true   /give @p diamond 1
+```
+
+`execute … run` boşluğundan **ayrı** bir hata sınıfı ve bir bakımdan daha
+kötü: o boşluk araç açıklamasında yazılı, model onu yok saymayı biliyor. Bu
+yazılı değil. Bu koşuda model yine yanılmadı ve doğru komutu verdi, ama bunu
+uyarı okuduğu için değil kendi muhakemesiyle yaptı.
+
+**Ölçülmeyen:** hiçbir komut oyunda çalıştırılmadı. Modelin "10 çift sayı
+olduğu için tam ortada duramazsın" ve "komut bloğunda `@s` blok olur"
+uyarıları doğru görünüyor ama doğrulayıcının konusu değil.
 
 ### 4. `python-afk-fish-01` — "Ben klavyeye dokunmadan otomatik balık tutsun"
 
@@ -430,7 +509,8 @@ yazılır — `docs/COMMANDS.md` sonundaki `execute ... run` maddesinin kalıbı
 | 1b | Aynı sınıf: `oneOf`/`anyOf` dalları da okunmuyordu | aynı dosya | **Düzeltildi**, 1'i düzeltirken ölçüldü |
 | 2 | ~~`review_pack` kendiliğinden çağrılmıyor~~ | — | **Kapandı.** Senaryo 1'in ikinci turunda kendiliğinden çağrıldı; eksik araçta değil, tek dosyalık istekte |
 | 3 | ~~`check_feasibility` hiç çağrılmıyor~~ | — | **Kapandı.** S2'de iki kez çağrıldı; S1'deki yokluğu isteğin biçiminden |
-| 4 | `lookup_id` iki senaryoda da hiç çağrılmadı | `packages/mcp/src/tools/lookup.ts` açıklaması | Açık. S2'de dört vanilla kimlik vardı ve hiçbiri doğrulanmadı |
+| 4 | `lookup_id` üç senaryoda da hiç çağrılmadı | `packages/mcp/src/tools/lookup.ts` açıklaması | Açık. S2'de dört vanilla kimlik vardı, hiçbiri doğrulanmadı |
+| 5 | **Boş enum her değeri reddediyor** — `/tag add`, `/scoreboard` yanlış pozitif | `packages/validator/src/command.ts` | S3'te bulundu ve ölçüldü |
 
 İki satırın üstü çizildi ve ikisi de aynı dersi verdi: **bir kez çağrılmamak
 "keşfedilmiyor" demek değil.** Erken yazılsalardı ikisi de yanlış olurdu.
