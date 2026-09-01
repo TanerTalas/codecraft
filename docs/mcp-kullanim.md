@@ -741,7 +741,14 @@ yazılır — `docs/COMMANDS.md` sonundaki `execute ... run` maddesinin kalıbı
 | 4 | ~~`lookup_id` hiç çağrılmıyor~~ | — | **Kapandı.** S4'te kendiliğinden çağrıldı. Sekiz aracın sekizi de çağrıldı |
 | 9 | ~~`check_feasibility` girdi yokluğu ifadesini kaçırıyor~~ | `packages/core/src/feasibility.ts` | **Kapatıldı.** Kendi eval vakamızı kaçırıyordu |
 | 10 | ~~`checkAssets` paketin kendi atlas tanımını görmüyor~~ (**yanlış pozitif**) | `packages/validator/src/checks.ts` | **Kapatıldı.** Doğru paket `ok:false` dönüyordu |
-| 11 | v1 kapsamı "behavior pack" diyor, model kaynak paketi de üretiyor | `CLAUDE.md` | Açık, **ürün kararı** — kod beklemiyor |
+| 11 | ~~v1 kapsamı "behavior pack" diyor, model kaynak paketi de üretiyor~~ | `CLAUDE.md` | **Karara bağlandı 01-09-2026:** kaynak paketi üretilebilir, teşvik ediliyor |
+| 12 | `prompt.ts` hâlâ "vanilla dokusu ödünç al" diyor | `packages/core/src/prompt.ts` | Açık. **Üretim davranışını değiştirir**, eval koşusu gerektirir |
+
+On ikinci satır bilerek açık: `prompt.ts` MCP yolunda hiç kullanılmıyor
+(model kendi kararıyla üretiyor), yalnızca CLI/web üretim yolunu yönlendiriyor.
+O metni değiştirmek `custom-item-01` ve `custom-block-01` için **ölçülmüş** bir
+sonucu geçersiz kılar (`docs/VALIDATION-LIMITS.md` C: model `emerald` ve
+`emerald_ore` yazmıştı ve ikisi de geçmişti). Ölçülmeden değiştirilmiyor.
 | 5 | ~~Boş enum her değeri reddediyor~~ | `packages/validator/src/command.ts` | **Kapatıldı ve dağıtıldı.** Boş enum artık serbest metin |
 | 6 | ~~Eski veri değeri kabul ediliyordu~~ (**yanlış negatif**) | aynı dosya | **Kapatıldı ve dağıtıldı.** Sohbet kanalı reddediyor |
 | 7 | `ws:probe` sohbetten daha gevşek bir kanalı ölçüyor | `docs/WEBSOCKET.md`, `pipeline/src/ws-probe.ts` | **Şerh düşüldü.** Alet duruyor, tek başına kural yazdırmıyor |

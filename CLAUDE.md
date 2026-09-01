@@ -10,7 +10,7 @@ Genel modellerden iki farkı var: sürekli güncellenen resmi veri kaynaklarına
 
 ## v1 kapsamı
 
-**İçeride:** Bedrock Edition, PC, tek oyunculu. Komut ve behavior pack üretimi, çıktı doğrulama, dışarıdan çalışan otomasyon script'leri.
+**İçeride:** Bedrock Edition, PC, tek oyunculu. Komut ve behavior pack üretimi, çıktı doğrulama, dışarıdan çalışan otomasyon script'leri. **Kaynak paketi de üretilebilir** (01-09-2026): önce "üretilmiyor" deniyordu, ama MCP üzerinden gelen bir istek kendiliğinden doku tanımlarıyla birlikte eksiksiz bir kaynak paketi üretti ve doğrulamadan geçti. Doğrulayıcı artık paketin kendi atlas tanımını çözüyor. Teşvik ediliyor, zorunlu değil.
 
 **Dışarıda:** Java Edition, Bedrock dışı platformlar, Realms ve sunucular, kullanıcı hesabı sistemi, ödeme.
 

@@ -638,10 +638,11 @@ function nearestKeys(key: string, atlas: ReadonlySet<string>, limit = 3): string
  * oyunda uyarı değil İÇERİK HATASI üretiyor ve item elde bomboş görünüyor —
  * gerçek oyunda ölçüldü (docs/VALIDATION-LIMITS.md C).
  *
- * NEDEN KAYNAK PAKETİ ÜRETMİYORUZ: v1 kapsamı behavior pack (CLAUDE.md).
- * Karar 30-08-2026'da alındı: model yalnızca zaten var olan bir vanilla
- * anahtarına işaret edebilir. Bunun bedeli açık ve gizlenmiyor — özel görsel
- * elde edilmiyor, "ruby" elmas dokusuyla görünüyor. Arayüz bunu söylüyor.
+ * KAYNAK PAKETİ: 30-08-2026'da "üretilmiyor, model yalnızca var olan bir
+ * vanilla anahtarına işaret edebilir" deniyordu. ~~O kural~~ 01-09-2026'da
+ * genişletildi (Aşama M5 senaryo 5): kaynak paketi üretilebilir ve bu kontrol
+ * artık paketin KENDİ atlas tanımını da çözüyor. Vanilla anahtarına işaret
+ * etmek hâlâ geçerli ve en ucuz yol; tek yol değil.
  *
  * Yanlış atlas ERROR değil WARNING: anahtar gerçekten var, yalnızca beklenen
  * atlasta değil. Ona "yok" demek uydurma hata olurdu.

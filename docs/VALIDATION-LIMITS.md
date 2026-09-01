@@ -89,8 +89,14 @@ açıkça söylenmeli.
 
 ### Karar ve kapanış (30-08-2026)
 
-**Kaynak paketi üretilmiyor.** Bunun yerine model yalnızca vanilla'da **zaten
-var olan** bir doku anahtarına işaret edebiliyor. v1 kapsamı değişmedi.
+> **Bu bölümün ilk cümlesi 01-09-2026'da değişti.** Kaynak paketi artık
+> üretilebilir; aşağıdaki "Güncelleme" bölümüne bakın. Geri kalan ölçümler
+> (atlas anahtar sayıları, %13/%40 bulgusu, yakın anahtar önerisi) aynen
+> geçerli.
+
+~~**Kaynak paketi üretilmiyor.**~~ Bunun yerine model yalnızca vanilla'da
+**zaten var olan** bir doku anahtarına işaret edebiliyor — bu hâlâ geçerli ve
+en ucuz yol, ama artık tek yol değil.
 
 Kaynak makine okunur ve doğrulandı — `Mojang/bedrock-samples@main` içinde
 `resource_pack/textures/item_texture.json` (498 anahtar) ve
