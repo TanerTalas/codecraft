@@ -781,7 +781,8 @@ ediliyor, Vercel'in rota bazlı logu hangi ARACIN çağrıldığını göstermiy
 >
 > ### Ölçülmeyen
 >
-> **Hiçbir üretilen paket Minecraft'a yüklenmedi.** Tek oyun içi ölçüm 4
+> **Hiçbir üretilen PAKET Minecraft'a yüklenmedi.** Oyun içi ölçüm yalnızca
+> komut yolunda yapıldı ve 4
 > numaralı boşluğun komutuydu. `docs/VALIDATION-LIMITS.md`'nin kapanış cümlesi
 > aynen geçerli: "doğrulamadan geçti" ile "oyunda çalışıyor" aynı şey değil.
 >

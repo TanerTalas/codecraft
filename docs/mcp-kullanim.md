@@ -953,3 +953,46 @@ sunucunun 405 dönmesine izin veriyor); OAuth keşif uçları yok, uç kimlik
 doğrulamasız (M4 kararı, Vercel Authentication kapalı kalmak zorunda); sunucu
 sürümü `0.0.0` görünür (`packages/mcp/src/server.ts`, M6'da bakılacak açık
 madde).
+
+## Oyun içi doğrulama — düzeltme çalıştı
+
+**01-09-2026, Bedrock 1.26.45, senaryolardan sonra.** M5'in tek gerçek oyun içi
+ölçümü bu. Senaryo 3'te bulunan yanlış negatifin kapandığı doğrulandı.
+
+Komutlar bu sefer **MCP sunucusundan geçirilerek** kuruldu (`lookup_id` ile
+kimlik, `validate_command` ile satır), sonra sohbete elle yazıldı:
+
+| Komut | Sonuç |
+|---|---|
+| `/fill ~-5 ~-1 ~-5 ~5 ~9 ~5 glass hollow` | **çalıştı** |
+| `/fill ~-5 ~-1 ~-5 ~5 ~9 ~5 glass outline` | **çalıştı** |
+| `/fill ~-5 ~-1 ~-5 ~5 ~9 ~5 air replace glass` | **çalıştı** |
+
+Aynı biçim birkaç saat önce `Syntax error: Unexpected "0"` veriyordu —
+aradaki tek fark, doğrulayıcının artık eski veri değerini reddedip komutu
+`glass hollow` biçiminde kurdurması. **Yanlış negatifin kapandığı oyunda
+doğrulandı**, testte değil.
+
+### Bir de yanlış alarm çıkmadı
+
+Kullanıcı `hollow` ile `outline`'ın aynı sonucu verdiğini bildirdi ve bu ilk
+bakışta bir bulgu gibi duruyordu. Ayırt edici test kuruldu (yanına katı toprak
+küp, sonra iki kabuk sırayla) ve ikisi de **doğru** çıktı:
+
+| | Kabuk | İçerisi |
+|---|---|---|
+| `hollow` | cam | havayla dolduruluyor |
+| `outline` | cam | dokunulmuyor |
+
+Fark yalnızca içeride blok varsa görünüyor; açık alanda ikisi aynı sonucu
+verir. Ayrıca ilk koşuda `hollow` içeriyi zaten boşaltmıştı, sonraki
+`outline`'ın koruyacak bir şeyi kalmamıştı.
+
+Kayda değer olan şu: **"garip görünüyor" ile "bozuk" arasındaki fark yine
+ölçümle ayrıldı.** Bulgu diye yazılsaydı olmayan bir hata için kod
+değiştirilecekti.
+
+### Hâlâ ölçülmeyen
+
+Üretilen **paketlerin** hiçbiri oyuna yüklenmedi. Doğrulanan tek şey komut
+yolu. `docs/VALIDATION-LIMITS.md`'nin cümlesi paketler için aynen geçerli.
