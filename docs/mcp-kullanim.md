@@ -457,6 +457,76 @@ uyarı okuduğu için değil kendi muhakemesiyle yaptı.
 olduğu için tam ortada duramazsın" ve "komut bloğunda `@s` blok olur"
 uyarıları doğru görünüyor ama doğrulayıcının konusu değil.
 
+#### Sonra kullanıcı komutu OYUNDA denedi — ve düştü
+
+Yukarıdaki "ölçülmeyen" maddesi aynı gün ölçüldü ve M5'in en değerli bulgusunu
+verdi. Kullanıcı komutu sohbete yazdı:
+
+```
+/fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass 0 outline
+Syntax error: Unexpected "0": at " ~4 glass >>0<< outline"
+```
+
+Doğrulayıcı o komuta `ok=true` demişti. **Yanlış negatif** — bu proje için en
+pahalı hata, çünkü kullanıcı araca güvenip komutu denedi. `docs/COMMANDS.md`
+yanlış pozitifi "en pahalı" sayıyordu; bu turda tersi ölçüldü.
+
+**Beş hipotez kuruldu, beşi de çürüdü** (`ws:probe`, iki tur, Bedrock 1.26.45):
+sürüm değil, komut değil, doldurma modu değil, blok değil, bölge büyüklüğü
+değil. Alet kullanıcının düşen komutunu **ayrıştırıyordu**.
+
+**Geriye kanal kaldı ve doğrulandı.** Aynı komutlar elle sohbete yazıldı:
+
+| Komut | `ws:probe` | Sohbet |
+|---|---|---|
+| `testforblock ~ ~-1 ~ minecraft:acacia_button 0` | ayrıştı | **HATA** |
+| `fill ~ ~ ~ ~ ~ ~ glass 0 outline` | ayrıştı | **HATA** |
+| `fill ~ ~ ~ ~ ~ ~ glass 0 hollow` | ayrıştı | **HATA** |
+
+Aynı oyun, aynı dünya, aynı oturum. **WebSocket ve sohbet aynı ayrıştırıcı
+değil.** Birinci satır, 30-08-2026'da "int serbest" kaçamağını kuran ölçümün
+birebir kendisi — o ölçüm yanlış yapılmamıştı, sadece başka bir kanalın
+sonucuydu ve hangi kanal olduğu sorulmamıştı.
+
+Bu yalnızca bir komut kuralını değil **ölçüm yönteminin kendisini** düzeltti:
+`ws:probe` ile ölçülen hiçbir kural sohbette tekrarlanmadan yazılamaz.
+`docs/WEBSOCKET.md` artık bu şerhi taşıyor, geçmişe dönük olarak.
+
+**Bulunuş biçimi kayda değer.** Bu boşluğu ne birim testi ne şema ne `tsc`
+bulabilirdi; ancak biri üretilen çıktıyı gerçekten kullanınca ortaya çıktı.
+Karar dokümanının dördüncü gerekçesi ("ürünü test etmenin en iyi yolu kendim
+kullanmak") bu tek bulguyla karşılığını verdi.
+
+#### İki düzeltme, dağıtılmış uçta doğrulandı
+
+| Komut | Önce | Sonra |
+|---|---|---|
+| `/scoreboard objectives add kills dummy` | `ok=false` | **`ok=true`** |
+| `/scoreboard players add @s kills 1` | `ok=false` | **`ok=true`** |
+| `/tag @s add kutucu` | `ok=false` | **`ok=true`** |
+| `/fill … glass 0 outline` | `ok=true` | **`ok=false`** + ne yapılacağı |
+| `/testforblock … acacia_button 0` | `ok=true` | **`ok=false`** |
+| `/fill … glass outline` | `ok=true` | `ok=true` |
+| `/gamemode uydurmamod` | `ok=false` | `ok=false` |
+
+Dokuz kontrolün dokuzu da beklendiği gibi, `npm run mcp:probe` 10/10 yeşil.
+`npm test` **218/218**.
+
+Reddedilen komutun mesajı eyleme dönüştürülebilir:
+
+```
+eski veri değeri "0" sohbette kabul edilmiyor; blok durumu kullan: ["ad":değer]
+```
+
+Çürüyen test silinmedi, üstü çizilip nereye gittiği yazıldı — TODO.md'nin
+"yanlış çıkan ölçüm silinmez" kuralı.
+
+**Açık kalan:** script içinden çalışan komutlar (`dimension.runCommand`) hangi
+ayrıştırıcıyı kullanıyor **ölçülmedi**. Üçüncü bir kanal olabilir ve bu teorik
+bir soru değil — senaryo 2'nin ürettiği script tam da onu kullanıyor. Bugün
+doğrulayıcı üçüne de en katısını, sohbetin kuralını uyguluyor.
+
+
 ### 4. `python-afk-fish-01` — "Ben klavyeye dokunmadan otomatik balık tutsun"
 
 Engellenen yol. Girdi simülasyonu Bedrock script API'sinde yok;
@@ -510,7 +580,10 @@ yazılır — `docs/COMMANDS.md` sonundaki `execute ... run` maddesinin kalıbı
 | 2 | ~~`review_pack` kendiliğinden çağrılmıyor~~ | — | **Kapandı.** Senaryo 1'in ikinci turunda kendiliğinden çağrıldı; eksik araçta değil, tek dosyalık istekte |
 | 3 | ~~`check_feasibility` hiç çağrılmıyor~~ | — | **Kapandı.** S2'de iki kez çağrıldı; S1'deki yokluğu isteğin biçiminden |
 | 4 | `lookup_id` üç senaryoda da hiç çağrılmadı | `packages/mcp/src/tools/lookup.ts` açıklaması | Açık. S2'de dört vanilla kimlik vardı, hiçbiri doğrulanmadı |
-| 5 | **Boş enum her değeri reddediyor** — `/tag add`, `/scoreboard` yanlış pozitif | `packages/validator/src/command.ts` | S3'te bulundu ve ölçüldü |
+| 5 | ~~Boş enum her değeri reddediyor~~ | `packages/validator/src/command.ts` | **Kapatıldı ve dağıtıldı.** Boş enum artık serbest metin |
+| 6 | ~~Eski veri değeri kabul ediliyordu~~ (**yanlış negatif**) | aynı dosya | **Kapatıldı ve dağıtıldı.** Sohbet kanalı reddediyor |
+| 7 | `ws:probe` sohbetten daha gevşek bir kanalı ölçüyor | `docs/WEBSOCKET.md`, `pipeline/src/ws-probe.ts` | **Şerh düşüldü.** Alet duruyor, tek başına kural yazdırmıyor |
+| 8 | `dimension.runCommand` hangi kanalı kullanıyor bilinmiyor | ölçülmedi | Açık. Senaryo 2'nin script'i tam da onu kullanıyor |
 
 İki satırın üstü çizildi ve ikisi de aynı dersi verdi: **bir kez çağrılmamak
 "keşfedilmiyor" demek değil.** Erken yazılsalardı ikisi de yanlış olurdu.
