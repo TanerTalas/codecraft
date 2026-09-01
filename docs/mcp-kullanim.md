@@ -15,12 +15,15 @@ kötü.** İkisi farklı sonuç doğurur, o yüzden ayrıştırılmadan yazılma
 
 ## Durum
 
-**01-09-2026 — taban çizgisi alındı, bağlayıcı bağlandı, senaryolar HENÜZ
-KOŞULMADI.**
+**01-09-2026 — taban çizgisi alındı, bağlayıcı bağlandı, altı senaryodan
+BİRİ koşuldu.**
 
-Bu dosya şu an yalnızca bağlamadan önceki ölçümü taşıyor. Aşağıdaki araç
-kullanım tablosu ve senaryo günlükleri bilerek boş: bir senaryo koşulmadan o
-satıra sayı yazılmaz. "Koşulmadı" bir eksiklik değil, bugünkü doğru cevap.
+Koşulmamış senaryonun satırına sayı yazılmaz; "koşulmadı" bir eksiklik değil,
+o satırın bugünkü doğru cevabı.
+
+**Bitiş kriteri henüz karşılanmadı** ve karşılandığı iddia edilmiyor. Senaryo
+1'in gerekçesi aşağıda: üretilen dosya şemadan temiz geçti ama paket
+incelemesi çağrılsaydı `ok:false` dönecekti.
 
 ## Nasıl ölçülecek
 
@@ -92,16 +95,18 @@ sütunu kritik: araç adı telaffuz edilmeden çağrıldıysa `evet`, ancak zorl
 çağrıldıysa `hayır` — ikincisi "araç sağlam ama keşfedilmiyor" demektir ve
 açıklama işidir.
 
-| Araç | Kaç senaryoda çağrıldı | Kendiliğinden | Not |
+**1 / 6 senaryo koşuldu.** Sayılar geçici, her senaryodan sonra güncelleniyor.
+
+| Araç | Çağrıldığı senaryo | Kendiliğinden | Not |
 |---|---|---|---|
-| `check_feasibility` | koşulmadı | — | — |
-| `get_version_info` | koşulmadı | — | — |
-| `get_schema` | koşulmadı | — | — |
-| `lookup_id` | koşulmadı | — | — |
-| `validate_json` | koşulmadı | — | — |
-| `validate_command` | koşulmadı | — | — |
-| `validate_script` | koşulmadı | — | — |
-| `review_pack` | koşulmadı | — | — |
+| `check_feasibility` | 0 / 1 | — | S1'de beklendi, çağrılmadı |
+| `get_version_info` | 1 / 1 | evet | İlk çağrı, dosya yazılmadan önce |
+| `get_schema` | 1 / 1 (iki çağrı) | evet | İlki boş döndü, aşağıdaki boşluk |
+| `lookup_id` | 0 / 1 | — | S1'de beklendi; ortada vanilla kimlik yoktu, savunulabilir |
+| `validate_json` | 1 / 1 | evet | `ok:true`, bağımsız doğrulandı |
+| `validate_command` | — | — | S1'de beklenmiyordu |
+| `validate_script` | — | — | S1'de beklenmiyordu |
+| `review_pack` | **0 / 1** | — | **Beklendi, çağrılmadı. Cevabın durumunu değiştirdi** |
 
 ## Senaryo günlükleri
 
@@ -118,7 +123,86 @@ yönlendirmesinin modele gerçekten ulaşıp ulaşmadığı.
 Beklenen: `check_feasibility` → `get_version_info` → `get_schema` → `lookup_id`
 → `validate_json` → `review_pack`.
 
-**Koşulmadı.**
+**Koşuldu, 01-09-2026.** Gerçekleşen zincir dört çağrı:
+
+| # | Araç | Argüman |
+|---|---|---|
+| 1 | `get_version_info` | — |
+| 2 | `get_schema` | `{type: "behavior/spawn_rules", path: "minecraft:spawn_rules/conditions"}` |
+| 3 | `get_schema` | `{type: "behavior/spawn_rules"}` (kök) |
+| 4 | `validate_json` | üretilen dosya |
+
+Çağrılmayan üç araç: `check_feasibility`, `lookup_id`, `review_pack`.
+
+**`format_version` doğru çıktı: `"1.8.0"`.** Tarihsel kırılmanın ölçüldüğü
+nokta buydu ve bu koşuda tuttu — model oyun sürümünü değil, spawn rule
+dosyasının kendi şema sürümünü yazdı. `get_version_info` zincirin ilk çağrısı
+ve dosya yazılmadan önce geliyor, yani yönlendirme okunuyor.
+
+### Modelin cümlesi bağımsız doğrulandı
+
+Model "şemaya karşı doğruladım, temiz geçiyor" dedi. Bu cümle olduğu gibi kabul
+edilmedi; aynı dört çağrı artı çağrılmayan ikisi dağıtılmış uçta tekrarlandı:
+
+| Çağrı | Sonuç | Bayt |
+|---|---|---|
+| `get_schema(conditions)` | `required:[]`, `properties:[]`, `description:"UNDOCUMENTED."` | 307 |
+| `get_schema(kök)` | `format_version` enum `["1.8.0","1.10.0","1.12.0"]` | 734 |
+| `validate_json` | **`ok:true`**, `errors:[]` | 145 |
+| `review_pack` *(çağrılmadı)* | **`ok:false`** | 832 |
+| `lookup_id("custom:muhafiz")` *(çağrılmadı)* | `found:false` | 71 |
+
+Modelin cümlesi doğru: dosya **şemadan** temiz geçiyor. Ama `review_pack`
+çağrılsaydı dönecek olan:
+
+```
+BP/spawn_rules/muhafiz.json [identity]:
+  - /minecraft:spawn_rules/description/identifier: "custom:muhafiz" pakette
+    tanımlı değil. minecraft: dışı bir kimliği ancak paketin kendisi
+    tanımlayabilir
+    kanıt: docs/VALIDATION-LIMITS.md · A ("The Item … is missing or invalid")
+```
+
+**Çağrılmayan araç burada kozmetik değil, cevabın durumunu değiştiriyor.**
+`validate_json` `ok:true`, `review_pack` `ok:false` — ikisi de doğru,
+çünkü farklı şeylere bakıyorlar. Kullanıcıya giden cümle "temiz geçiyor" oldu.
+
+Hakkını vermek gerek: model bu kusuru **kendi muhakemesiyle** yakaladı ve son
+paragrafta sordu — "yaratığın gerçek identifier'ı ne? yoksa spawn rules hiçbir
+şeye bağlanmaz". Yani doğru teşhis prozada var, araçtan gelmedi. Bir sonraki
+koşuda aynı şansın tekrarlanacağı varsayılamaz; `review_pack` tam olarak bunu
+mekanik hâle getirmek için var.
+
+### Boşluk: `get_schema` dizi düğümlerinde boş özet döndürüyor
+
+Model **doğru yolu** istedi (`minecraft:spawn_rules/conditions`) ve eli boş
+döndü — sonra köke geri çıktı. Sebep ölçüldü, şemada eksiklik yok:
+
+```
+conditions.type            = "array"
+conditions.properties      = 0 alan
+conditions.items.properties = 22 alan
+  minecraft:biome_filter, minecraft:brightness_filter, minecraft:delay_filter,
+  minecraft:density_limit, minecraft:difficulty_filter, minecraft:herd, …
+```
+
+`summarizeSchema` (`packages/validator/src/schema-summary.ts`) yalnızca
+`properties` üzerinde yürüyor, dizi düğümlerinde `items` içine inmiyor. 22
+spawn koşulu bileşeninin hepsi orada duruyor ve hiçbiri döndürülmüyor.
+
+Sonucu **hatadan kötü**: araç "burada alan yok" diyor, "bakamıyorum" demiyor.
+M3'te `get_schema` tasarlanırken "ilk 60 alanı göster, sus" yolu tam bu
+gerekçeyle reddedilmişti — model olmayan alanların var olmadığını sanmasın
+diye. Dizi düğümlerinde o hata yine de yapılıyor.
+
+**Bu koşuda ne oldu:** model altı koşul bileşenini (`spawns_on_surface`,
+`brightness_filter`, `difficulty_filter`, `weight`, `herd`,
+`biome_filter`) şemadan değil **kendi belleğinden** yazdı. Altısı da doğru
+çıktı ve `validate_json` onları ajv ile tam şemaya karşı denetleyip geçirdi —
+yani ağ tutmadı çünkü düşen olmadı. Ama üretim anında modele rehberlik eden
+şema yoktu; yakalayan şey üretimden sonraki doğrulama oldu.
+
+Düzeltmenin yeri `packages/validator`, MCP değil.
 
 ### 2. `chain-mining-01` — "Kırdığım bloğun aynı türden komşularını da kırsın"
 
@@ -189,7 +273,13 @@ Ayrım yapılmadan bulgu eyleme dönüşmez:
 Gerçek kullanımda çıkan her şey buraya. Kapatılmaz, gizlenmez; nereye gittiği
 yazılır — `docs/COMMANDS.md` sonundaki `execute ... run` maddesinin kalıbı.
 
-**Henüz yok** — senaryolar koşulmadı.
+| # | Boşluk | Nerede | Durum |
+|---|---|---|---|
+| 1 | `get_schema` dizi düğümünde boş özet döndürüyor (`items` içine inmiyor) | `packages/validator/src/schema-summary.ts` | Senaryo 1'de ölçüldü, açık |
+| 2 | `review_pack` kendiliğinden çağrılmıyor | `packages/mcp/src/tools/review.ts` açıklaması ya da `server.ts` `instructions` | 1 senaryoda 1 kez, tek gözlem — kontrol koşusu bekliyor |
+
+İkincisi için tek bir senaryo yeterli veri değil; kalan beş senaryodan sonra
+tekrar bakılacak. Bir kez çağrılmamak "keşfedilmiyor" demek değildir.
 
 ## Değişen açıklamalar
 
