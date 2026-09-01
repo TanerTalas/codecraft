@@ -19,6 +19,10 @@
  *   · Kök düğüm özetleri 1 KB'ın altında (entities 583 B, blocks 597 B).
  *     Patlama derinlerde: minecraft:entity/components düğümünde 390 alan var
  *     ve tam özeti 59.763 bayt.
+ *   · Alanlar her zaman `properties` altında DEĞİL. Dizi düğümlerinde
+ *     `items` içindeler ve bu yaygın: 60 derlenmiş şemada 618 düğüm `items`
+ *     taşıyor, 91'inin arkasında gerçek alanlar var (spawn_rules/conditions
+ *     22, blocks/permutations, dialogue/scenes …). Ölçüm 01-09-2026, Aşama M5.
  *
  * O yüzden özet KADEMELİ daralıyor (bkz. Detail). Sessiz kesme yok: hangi
  * basamağa inildiği `truncated` alanında yazıyor, çünkü modelin neyi
@@ -81,6 +85,21 @@ export type SchemaSummary = {
   schema: string;
   /** İnilen alt yol. Kök için "". */
   path: string;
+  /**
+   * Bu düğüm bir DİZİ ve `properties` altındakiler dizinin her ÖĞESİNİN
+   * alanları. Dizi olmayan düğümlerde alan hiç yok.
+   *
+   * Ayrıca yazılıyor çünkü fark dosyayı değiştiriyor: "conditions'ın alanları"
+   * ile "conditions'ın her öğesinin alanları" farklı JSON ürettirir.
+   */
+  arrayItems?: boolean;
+  /**
+   * Alanlar bu kadar ALTERNATİF biçimden birleştirildi (`oneOf`/`anyOf`).
+   * Hepsi aynı anda geçerli olmayabilir; hangisinin geçtiğini validate_json
+   * söyler. Zorunlu alanlar kesişimden alınıyor, yani buradaki `required`
+   * her dalda zorunlu olanlar.
+   */
+  oneOfBranches?: number;
   title?: string;
   description?: string;
   required: string[];
@@ -136,20 +155,116 @@ function deref(node: unknown, root: Node): unknown {
   return current;
 }
 
-/** Bir düğümün doğrudan çocukları: properties, yoksa additionalProperties. */
-function childrenOf(node: unknown, root: Node): Node | null {
+/** Bir düğümün `required` listesi, dizeye indirgenmiş. */
+const requiredOf = (node: Node): string[] =>
+  Array.isArray(node["required"])
+    ? (node["required"] as unknown[]).filter((value): value is string => typeof value === "string")
+    : [];
+
+/** Alanlar ve nereden geldikleri. `fieldsOf` bunu döndürür. */
+type Fields = {
+  /** Alan adı → şema düğümü. */
+  properties: Node;
+  required: string[];
+  /** Alanlar bir dizinin ÖĞESİNDEN geldi. */
+  viaItems: boolean;
+  /** Alanlar bu kadar alternatif daldan birleştirildi. Tek biçimliyse yok. */
+  branches?: number;
+};
+
+/**
+ * Alternatif dalları tek bir alan kümesinde birleştirir.
+ *
+ * Zorunluluk BİRLEŞİM değil KESİŞİM: yalnızca her dalda zorunlu olan alan
+ * gerçekten zorunlu. Birleşim alsaydık tek bir dalda zorunlu olan alanı her
+ * biçimde zorunlu göstermiş olurduk — modele olmayan bir kısıt dayatırdı.
+ */
+function mergeBranches(found: Fields[]): Fields {
+  const properties: Node = {};
+  for (const branch of found) {
+    for (const [name, spec] of Object.entries(branch.properties)) {
+      if (!(name in properties)) properties[name] = spec;
+    }
+  }
+
+  const merged: Fields = {
+    properties,
+    required: found[0]!.required.filter((name) =>
+      found.every((branch) => branch.required.includes(name)),
+    ),
+    viaItems: found.every((branch) => branch.viaItems),
+  };
+  if (found.length > 1) merged.branches = found.length;
+  return merged;
+}
+
+/**
+ * Alanların GERÇEKTE durduğu yer — target'ın `properties`'i olmayabilir.
+ *
+ * Dört yer var, sırayla bakılıyor: `properties`, `additionalProperties`
+ * (map düğümleri), `items` (dizi düğümleri), `oneOf`/`anyOf` (alternatif
+ * biçimler).
+ *
+ * SON İKİSİ Aşama M5'te ÖLÇÜLEREK eklendi. Gerçek bir oturumda model
+ * `minecraft:spawn_rules/conditions` yolunu DOĞRU istedi ve eli boş döndü:
+ * o düğüm `type: "array"`, kendi `properties`'i yok, 22 spawn koşulu
+ * bileşeninin hepsi `items.properties` içinde. Bir alt basamakta aynı şey
+ * tekrarlanıyordu — `minecraft:herd` bir `oneOf` ve 6 alanı iki dalın
+ * içinde. Araç ikisinde de "burada alan yok" dedi, "bakamıyorum" demedi; bu
+ * hatadan kötü, çünkü model o bileşenleri şemadan değil belleğinden yazar.
+ * (docs/mcp-kullanim.md, senaryo 1)
+ *
+ * Kapsam ölçüldü (60 derlenmiş şema, 01-09-2026):
+ *
+ *   · 618 düğüm `items` taşıyor, 91'inin arkasında gerçek alanlar var
+ *   · 436 `oneOf`/`anyOf` düğümünün 144'ü boş dönüyordu ama alanı var;
+ *     123'ünde dalların alan kümesi birebir AYNI, 21'inde farklı
+ *
+ * Tuple biçimi (`items` bir dizi) bilerek DIŞARIDA: 141 tuple düğümünün
+ * hiçbirinde alan yok, hepsi koordinat/aralık çifti ([number, number],
+ * [string, integer]). Ölçülmemiş kural kodlanmıyor.
+ */
+function fieldsOf(node: unknown, root: Node, depth = 0): Fields | null {
+  if (depth > MAX_DEPTH) return null;
   const resolved = deref(node, root);
   if (!isNode(resolved)) return null;
 
   const properties = resolved["properties"];
-  if (isNode(properties)) return properties;
-
-  const additional = resolved["additionalProperties"];
-  if (isNode(additional)) {
-    const nested = deref(additional, root);
-    if (isNode(nested) && isNode(nested["properties"])) return nested["properties"];
+  // Boş bir properties "alan yok" demek, "alanlar burada" demek değil —
+  // aşağıdaki basamaklara inebilmek için geçilmesi gerekiyor.
+  if (isNode(properties) && Object.keys(properties).length > 0) {
+    return { properties, required: requiredOf(resolved), viaItems: false };
   }
+
+  const additional = deref(resolved["additionalProperties"], root);
+  if (isNode(additional) && isNode(additional["properties"])) {
+    return {
+      properties: additional["properties"],
+      required: requiredOf(additional),
+      viaItems: false,
+    };
+  }
+
+  const items = resolved["items"];
+  if (items !== undefined && !Array.isArray(items)) {
+    const inner = fieldsOf(items, root, depth + 1);
+    if (inner !== null) return { ...inner, viaItems: true };
+  }
+
+  const branches = resolved["oneOf"] ?? resolved["anyOf"];
+  if (Array.isArray(branches) && branches.length > 0) {
+    const found = branches
+      .map((branch) => fieldsOf(branch, root, depth + 1))
+      .filter((fields): fields is Fields => fields !== null);
+    if (found.length > 0) return mergeBranches(found);
+  }
+
   return null;
+}
+
+/** Bir düğümün doğrudan çocukları. Nerede durduklarını fieldsOf biliyor. */
+function childrenOf(node: unknown, root: Node): Node | null {
+  return fieldsOf(node, root)?.properties ?? null;
 }
 
 /** "a/b/c" yolunu izler. Çözemezse hata — en yakına düşmek yok. */
@@ -267,12 +382,11 @@ export async function summarizeSchema(
   collectFormatVersions(root, formatVersions, 0);
 
   const target = isNode(node) ? node : {};
-  const required = new Set(
-    Array.isArray(target["required"])
-      ? (target["required"] as unknown[]).filter((value): value is string => typeof value === "string")
-      : [],
-  );
-  const children = childrenOf(target, root) ?? {};
+  // `required` alanların durduğu düğümden okunuyor, target'tan değil. Dizi
+  // düğümünde zorunluluk items içinde yazılı; target'a bakmak onu düşürürdü.
+  const fields = fieldsOf(target, root);
+  const required = new Set(fields?.required ?? requiredOf(target));
+  const children = fields?.properties ?? {};
 
   const summary: SchemaSummary = {
     type: entry.type,
@@ -286,6 +400,9 @@ export async function summarizeSchema(
     ),
     detail: "full",
   };
+
+  if (fields?.viaItems === true) summary.arrayItems = true;
+  if (fields?.branches !== undefined) summary.oneOfBranches = fields.branches;
 
   const title = target["title"];
   if (typeof title === "string" && title !== "") summary.title = title;

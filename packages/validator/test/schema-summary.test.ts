@@ -124,3 +124,51 @@ test("tavan verilmezse tam özet dönüyor", async () => {
   assert.equal(summary.detail, "full");
   assert.equal(summary.truncated, undefined);
 });
+
+/**
+ * Aşağıdaki üç test Aşama M5'te eklendi ve hepsinin sebebi ÖLÇÜLMÜŞ bir
+ * kayıp: gerçek bir Claude oturumunda model `.../conditions` yolunu doğru
+ * istedi, araç 307 bayt ve SIFIR alan döndürdü, model altı spawn koşulunu
+ * şemadan değil belleğinden yazdı. docs/mcp-kullanim.md senaryo 1.
+ */
+test("dizi düğümünde alanlar items içinden geliyor", async () => {
+  // conditions: type "array", kendi properties'i YOK, 22 bileşen items içinde.
+  const summary = await summarizeSchema("behavior/spawn_rules", {
+    path: "minecraft:spawn_rules/conditions",
+    limit: LIMIT,
+  });
+
+  const names = summary.properties.map((property) => property.name);
+  assert.equal(summary.properties.length, 22, `22 bileşen beklenirken ${names.length}`);
+  assert.ok(names.includes("minecraft:brightness_filter"), names.join(", "));
+  assert.ok(names.includes("minecraft:biome_filter"), names.join(", "));
+  // Alanların dizinin ÖĞESİNE ait olduğu söylenmeli — sessizce sunmak,
+  // "conditions'ın alanları" sanılmasına yol açar ve farklı JSON ürettirir.
+  assert.equal(summary.arrayItems, true);
+});
+
+test("dizi öğesinin zorunlu alanları düşmüyor", async () => {
+  // permutations dizi; "condition" zorunluluğu items içinde yazılı. Dış
+  // düğüme bakılsaydı required boş dönerdi.
+  const summary = await summarizeSchema("behavior/blocks", {
+    path: "minecraft:block/permutations",
+    limit: LIMIT,
+  });
+
+  assert.equal(summary.arrayItems, true);
+  assert.deepEqual(summary.required, ["condition"]);
+});
+
+test("oneOf dallarındaki alanlar birleştiriliyor ve kaç dal olduğu yazılıyor", async () => {
+  // minecraft:herd bir oneOf: dal 0 nesne, dal 1 o nesnelerin dizisi. Altı
+  // alan ikisinde de var. Dallara bakılmazsa düğüm boş görünür.
+  const summary = await summarizeSchema("behavior/spawn_rules", {
+    path: "minecraft:spawn_rules/conditions/minecraft:herd",
+    limit: LIMIT,
+  });
+
+  const names = summary.properties.map((property) => property.name);
+  assert.ok(names.includes("min_size"), names.join(", "));
+  assert.ok(names.includes("max_size"), names.join(", "));
+  assert.equal(summary.oneOfBranches, 2);
+});
