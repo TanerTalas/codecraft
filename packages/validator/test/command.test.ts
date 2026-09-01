@@ -321,3 +321,37 @@ test("eklenti kimliği kalıbı dar — köşeli parantez enum sanılmaz", async
   const custom = await check("/setblock ~ ~ ~ codecraft:ruby_ore");
   assert.equal(custom.ok, true, custom.errors[0]?.message ?? "");
 });
+
+/**
+ * Aşağıdaki iki test Aşama M5 senaryo 3'te ölçülen bir yanlış pozitifi
+ * kapatıyor. Kaynak veride 225 enum'un dördü BOŞ geliyor — tagvalues,
+ * scoreboardobjectives, gametestname, gametesttag — çünkü değerlerini oyun
+ * çalışma anında dünyadan dolduruyor. Doğrulayıcı boşu "geçerli değer yok"
+ * diye okuyup /tag ve /scoreboard'u reddediyordu.
+ *
+ * Dosyanın başındaki cümle burada geçerli: yanlış pozitif en pahalı hata.
+ */
+test("çalışma anında dolan boş enum serbest metin kabul eder", async () => {
+  for (const line of [
+    "/scoreboard objectives add kills dummy",
+    "/scoreboard players add @s kills 1",
+    "/tag @s add kutucu",
+    "/tag @s remove kutucu",
+  ]) {
+    const result = await check(line);
+    assert.equal(result.ok, true, `${line} reddedildi: ${JSON.stringify(result.errors)}`);
+  }
+});
+
+test("dolu enum hâlâ uydurma değeri reddediyor", async () => {
+  // Boş enum gevşetildi diye bütün enum denetimi gevşemesin — bu testin tek
+  // işi o gevşemeyi yakalamak.
+  for (const line of [
+    "/gamemode uydurmamod",
+    "/fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass 0 uydurma_mod",
+  ]) {
+    const result = await check(line);
+    assert.equal(result.ok, false, `${line} geçti, oysa geçmemeliydi`);
+    assert.equal(result.errors[0]?.kind, "argument");
+  }
+});

@@ -558,7 +558,24 @@ async function tryOverload(
     }
 
     const values = index.enums[param.type.toLowerCase()];
-    if (values !== undefined) {
+    // BOŞ ENUM "hiçbir değer geçerli değil" DEĞİL, "serbest metin" demek.
+    //
+    // Ölçüldü (01-09-2026, Aşama M5 senaryo 3): 225 enum'un DÖRDÜ kaynak
+    // veride tamamen boş — tagvalues, scoreboardobjectives, gametestname,
+    // gametesttag. Bunlar oyunun ÇALIŞMA ANINDA dünyadan doldurduğu listeler
+    // (dünyadaki etiketler, tanımlı skorbord hedefleri). Mojang'ın metadata'sı
+    // onları boş yayınlıyor çünkü değerleri dünyaya bağlı, şemaya değil.
+    //
+    // Boşu "geçerli değer yok" diye okumak dört komutu birden yanlış
+    // reddediyordu — /tag, /scoreboard, /execute (objective), /gametest:
+    //
+    //   /scoreboard objectives add kills dummy   ok=false  (doğru komut)
+    //   /tag @s add kutucu                       ok=false  (doğru komut)
+    //
+    // Üstelik hata mesajı da bozuktu: "Kabul edilenler:" sonrası boş liste.
+    // Yanlış pozitif, CodeCraft'ın önlemek için var olduğu hatanın ters yönden
+    // aynısı. Gerçek bir oturumda bulundu — docs/mcp-kullanim.md, senaryo 3.
+    if (values !== undefined && values.length > 0) {
       const value = slice[0] as string;
       if (matchesEnum(values, value)) {
         if (param.type === "BLOCK") lastBlock = value;

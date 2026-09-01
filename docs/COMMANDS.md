@@ -215,3 +215,66 @@ yönden.
 yok saysın diye) ve `packages/mcp/test/tools.test.ts` içinde bugünkü davranışı
 sabitleyen bir testte. Doğrulayıcı düzeltilince o test kırmızıya döner ve
 boşluğun kapandığı görülür — `cases.json`'daki `expect: "gap"` kalıbının aynısı.
+
+## Kapatılan boşluk: boş enum her değeri reddediyordu
+
+**Bulundu ve kapatıldı 01-09-2026, Aşama M5 senaryo 3'te** — gerçek bir Claude
+oturumunda, planlanmamış bir yerden. Model `/tag @s add kutucu` önerdi,
+doğrulayıcı reddetti:
+
+```
+argument: "kutucu" name için geçerli değil. Kabul edilenler:
+```
+
+"Kabul edilenler:" satırının arkası boş, çünkü liste gerçekten boştu.
+
+**Sebep veride, ve veri eksik değil.** `commands.json`'ın 225 enum'undan
+**dördü** kaynakta tamamen boş geliyor:
+
+| Enum | Neyi listeler |
+|---|---|
+| `tagvalues` | Dünyadaki etiketler |
+| `scoreboardobjectives` | Tanımlı skorbord hedefleri |
+| `gametestname` | Kayıtlı gametest adları |
+| `gametesttag` | Gametest etiketleri |
+
+Dördü de oyunun **çalışma anında** dünyadan doldurduğu listeler. Mojang'ın
+metadata'sı onları boş yayınlıyor çünkü değerleri dünyaya bağlı, şemaya değil.
+Doğrulayıcı boşu "hiçbir değer geçerli değil" diye okuyordu; doğrusu "serbest
+metin".
+
+**Etkilenen dört komut** (83 komut tarandı) ve ikisi çok yaygın:
+
+| Komut | Parametre |
+|---|---|
+| `/tag` | `name: TAGVALUES` |
+| `/scoreboard` | `objective`, `targetObjective: SCOREBOARDOBJECTIVES` |
+| `/execute` | `objective: SCOREBOARDOBJECTIVES` |
+| `/gametest` | `testName`, `tag` |
+
+Düzeltmeden önce ölçülen:
+
+```
+ok=false  /scoreboard objectives add kills dummy
+ok=false  /scoreboard players add @s kills 1
+ok=false  /tag @s add kutucu
+ok=false  /tag @s remove kutucu
+ok=true   /tag @s list          (bu aşırı yüklemede enum yok)
+```
+
+Sonra dördü de `ok=true`.
+
+**Düzeltme dar:** `packages/validator/src/command.ts` içinde enum denetimi
+yalnızca liste **doluysa** uygulanıyor; boş liste görülünce parametre yapısal
+denetime düşüyor. Enum denetiminin geri kalanı gevşemedi ve bunu ölçen ayrı
+bir test var — `/gamemode uydurmamod` ve `/fill … uydurma_mod` hâlâ
+reddediliyor.
+
+İki test eklendi, biri bilerek kırılarak doğrulandı: guard geri alınınca
+yalnızca boş-enum testi kırmızıya döndü, regresyon bekçisi yeşil kaldı.
+
+**Neden `execute … run` boşluğundan farklı.** O boşluk araç açıklamasında
+yazılı ve model onu yok saymayı biliyor — senaryo 3'te üç kez tetiklendi ve
+model doğru komutu korudu. Bu yazılıydı bile değildi; model yine yanılmadı ama
+uyarı okuduğu için değil kendi muhakemesiyle. O yüzden bu boşluk belgelenmedi,
+**kapatıldı**.
