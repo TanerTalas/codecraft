@@ -116,6 +116,62 @@ const PROBES: Probe[] = [
     command: 'testforblock ~ ~-1 ~ minecraft:acacia_door ["minecraft:cardinal_direction"="north"]',
     expect: "parses",
   },
+
+  // --- AÇIK SORU: eski veri değeri (int) HANGİ komutlarda kabul ediliyor ---
+  //
+  // 01-09-2026, Aşama M5 senaryo 3: kullanıcı oyunda ölçtü ve doğrulayıcının
+  // GEÇİRDİĞİ bir komut düştü — yanlış negatif:
+  //
+  //   /fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass 0 outline
+  //   Syntax error: Unexpected "0": at " ~4 glass >>0<< outline"
+  //
+  // Oysa checkBlockStates() int'i BİLEREK kabul ediyor ve gerekçesi ölçülmüş
+  // bir sonuç (30-08-2026). Ama o ölçüm testforblock üzerindeydi; kaçamak
+  // BLOCK_STATE_ARRAY kullanan BEŞ komuda birden uygulanıyor (clone, execute,
+  // fill, setblock, testforblock). Genelleme fazla geniş olabilir.
+  //
+  // Üç hipotez, üçünü ayıracak ölçüm:
+  //   H1 sürüm değişti, int artık hiçbir yerde kabul edilmiyor
+  //   H2 komuta bağlı — testforblock kabul ediyor, fill etmiyor
+  //   H3 FILLMODE'a bağlı — "replace" kabul ediyor, "hollow"/"outline" etmiyor
+  //
+  // Bloklar bilerek "air" ve tek bloklu bölge: sözdizimi ölçülüyor, blok
+  // kimliği değil, ve dünya değişmiyor.
+  {
+    question: "int: testforblock (30-08 ölçümünün tekrarı)",
+    command: "testforblock ~ ~-1 ~ minecraft:acacia_button 0",
+    expect: "parses",
+  },
+  {
+    question: "int: fill + replace (kod yorumunun iddiası)",
+    command: "fill ~ ~ ~ ~ ~ ~ minecraft:air 0 replace",
+    expect: "parses",
+  },
+  {
+    question: "int: fill + hollow",
+    command: "fill ~ ~ ~ ~ ~ ~ minecraft:air 0 hollow",
+    expect: "syntax-error",
+  },
+  {
+    question: "int: fill + outline (kullanıcının düşen biçimi)",
+    command: "fill ~ ~ ~ ~ ~ ~ minecraft:air 0 outline",
+    expect: "syntax-error",
+  },
+  {
+    question: "int: fill, namespace'siz blok",
+    command: "fill ~ ~ ~ ~ ~ ~ air 0 hollow",
+    expect: "syntax-error",
+  },
+  {
+    question: "int: setblock + replace",
+    command: "setblock ~ ~ ~ minecraft:air 0 replace",
+    expect: "parses",
+  },
+  {
+    question: "kontrol: fill + hollow, int YOK (doğru modern biçim)",
+    command: "fill ~ ~ ~ ~ ~ ~ minecraft:air hollow",
+    expect: "parses",
+  },
 ];
 
 const send = (socket: WebSocket, commandLine: string): void => {
