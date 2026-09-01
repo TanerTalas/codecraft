@@ -273,18 +273,43 @@ yakalanıyor mu, `get_version_info` gerçek sürüm veriyor mu, `GET` ve `DELETE
 derlemeyen bir yoldan da gelebilirdi. O yüzden bozuk bir payload bilerek
 gönderiliyor ve gerçek bir tanı bekleniyor.
 
-Dağıtılmış ölçüm (01-09-2026) — **bu tablo sekiz araçlıydı ve henüz
-yenilenmedi:** dokuzuncu araç ile daraltılmış izleme haritası yalnızca yerel
-üretim build'inde doğrulandı, uca deploy edilmedi.
+Dağıtılmış ölçüm (02-09-2026, dokuz araç ve daraltılmış izleme haritasıyla):
 
 | Adım | Sonuç |
 |---|---|
-| bağlantı (initialize) | 1.604 ms (soğuk) |
-| `tools/list` | 8 araç, 9.036 bayt, 277 ms soğuk / 172 ms sıcak |
-| `validate_script` (kaldırılmış API) | 285 bayt, gerçek `TS2551` tanısı, 592 ms |
-| `validate_script` (geçerli) | 144 bayt, `ok:true`, 313 ms |
-| `get_schema` (390 alanlı düğüm) | 15.898 bayt, kesilmedi, 488 ms |
+| bağlantı (initialize) | 1.385 ms (soğuk) |
+| `tools/list` | 9 araç, 10.227 bayt, 396 ms soğuk / 308 ms sıcak |
+| `validate_script` (kaldırılmış API) | 285 bayt, gerçek `TS2551` tanısı, 530 ms |
+| `validate_script` (geçerli) | 144 bayt, `ok:true`, 421 ms |
+| `get_schema` (390 alanlı düğüm) | 15.898 bayt, kesilmedi, 197 ms |
 | `GET` / `DELETE` | 405 + JSON gövde |
+
+Daraltılmış izleme haritası uçta doğrulandı: `tsc` hâlâ paketin içinden koşuyor
+ve `get_schema` bayt bayt aynı sonucu veriyor.
+
+### `validate_python`'ın sözdizimi ayağı uçta KOŞMUYOR
+
+**Ölçüldü 02-09-2026, dağıtılmış uçta.** Vercel'in Node runtime'ında Python
+yorumlayıcısı yok — `python3`, `python` ve `py` denendi, üçü de bulunamadı.
+
+| Girdi | Uçta sonuç |
+|---|---|
+| geçerli script | `ok:true`, `syntaxChecked:false`, komut ekseni koştu |
+| bozuk komut (`glass 0 outline`) | `ok:false` — **yakalandı** |
+| **sözdizimi bozuk Python** | **`ok:true`** — yakalanmadı |
+
+İlk iki satır tasarlandığı gibi: atlama sessiz değil, `syntaxSkipped` sebebi
+taşıyor ve diğer iki eksen koşmaya devam ediyor.
+
+**Üçüncü satır bir risk ve gizlenmiyor.** Yalnızca `ok` alanına bakan bir
+model, sözdizimi bozuk bir Python dosyasını doğrulanmış sanabilir. `ok:false`
+döndürmek de yanlış olurdu — bakılamayan bir şeye hata demek, doğrulayıcının
+kendi ilkesine aykırı ("emin olmadığına hata deme"). Bugünkü sözleşme:
+`ok:true` **yalnızca ölçülebilen eksenler için** geçerli ve `syntaxChecked`
+bunu söylüyor.
+
+Yerelde üç eksen de koşuyor (Python 3.14.3 ölçüldü), yani araç yarım değil —
+ama üretimde iki eksenli.
 
 Yerelde: `npm run typecheck` exit 0, `npm test` 227/227.
 
