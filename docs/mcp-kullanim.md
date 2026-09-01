@@ -15,7 +15,8 @@ kötü.** İkisi farklı sonuç doğurur, o yüzden ayrıştırılmadan yazılma
 
 ## Durum
 
-**01-09-2026 — taban çizgisi alındı, senaryolar HENÜZ KOŞULMADI.**
+**01-09-2026 — taban çizgisi alındı, bağlayıcı bağlandı, senaryolar HENÜZ
+KOŞULMADI.**
 
 Bu dosya şu an yalnızca bağlamadan önceki ölçümü taşıyor. Aşağıdaki araç
 kullanım tablosu ve senaryo günlükleri bilerek boş: bir senaryo koşulmadan o
@@ -61,6 +62,28 @@ Aynı gün `npm run typecheck` exit 0, `npm test` **211/211**.
 
 Yani M5 başlarken uç sağlam. Bundan sonra ölçülen her kırık, bağlayıcının ya da
 modelin davranışıdır; sunucunun ayakta olmaması değil.
+
+## Bağlayıcı bağlandı
+
+**01-09-2026, Claude Pro, Customize > Connectors.** Özel bağlayıcı yukarıdaki
+adresle eklendi ve araç izinleri ekranında göründü.
+
+Ölçülen — tek bir "çalıştı" cümlesi değil, üç ayrı gözlem:
+
+| Gözlem | Sonuç |
+|---|---|
+| Araç sayısı | **8**, eksiksiz |
+| İstemcinin sınıflandırması | **"read only tools: 8"** — sekizin sekizi de salt okunur |
+| Başlıklar | Bizim `title` alanlarımız görünüyor: "İstek Bedrock'ta yapılabilir mi" (`check_feasibility`), "Belge tipinin şema özeti" (`get_schema`) |
+
+İkinci satır kayda değer: `annotations: {readOnlyHint: true, openWorldHint:
+false}` (`packages/mcp/src/tool.ts`) uçtan uca taşınıyor. M3'te kendi
+testimizle ölçülmüştü; burada gerçek istemcinin onu okuyup **ayrı bir izin
+sınıfı** olarak gösterdiği görüldü. Bağlanmadan önce bilinmiyordu.
+
+Araç izinleri **"her seferinde sor"da bırakıldı**, "always allow"a
+çevrilmedi. Tercih değil, yöntem: sunucuda log yok, onay istemi hangi aracın
+hangi argümanla çağrıldığını gösteren tek kaçırılamaz kayıt.
 
 ## Araç kullanım tablosu
 
