@@ -949,27 +949,158 @@ iddia edilmez.
 
 ## Devralınan açık işler (MCP dışı)
 
-Arşivde `- [ ]` olarak duran ve MCP yolunu da ilgilendiren maddeler.
+Arşivde `- [ ]` olarak duran ve MCP yolunu da ilgilendiren maddeler. **Altısı
+02-09-2026'da ele alındı**; ikisi kod yazılarak kapandı, üçü kararla kapandı,
+biri ertelenmişe taşındı. Ölçümler aşağıdaki blokquote'ta.
 
-- [ ] **Taze kapı koşusu.** Çekirdek liste 20/20 ama `--generator=cached` ile
-  alındı ve o üretici parmak izini doğrulamıyor; 19 vakanın çıktısı bugünkü
-  prompt'tan önce üretilmişti. Skor "bu çıktılar bugünkü doğrulayıcıdan
-  geçiyor" demek, "bugünkü prompt 20/20 üretiyor" **demiyor**. 20 taze istek
-  gerekiyor
-- [ ] **Şemaların birebir commit edilmesi kararı.** Depo public yapılmadan önce
-  yeniden değerlendirilecek (`docs/SOURCES.md`). MCP sunucusu yayınlamak
-  demek, bu madde artık daha yakın
-- [ ] **Pipeline'ın hiç koşmamış iki yolu:** (1) veri gerçekten değiştiğinde
-  bot'un commit + push atması, (2) başarısızlıkta GitHub issue açılması.
-  İlki Mojang bir sonraki sürümü yayınladığında kendiliğinden ölçülür
-- [ ] **`execute ... run <komut>` zincirlemesi** — `validateCommand` geçerli
-  komutu geçersiz raporluyor (yanlış pozitif). M3'te bulundu ve ölçüldü,
-  kapsamı dışı olduğu için kapatılmadı: bu `packages/validator` işi. Ölçüm ve
-  düzeltmenin nereye gireceği `docs/COMMANDS.md` sonunda
-- [ ] Python doğrulayıcısı kararı (arşiv, Aşama 2.5)
-- [ ] Opsiyonel: Bedrock Dedicated Server (arşiv, Aşama 0)
+- [x] **`execute ... run <komut>` zincirlemesi** — kapatıldı. `tryOverload`
+  artık `EXECUTECHAINEDOPTION_0` ve `CODEBUILDERARGS` tiplerine özyineliyor,
+  iç içe `execute` dahil. Ölçüm ve iki doküman hatasının düzeltilmesi
+  `docs/COMMANDS.md`
+- [x] **Python doğrulayıcısı kararı** (arşiv, Aşama 2.5) — **yapıldı.** Arşiv
+  üç seçenek sunuyordu; kullanıcı sözdizimi dahil olanı seçti.
+  `validate_python` dokuzuncu araç olarak açıldı
+- [x] **Şemaların birebir commit edilmesi kararı** — kapandı. Depo asla public
+  olmayacak (kullanıcı kararı), yani maddenin yazılı koşulu hiç gerçekleşmiyor.
+  Ama kapatılırken dokümanların hesaba katmadığı **ikinci bir dağıtım kanalı**
+  bulundu ve daraltıldı; ayrıntı `docs/SOURCES.md`
+- [x] **Pipeline'ın ~~hiç koşmamış~~ iki yolu.** Madde **bayat çıktı:** yol (1)
+  29-08-2026'da koşmuş ve yeşil. Yol (2) hâlâ koşmadı ve kullanıcının GitHub
+  erişimini gerektiriyor — aşağıda açık madde olarak duruyor
+- [x] **Bedrock Dedicated Server** (arşiv, Aşama 0) — **yapılmayacak**,
+  gerekçesi aşağıda
+- [ ] **Taze kapı koşusu** — ertelenmiş Aşama 4'e taşındı, aşağıda
 
----
+### Açık kalan iki şey
+
+- [ ] **Pipeline yol (2): başarısızlıkta GitHub issue açılması.** `if:
+  failure()` dalı (`.github/workflows/data.yml`) hiç tetiklenmedi. Ölçmek için
+  atılabilir bir dalda bir adımı bilerek kırıp `workflow_dispatch` ile koşmak
+  ve issue listesine bakmak gerekiyor — **kullanıcı adımı**, `gh` CLI bu
+  makinede kurulu değil
+- [ ] **`matchesEnum` namespace toleransı tek yönlü.** `execute` düzeltmesi
+  bunu görünür kıldı: `/locate biome plains` reddediliyor çünkü altı enum
+  tamamen `minecraft:` önekli. Ters yön eklenmedi — oyunun çıplak biçimi kabul
+  edip etmediği ölçülmedi ve tek yönlülük bilinçli yazılmış bir karardı.
+  **Sohbet kanalında ölçülmeli** (`docs/COMMANDS.md`)
+- [ ] **`/execute as @a run` (run sonrası boş) oyunda ölçülmedi.** Düzeltmeyle
+  `ok=true` → `ok=false` oldu; veriye dayanıyor (18. aşırı yüklemede `command`
+  zorunlu) ama sohbette denenmedi
+
+> **Ölçüm, 02-09-2026.** `npm run typecheck` exit 0, `npm test` **237/237**
+> (M6'da 227'ydi, on yeni test). Her yeni test enjekte edilen kırıkla kırmızıya
+> döndürülerek doğrulandı — yöntem M2'den beri aynı.
+>
+> ### 1. `execute ... run` — kapatıldı
+>
+> Düzeltmeden önce iki ölçüm bu deponun kendi dokümanını yanlış çıkardı:
+>
+> | `docs/COMMANDS.md` diyordu ki | Ölçülen |
+> |---|---|
+> | "18 aşırı yüklemesinin **hepsinde**" zincirleme var | **17**'sinde; 18.'si terminal ve `CODEBUILDERARGS` taşıyor |
+> | Aynı biçim `function`, `place`, `schedule`, `help`, `locate`, `project`'te de var | **Yok.** `chainedCommand` yalnızca `execute`'ta; 83 komut tarandı |
+>
+> Birincisi düzeltmeyi belirledi: **iki tipe birden** dokunmak gerekiyordu.
+> İkincisi kapsamı daralttı — o cümleye güvenip altı komuta yayılmak gereksiz
+> yüzey açardı.
+>
+> Yanlış pozitif dokümandakinden de genişti: `/execute run say hi` ve
+> `/execute as @a at @s run` hiç yazılmamıştı. Doğrusu "zincir uzunluğu > 1
+> olan **her** execute yanlış pozitif".
+>
+> Dört kırık enjekte edildi, dördü de kırmızıya döndürdü: dalın tamamen
+> kaldırılması, zincirin her şeyi kabul etmesi, indeks kaydırmasının bozulması,
+> ve `/` şartının kalkması.
+>
+> **Bir davranış tersine döndü:** `/execute as @a run` artık `ok=false`.
+> Veriye dayanıyor ama oyunda ölçülmedi — yukarıda açık madde.
+>
+> ### 2. Python doğrulayıcısı — üç eksen
+>
+> `validate_python` (`packages/validator/src/python.ts`, saf fonksiyon —
+> mimari kural 3): sözdizimi (gerçek yorumlayıcı), gömülü Minecraft komutları
+> (`validateCommand`), `/connect` mesaj zarfı.
+>
+> **En değerli eksen ikincisi ve bunu bir ölçüm söylüyor:** araç ilk denemede
+> `/fill ~ ~ ~ ~ ~ ~ glass 0 outline` satırını reddetti — M5'te **oyunda**
+> yakalanan, kullanıcıya çalışmayan bir komutun gitmesine yol açan hatanın
+> birebir aynısı. O gün Python gövdesindeki komut hiçbir doğrulayıcıdan
+> geçmiyordu.
+>
+> Kapsam bilerek dar: yalnızca `/` ile başlayan dizeler komut sayılıyor.
+> Geniş kural denendi ve reddedildi — `"say"` gibi sıradan bir dize komut
+> sanılıp arity hatası üretiyordu, yani yanlış pozitif.
+>
+> `syntaxChecked` ayrı bir alan: Python yoksa ayak atlanıyor ve **çıktıda
+> söyleniyor**. `ok:true` tek başına "sözdizimi doğru" demiyor.
+>
+> **Kural esnetildi, sorularak.** `CLAUDE.md` "Stack" bölümündeki "Altyapıda
+> Python çalıştırılmıyor" satırı gerekçesiyle güncellendi. O bölüm dokümanın
+> kendi tanımına göre değiştirilebilir.
+>
+> | | |
+> |---|---|
+> | Araç sayısı | 8 → **9** |
+> | `tools/list` | 9.036 → **10.227 bayt** (~%8,5 bütçe) |
+> | `validate_python` çıktısı | 568 bayt, 606 ms |
+>
+> Probe'un araç sayısı kontrolü artık **sabit değil**, kayıtlı listeden
+> geliyor: bayat bir deploy uçta kırmızıya döner.
+>
+> ### 3. Şemalar — kapandı, ama kapatırken bir kanal bulundu
+>
+> Maddenin koşulu "depo public yapılırsa" idi ve o koşul hiç gerçekleşmeyecek.
+> Ama dokümanların hesaba katmadığı ikinci bir dağıtım kanalı vardı: **MCP ucu
+> herkese açık ve `app/next.config.ts` `data/`'nın tamamını fonksiyon paketine
+> koyuyordu** — 1.313 Mojang EULA dosyası dahil, hiçbiri çalışma zamanında
+> okunmadan.
+>
+> | | Önce | Sonra |
+> |---|---|---|
+> | `/mcp` izlenen dosya | 4.152 | **731** |
+> | └ `data/` | 3.372 | **88** |
+> | └ ham Mojang şeması | 1.313 | **0** |
+> | └ Blockception kaynağı | 1.140 | **0** |
+> | İzlenen boyut (Windows) | 70,8 MB | **59,1 MB** |
+>
+> Kritik dördü ayrıca sayıldı ve yerinde: `codecraft.config.json` 1,
+> `@typescript/` 114, `script-types/` 11, `blockception/compiled/` 60. M1'de
+> tam bu haritadan iki kırık çıkmıştı, o yüzden daraltma tahminle değil
+> manifest sayımıyla **ve** gerçek bir üretim build'i üzerinde `mcp:probe` ile
+> doğrulandı: dokuz kontrolün dokuzu yeşil, `tsc` hâlâ paketin içinden koşuyor.
+>
+> Künye (`data/<sürüm>/schemas/NOTICE.md`) **pipeline'a** yazıldı, elle değil:
+> `writeTree` haritada olmayan her dosyayı siliyor, yani elle yazılan künye
+> ilk koşuda sessizce silinirdi. Yazmadan önce ölçüldü.
+>
+> ### 4. Pipeline — madde bayattı
+>
+> "Hiç koşmamış iki yol" diyordu; yol (1) 29-08-2026'da koşmuş:
+>
+> ```
+> 18db974  21:02 UTC  test(pipeline): remove a derived file to exercise the push path
+> 5896963  21:13 UTC  github-actions[bot]: data(pipeline): update indexes for 1.26.40.5
+> ```
+>
+> Bir dosya bilerek silinmiş, bot 11 dakika sonra yeniden üretip push etmiş.
+> Ölçülmemiş tek şey tetikleyicinin **gerçek** bir upstream değişikliği olması;
+> kod yolu aynı. Yol (2) hâlâ açık, kullanıcı adımı.
+>
+> ### 5. Bedrock Dedicated Server — yapılmayacak
+>
+> Karar, iş değil. Üç gerekçe, üçü de ölçülmüş ya da yazılı:
+>
+> 1. v1 kapsamı tek oyunculu PC, ve `packages/core/src/feasibility.ts` BDS'yi
+>    zaten **kapsam dışı** ilan ediyor (`@minecraft/server-net` yalnızca orada)
+> 2. Vaadi "otomatik test"ti, kanalı ws/konsol olacaktı — ve 01-09'da ölçüldü:
+>    **ws kanalı sohbetten daha gevşek ayrıştırıyor.** BDS o gevşekliği miras
+>    alır, yani vaat ölçülmemiş ve muhtemelen kısmi
+> 3. Engel para değil (BDS ücretsiz), **değer**
+>
+> ### Ölçülmeyen
+>
+> Bu turda dağıtılmış uçta hiçbir şey ölçülmedi — daraltılmış paket ve dokuzuncu
+> araç yalnızca **yerel üretim build'inde** doğrulandı. Deploy kullanıcı adımı.
 
 ## Ertelendi — arşivde
 
@@ -980,6 +1111,32 @@ sonra dönülecek:
 - BYOK anahtar giriş akışı
 - Sürüm seçici arayüzü
 - Doğrulama rozeti — MCP'de araç çıktısının kendisi zaten bu işlevi görüyor
+- **Taze kapı koşusu** (02-09-2026'da buraya taşındı, aşağıdaki gerekçeyle)
+
+> **Taze kapı koşusu neden buraya taşındı.** Madde "Devralınan açık işler"
+> altında duruyordu ve 20 taze istek istiyordu. Ölçüldü: kapının ölçtüğü kod
+> yolu **MCP'de hiç çalışmıyor.** `packages/mcp` içinde `prompt.ts`,
+> `model.ts` ve `generate.ts`'e sıfır referans var; `packages/core/src/server.ts`
+> üçünü de bilerek dışa açmıyor. Yani kapı, ertelenmiş Aşama 4'ün (web + BYOK)
+> üretim döngüsünü ölçüyor. Ürün bugün yalnızca MCP ve modeli kullanıcı
+> getiriyor.
+>
+> **Bugünkü 20/20 skorunun ne olduğu, dürüstçe:** `--generator=cached` ile
+> alındı ve o üretici parmak izini doğrulamıyor. Bugün hesaplandı — **19
+> vakanın parmak izi tutmuyor**, tek tutan `ore-gen-01`. Sebebi `eeff070`'in
+> `prompt.ts`'e eklediği tek madde. Yani skor "bu çıktılar bugünkü
+> doğrulayıcıdan geçiyor" demek, "bugünkü prompt 20/20 üretiyor" **demiyor**.
+>
+> **Ücretsiz kademe ölçüldü ve kapıyı tek turda imkânsız kılıyor:** günde 20,
+> dakikada 5 istek, model başına. Çekirdek liste 20 vaka ve her vaka
+> doğrulama düşerse bir kez daha deniyor — yani taban 20, tavan 40 istek. Tam
+> taze bir koşu günlük kotayı birebir bitiriyor, ilk retry deliyor. `out/`
+> altındaki sekiz denenmiş koşu bunu gösteriyor: en iyi tamamen taze skor
+> 15/20 ve 3-6 vaka `429` yüzünden hiç ölçülemedi. En iyi 19/20 ise `--reuse`
+> ile alındı.
+>
+> Bu, `CLAUDE.md`'nin "istek limiti de tasarıma girer" cümlesinin ölçülmüş
+> hâli. Aşama 4 geri açılırsa koşu orada, kotayı düşünen bir yordamla yapılır.
 
 Ayrıntı: `docs/ileride-donulecek-todo.md` Aşama 4, ve tasarım brief'i
 `docs/UI.md`.
