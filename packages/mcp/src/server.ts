@@ -28,8 +28,16 @@ import { validateJsonTool } from "./tools/json.ts";
 import { validateScriptTool } from "./tools/script.ts";
 import type { ToolModule } from "./tool.ts";
 
-/** Sunucunun kendi sürümü. package.json ile aynı, elle tutuluyor. */
-export const SERVER_VERSION = "0.0.0";
+/**
+ * Sunucunun kendi sürümü. `packages/mcp/package.json` ile aynı olmak zorunda;
+ * `test/server.test.ts` eşleştiklerini ölçüyor, elle senkrona güvenilmiyor.
+ *
+ * DEPO KURALINDAN SAPMA: diğer yedi workspace paketi `0.0.0` duruyor, çünkü
+ * hiçbiri yayınlanmıyor (`private: true`) ve sürümleri kimse görmüyor. Bu paket
+ * farklı — burada yazan dize bağlayıcıyı ekleyen kullanıcının ekranında
+ * görünüyor. `0.0.0` orada "yarım" diye okunuyordu (Aşama M6).
+ */
+export const SERVER_VERSION = "0.1.0";
 
 /**
  * Kayıtlı araçlar. Sekizi de salt okunur; yazma işlemi yok.

@@ -19,13 +19,14 @@
  * karşılaştırılıyor — aynı veriye ikinci bir yoldan bakılıyor.
  */
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { resolveVersion } from "@codecraft/knowledge";
 
-import { createServer } from "../src/server.ts";
+import { SERVER_VERSION, createServer } from "../src/server.ts";
 
 /** Bağlı bir istemci döndürür. Kapatma sorumluluğu çağırana ait. */
 async function connect(): Promise<Client> {
@@ -107,6 +108,33 @@ test("geçersiz sürüm sessizce en yeniye düşmüyor", async () => {
   try {
     const result = await client.callTool({ name: "get_version_info", arguments: { version: "26.40" } });
     assert.equal(result.isError, true, "Pazarlama numarası hata döndürmedi.");
+  } finally {
+    await client.close();
+  }
+});
+
+test("sunucu sürümü package.json ile aynı ve istemciye ulaşıyor", async () => {
+  // Aşama M6. İki dize iki ayrı dosyada elle tutuluyor; M2 bunu "gereksiz"
+  // diye test etmemişti ve ayrışmaları sessizdi. Ayrışma kullanıcıya kadar
+  // gider: bağlayıcıyı ekleyen kişi bu sürümü ekranında görüyor.
+  const manifest = JSON.parse(
+    readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+  ) as { version: string };
+
+  assert.equal(
+    SERVER_VERSION,
+    manifest.version,
+    "server.ts ile package.json'ın sürümü ayrışmış.",
+  );
+
+  // İkinci yol: dizeyi karşılaştırmak, onun initialize cevabına GERÇEKTEN
+  // konduğunu söylemiyor. Bağlanıp istemcinin ne gördüğüne bakılıyor.
+  const client = await connect();
+  try {
+    assert.deepEqual(client.getServerVersion(), {
+      name: "codecraft",
+      version: SERVER_VERSION,
+    });
   } finally {
     await client.close();
   }

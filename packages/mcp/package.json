@@ -1,6 +1,6 @@
 {
   "name": "@codecraft/mcp",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "description": "MCP arac katmani. Transport app/ tarafinda, mantik burada",
