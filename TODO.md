@@ -321,10 +321,12 @@ olarak yazılır.
 >    validator üzerinden pakette. Yani M4'te `/mcp` fonksiyon paketi
 >    `/api/review`'un 47,3 MB'ının üstüne kayda değer bir şey eklemeyecek
 >
-> **Açık kalan (M2 kapsamı dışı, kayda geçiyor):** `SERVER_VERSION`
+> ~~**Açık kalan (M2 kapsamı dışı, kayda geçiyor):** `SERVER_VERSION`
 > `packages/mcp/src/server.ts` içinde elle tutuluyor ve `package.json` ile
 > eşleşmesi test edilmiyor. Tek bir sürüm dizesi için `package.json` okumak
-> gereksiz göründü; M6'da doküman yazılırken tekrar bakılır.
+> gereksiz göründü; M6'da doküman yazılırken tekrar bakılır.~~
+> **Kapandı, 01-09-2026 (Aşama M6):** sürüm `0.1.0` oldu ve eşleşme test
+> ediliyor. Ölçüm M6'da.
 
 ---
 
@@ -805,10 +807,100 @@ ediliyor, Vercel'in rota bazlı logu hangi ARACIN çağrıldığını göstermiy
 
 ## Aşama M6 — Kurulum dokümantasyonu
 
-- [ ] `docs/MCP.md`: araç listesi, kurulum yolu (Customize > Connectors), token
+- [x] `docs/MCP.md`: araç listesi, kurulum yolu (Customize > Connectors), token
   sınırı kararları, barındırma ölçümünün sonucu. Diğer `docs/` dosyalarıyla
-  aynı sözleşme
-- [ ] `CLAUDE.md` "Ayrıntı" listesine satır eklenir
+  aynı sözleşme. **338 satır**; ölçüm günlüğüyle çakışmaması bir tasarım
+  kısıtıydı, ayrıntı aşağıda
+- [x] `CLAUDE.md` "Ayrıntı" listesine satır eklenir
+- [x] **Sunucu sürümü.** M2'nin "M6'da tekrar bakılır" dediği madde. `0.0.0` →
+  `0.1.0`, ve `server.ts` ile `package.json`'ın eşleştiği artık test ediliyor
+- [x] **`docs/ROADMAP.md`'nin eskimiş araç listesi.** Altı araç ve eski adlarla
+  yazılıydı, kodla çelişiyordu (`CLAUDE.md`: "kod ile bu doküman çeliştiğinde
+  kodu değil dokümanı güncelle")
+- [x] **Dört yerde yanlış yazılmış probe sayısı** ve `limit.ts`'in eskimiş
+  `tools/list` rakamı düzeltildi — ölçülerek, tahminle değil
+
+**Bitiş kriteri:** Sunucu **yalnızca `docs/MCP.md`'ye bakılarak** bağlanabiliyor:
+dosyadaki adımlar izlendiğinde bağlayıcı sekiz aracı listeliyor, ve dosyadaki
+adresle `npm run mcp:probe` **HEPSİ YEŞİL** diyor. Doküman koşularak ölçülür,
+iddia edilmez.
+
+> **Bu kriter M6'da yazıldı, çünkü yoktu.** Diğer bütün aşamalarda var ve bu
+> dosyanın kendi kuralı "'Tamamlandı' sadece bitiş kriteri ölçüldüğünde yazılır"
+> diyor. Kriteri olmayan bir aşama, hiçbir şey koşmadan da bitmiş görünürdü —
+> M2'de aynı hata bir kez yapıldı ve orada ayrı bir testle kapatılmıştı.
+
+> **ARA KAYIT, 01-09-2026. Aşama AÇIK.** Yazılacak her şey yazıldı ve yerelde
+> ölçülen her şey yeşil, ama **bitiş kriteri henüz karşılanmadı**: kriterin iki
+> ayağı kullanıcıya bağlı ve ikisi de koşulmadı. Bu satır, koşulduğunda
+> değiştirilecek.
+>
+> **Ölçülen (yerel):**
+>
+> | Ne | Sonuç |
+> |---|---|
+> | `npm run typecheck` | exit 0 |
+> | `npm test` | **227/227** (M5'te 226'ydı, bir yeni test) |
+> | `npm run mcp:probe` (dağıtılmış uç) | **HEPSİ YEŞİL**, dokuz kontrol |
+> | `docs/MCP.md` | 338 satır |
+>
+> **Yeni test bilerek kırılarak doğrulandı** (M2'den beri kullanılan yöntem),
+> ve tek bir kırık yetmedi — testin iki ayrı bacağı var:
+>
+> | Enjekte edilen hata | Kırmızıya dönen |
+> |---|---|
+> | `SERVER_VERSION` `0.2.0` yapıldı | *server.ts ile package.json'ın sürümü ayrışmış* |
+> | Sunucu adı `codecrafty` yapıldı | `getServerVersion()` karşılaştırması |
+>
+> İkincisi ayrı bir bacak gerektirdi ve gerekçesi şu: iki dizeyi
+> karşılaştırmak, o dizenin `initialize` cevabına **gerçekten konduğunu**
+> söylemiyor. Sürüm alanı hiç gönderilmese de ilk assert yeşil kalırdı.
+>
+> **Depo kuralından bilinçli sapma.** Sekiz workspace paketinin hepsi `0.0.0`
+> duruyor, çünkü hiçbiri yayınlanmıyor (`private: true`) ve sürümlerini kimse
+> görmüyor. `packages/mcp` farklı: burada yazan dize bağlayıcıyı ekleyen
+> kullanıcının ekranında görünüyor ve `0.0.0` orada "yarım" diye okunuyordu.
+> Sapma `server.ts`'in yorumunda gerekçesiyle yazılı.
+>
+> ### Ölçülerek bulunan dört eskimiş rakam
+>
+> Hiçbiri M6'nın işi değildi; MCP.md yazılırken kopyalanacakları için
+> doğrulandı ve dördü de yanlış çıktı:
+>
+> | Rakam | Yazılan | Ölçülen |
+> |---|---|---|
+> | Probe kontrol sayısı (4 yerde) | 10 | **9** |
+> | `limit.ts` başlığındaki `tools/list` | ~6 KB (~1.600 token) | **9.036 bayt** |
+> | En küçük araç çıktısı | — | `review_pack` 192 B, `lookup_id` değil |
+> | Sunucu sürümü | `0.0.0` | `0.1.0` oldu |
+>
+> Probe sayısı yalnızca **koşularak** çözüldü: `probe.ts`'te sekiz `check()`
+> çağrı yeri var ama sonuncusu `["GET","DELETE"]` döngüsünde, yani çalışma
+> anında dokuz doğrulama oluyor. Dosyaya bakarak sayan üç doküman da sekizi
+> görüp on yazmış. Ölçümlerin kendisi değişmedi.
+>
+> ### MCP.md'nin asıl tasarım kısıtı çakışmaydı
+>
+> `docs/mcp-kullanim.md` zaten 998 satır ve M5'in ölçüm günlüğü. İkinci bir
+> dosyanın aynı rakamları tekrarlaması iki çelişen kaynak üretirdi. Sınır şöyle
+> çekildi: **ölçümün nasıl yapıldığı orada, sözleşme burada.**
+>
+> Aynı gerekçeyle araç `description`'ları MCP.md'ye **kopyalanmadı** — model
+> onları `tools/list`'ten okuyor ve M5 iki açıklamanın senaryolar sırasında
+> değiştiğini zaten ölçtü. Doküman açıklamayı değil, nerede durduğunu yazıyor.
+> Araç başına bölüm açmak dosyayı ~330 satırdan ~410'a taşır ve eklenen
+> satırların tamamı en hızlı çürüyecek metin olurdu.
+>
+> ### Koşulmayan iki adım — kriterin ikisine de ihtiyacı var
+>
+> 1. **Deploy.** `0.1.0` dağıtılmış uçta değil; bugünkü uç hâlâ `0.0.0`
+>    koşuyor. `npx vercel --prod` kullanıcı tarafından çalıştırılır
+> 2. **Bağlayıcı koşusu.** Yalnızca `docs/MCP.md`'ye bakarak bağlayıcının
+>    yeniden eklenmesi ve sekiz aracın listelendiğinin görülmesi. Claude Pro
+>    hesabı ve tarayıcı gerekiyor (`CLAUDE.md`, "Takıldığında dur ve sor")
+>
+> Probe zaten dağıtılmış uçta koşuldu ve yeşil, ama o kriterin yalnızca bir
+> ayağı. **Koşulmamış adımın satırına sonuç yazılmıyor.**
 
 ---
 
