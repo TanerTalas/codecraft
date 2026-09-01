@@ -16,7 +16,7 @@ kötü.** İkisi farklı sonuç doğurur, o yüzden ayrıştırılmadan yazılma
 ## Durum
 
 **01-09-2026 — bağlayıcı bağlı, BİTİŞ KRİTERİ KARŞILANDI.** Altı senaryodan
-üçü bitti.
+dördü bitti.
 
 Koşulmamış senaryonun satırına sayı yazılmaz; "koşulmadı" bir eksiklik değil,
 o satırın bugünkü doğru cevabı.
@@ -100,20 +100,25 @@ sütunu kritik: araç adı telaffuz edilmeden çağrıldıysa `evet`, ancak zorl
 çağrıldıysa `hayır` — ikincisi "araç sağlam ama keşfedilmiyor" demektir ve
 açıklama işidir.
 
-**3 / 6 senaryo koşuldu.** Sayılar geçici, her senaryodan sonra güncelleniyor.
+**4 / 6 senaryo koşuldu.** Sayılar geçici, her senaryodan sonra güncelleniyor.
 Senaryo 1 iki turda koştu (tek dosya → yedi dosyalık paket) ve iki turun
 davranışı FARKLI; ayrım aşağıdaki notlarda.
 
 | Araç | Çağrıldığı senaryo | Kendiliğinden | Not |
 |---|---|---|---|
-| `check_feasibility` | 1 / 3 | evet | Yalnızca S2. Script isteğinde çağrılıyor, JSON ve komutta değil |
-| `get_version_info` | 2 / 3 | evet | Dosya üretilen iki senaryoda da, hep üretimden önce |
-| `get_schema` | 1 / 3 (4 çağrı) | evet | Yalnızca S1 |
-| `lookup_id` | **0 / 3** | — | **Üç senaryoda da hiç.** Tek gerçek "keşfedilmiyor" adayı |
-| `validate_json` | 1 / 3 (4 çağrı) | evet | S2 ve S3'te `review_pack` ya da komut yolu karşıladı |
-| `validate_command` | 2 / 3 (5 çağrı) | evet | S2'de beklenmiyordu bile; en çok çağrılan ikinci araç |
-| `validate_script` | 1 / 3 (2 çağrı) | evet | S2'nin asıl aracı, gerçek `tsc` |
-| `review_pack` | 2 / 3 | evet | S3'te dosya üretilmedi, uygulanmıyor |
+**Sekiz aracın sekizi de en az bir kez, kendiliğinden çağrıldı.** M5'in asıl
+sorusunun cevabı bu: hiçbir araç "hiç çağrılmayan" değil. Dört senaryo sonunda:
+
+| Araç | Çağrıldığı senaryo | Kendiliğinden | Not |
+|---|---|---|---|
+| `check_feasibility` | S2, S4 | evet | Script isteğinde çağrılıyor; JSON ve komut isteğinde değil |
+| `get_version_info` | S1, S2, S4 | evet | Dosya üretilen her senaryoda, hep üretimden önce |
+| `get_schema` | S1 | evet | Yalnızca yeni bir belge tipi yazarken |
+| `lookup_id` | S4 | evet | Üç senaryo boyunca hiç çağrılmadı, dördüncüde çağrıldı |
+| `validate_json` | S1 | evet | Diğerlerinde `review_pack` içinden geçti |
+| `validate_command` | S2, S3, S4 | evet | En çok çağrılan ikinci araç; ikisinde beklenmiyordu bile |
+| `validate_script` | S2, S4 | evet | Gerçek `tsc`, script üretilen her senaryoda |
+| `review_pack` | S1, S2, S4 | evet | Dosya üretilen her senaryoda, hep son adım |
 
 ## Senaryo günlükleri
 
@@ -534,7 +539,92 @@ Engellenen yol. Girdi simülasyonu Bedrock script API'sinde yok;
 
 Beklenen: `check_feasibility` (engelli sonuç).
 
-**Koşulmadı.**
+**Koşuldu, 01-09-2026.** Altı araç:
+
+`check_feasibility` → `get_version_info` → `validate_command` → **`lookup_id`**
+→ `validate_script` → `review_pack`
+
+**`lookup_id` nihayet çağrıldı.** Üç senaryo boyunca hiç çağrılmamıştı ve
+"keşfedilmiyor" hipotezinin tek gerçek adayıydı. Dördüncü kez aynı ders:
+**bir araç henüz çağrılmadıysa bu "keşfedilmiyor" demek değil.** Bu satır
+üçüncü senaryodan sonra "boşluk" diye yazılsaydı yanlış olurdu — nitekim
+`review_pack` ve `check_feasibility` için erken yazılmış ve ikisi de geri
+alınmıştı.
+
+#### Bulunan boşluk: `check_feasibility` engellemesi gerekeni engellemedi
+
+Bu senaryo tam olarak engellenen yolu ölçmek için seçilmişti. Ölçüldü:
+
+```
+check_feasibility("Ben klavyeye dokunmadan otomatik balık tutsun")
+  ->  {"blocked": false}
+```
+
+Oysa istek bu deponun **kendi eval korpusunda** duruyor
+(`evals/cases/cases.json`, `python-afk-fish-01`) ve vakanın notu açık:
+
+> "Yapılabilirlik vakası: @minecraft/server oyuncu girdisini simüle edemez,
+> doğru cevap dışarıdan çalışan script"
+
+Sebep tetikleyici listesinde: `otomatiks*(tıkla|vur|kaz|kır)` "balık" ile
+eşleşmiyor, klavye kalıbı ise `(bas|tıkla|simüle)` bekliyor ve "dokunmadan"
+onların hiçbiri değil. Girdinin **yokluğu** üzerinden kurulan ifade listede
+hiç yoktu.
+
+**Modeli durduran şey araç değil kendi bilgisi oldu.** Cevabın ilk cümlesi:
+"Bedrock script API'sinde girdi simülasyonu yok." Doğru teşhis, ama
+`check_feasibility`'den gelmedi. Bu bir şans değil ama garanti de değil —
+aracın var olma sebebi tam olarak o garantiyi vermek.
+
+Model uydurma bir API de yazmadı; bunun yerine davranışı taklit eden bir paket
+üretti (elde olta + yakında su → sayaç → vanilla `fishing.json` loot table'ı).
+Eval vakasının beklediği "dışarıdan Python" değil, ama uydurma da değil.
+
+**Düzeltildi ve ölçüldü.** Tetikleyiciye girdinin yokluğu kalıbı eklendi:
+
+```
+/(klavye|keyboard|fare|mouse|tu[şs]a?)w*s*(dokun|bas|de[ğg])w*m[ae]/i
+```
+
+| İstek | Önce | Sonra |
+|---|---|---|
+| "Ben klavyeye dokunmadan otomatik balık tutsun" | serbest | **ENGEL** (input-simulation) |
+| "Tuşa basmadan ağaç kessin" | serbest | **ENGEL** |
+| "Fareye değmeden madencilik yapsın" | serbest | **ENGEL** |
+| "Dünyamı her akşam otomatik yedeklesin" | ENGEL | ENGEL |
+| 22 python olmayan eval isteği | serbest | **serbest** |
+
+**"otomatik <şey>" kalıbı bilerek eklenmedi.** "Yakut cevheri doğal olarak
+oluşsun" ve "her otuz saniyede bir zombi belirsin" tamamen yapılabilir
+istekler; geniş bir kalıp onları yanlış engellerdi. 24 eval isteğinin
+tamamında ölçüldü: **yanlış engelleme sıfır.**
+
+`m[ae]` ayrıntısı testin kendi bulduğu bir şey: Türkçe ünlü uyumu yüzünden
+"dokunmadan" ve "basmadan" *ma* alırken "değmeden" *me* alıyor. Yalnızca *ma*
+yazılmıştı ve test kırmızıya döndü.
+
+Tetikleyici listesi bir regex listesi, yani doğası gereği eksik kalabilir. Test
+kapsamı genişletmeyi değil **ölçülen kaybı** sabitliyor.
+
+#### Bağımsız doğrulama
+
+```
+validate_script -> ok=true, 0 hata      (@minecraft/server 2.9.0)
+review_pack     -> ok=true, 0 bulgu     (manifest + scripts/main.js)
+validate_command('loot give @s loot "loot_tables/gameplay/fishing.json" mainhand')
+                -> ok=true, requiresCheats=true
+```
+
+Sonuncusu yine kullanıcıya ulaşan bir uyarıya dönüşmüş: modelin "loot cheat
+gerektiren bir komut, cheats kapalıysa ilk bakılacak yer burası" notu doğrudan
+bu araç çıktısından geliyor. Senaryo 2'deki `setblock` uyarısıyla aynı kalıp.
+
+**Açık maddeyi doğrudan ilgilendiriyor:** script komutu `player.runCommand` ile
+çalıştırıyor, yani senaryo 3'te ölçülemeyen **üçüncü kanal**. Bugün doğrulayıcı
+o komuta sohbetin kuralını uyguluyor ve komut zaten temiz geçiyor, ama hangi
+ayrıştırıcının koştuğu hâlâ ölçülmedi.
+
+**Ölçülmeyen:** paket oyunda çalıştırılmadı.
 
 ### 5. `ore-gen-01` — "Yakut cevheri yer altında doğal olarak oluşsun"
 
@@ -579,7 +669,8 @@ yazılır — `docs/COMMANDS.md` sonundaki `execute ... run` maddesinin kalıbı
 | 1b | Aynı sınıf: `oneOf`/`anyOf` dalları da okunmuyordu | aynı dosya | **Düzeltildi**, 1'i düzeltirken ölçüldü |
 | 2 | ~~`review_pack` kendiliğinden çağrılmıyor~~ | — | **Kapandı.** Senaryo 1'in ikinci turunda kendiliğinden çağrıldı; eksik araçta değil, tek dosyalık istekte |
 | 3 | ~~`check_feasibility` hiç çağrılmıyor~~ | — | **Kapandı.** S2'de iki kez çağrıldı; S1'deki yokluğu isteğin biçiminden |
-| 4 | `lookup_id` üç senaryoda da hiç çağrılmadı | `packages/mcp/src/tools/lookup.ts` açıklaması | Açık. S2'de dört vanilla kimlik vardı, hiçbiri doğrulanmadı |
+| 4 | ~~`lookup_id` hiç çağrılmıyor~~ | — | **Kapandı.** S4'te kendiliğinden çağrıldı. Sekiz aracın sekizi de çağrıldı |
+| 9 | ~~`check_feasibility` girdi yokluğu ifadesini kaçırıyor~~ | `packages/core/src/feasibility.ts` | **Kapatıldı.** Kendi eval vakamızı kaçırıyordu |
 | 5 | ~~Boş enum her değeri reddediyor~~ | `packages/validator/src/command.ts` | **Kapatıldı ve dağıtıldı.** Boş enum artık serbest metin |
 | 6 | ~~Eski veri değeri kabul ediliyordu~~ (**yanlış negatif**) | aynı dosya | **Kapatıldı ve dağıtıldı.** Sohbet kanalı reddediyor |
 | 7 | `ws:probe` sohbetten daha gevşek bir kanalı ölçüyor | `docs/WEBSOCKET.md`, `pipeline/src/ws-probe.ts` | **Şerh düşüldü.** Alet duruyor, tek başına kural yazdırmıyor |

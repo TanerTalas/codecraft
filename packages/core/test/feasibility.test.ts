@@ -93,3 +93,44 @@ test("fetch yalnızca doküman yorumunda geçiyor, API olarak tanımlı değil",
     .filter((line) => !line.trimStart().startsWith("*") && /\bfetch\s*[(<:]/.test(line));
   assert.deepEqual(declarations, []);
 });
+
+/**
+ * Girdinin YOKLUĞU üzerinden kurulan istek.
+ *
+ * Ölçüldü 01-09-2026, Aşama M5 senaryo 4: bu istek gerçek bir oturumda
+ * MCP üzerinden soruldu, check_feasibility "blocked: false" döndü ve modeli
+ * durduran şey araç DEĞİL kendi bilgisi oldu. Oysa istek bu deponun kendi
+ * eval korpusunda duruyor (python-afk-fish-01) ve vakanın notu açık:
+ * "doğru cevap dışarıdan çalışan script".
+ *
+ * Tetikleyici listesi bir regex listesi, yani doğası gereği eksik kalabilir.
+ * Bu testin işi kapsamı genişletmek değil, ÖLÇÜLEN kaybı sabitlemek.
+ */
+test("girdinin yokluğu üzerinden kurulan istek de yakalanır", () => {
+  const result = checkFeasibility("Ben klavyeye dokunmadan otomatik balık tutsun");
+  assert.equal(result.blocked, true);
+  assert.equal(result.blocked && result.category, "input-simulation");
+
+  for (const request of [
+    "Tuşa basmadan ağaç kessin",
+    "Fareye değmeden madencilik yapsın",
+  ]) {
+    assert.equal(checkFeasibility(request).blocked, true, request);
+  }
+});
+
+test("genişletme yapılabilir istekleri engellemiyor", () => {
+  // Tetikleyici genişletilirken "otomatik <şey>" kalıbı BİLEREK alınmadı:
+  // aşağıdakilerin hepsi tamamen yapılabilir ve yanlış engellenirlerdi.
+  // Eval korpusunun 22 python olmayan vakasının tamamında ölçüldü, yanlış
+  // engelleme sıfır; buraya en riskli olanlar alındı.
+  for (const request of [
+    "Yakut cevheri yer altında doğal olarak oluşsun",
+    "Her otuz saniyede bir yanımda bir zombi belirsin",
+    "Elma yediğimde canım tamamen dolsun",
+    "Kırdığım bloğun aynı türden komşularını da kırsın",
+    "Etrafıma on çarpı on camdan bir kutu yap",
+  ]) {
+    assert.equal(checkFeasibility(request).blocked, false, request);
+  }
+});

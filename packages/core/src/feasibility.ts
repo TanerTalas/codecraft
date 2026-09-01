@@ -58,6 +58,23 @@ const RULES: FeasibilityRule[] = [
       /\bafk\b/i,
       /(fare|mouse|klavye|keyboard)\w*\s*(ile|ye|ya)?\s*(bas|t[ıi]kla|simüle)/i,
       /girdi(yi)?\s*simüle/i,
+      // "klavyeye dokunmadan", "tuşa basmadan", "fareye değmeden" — girdinin
+      // YOKLUĞU üzerinden kurulan istek. Ölçülerek eklendi (01-09-2026,
+      // Aşama M5 senaryo 4): kendi eval korpusumuzdaki python-afk-fish-01
+      // ("Ben klavyeye dokunmadan otomatik balık tutsun") bu listeden
+      // geçiyordu, check_feasibility "blocked: false" dönüyordu ve model
+      // yapılabilirlik sınırını aracın DEĞİL kendi bilgisinin sayesinde
+      // gördü. O vakanın kendi notu "doğru cevap dışarıdan çalışan script".
+      //
+      // "otomatik <şey>" kalıbı BİLEREK eklenmedi: "otomatik olarak oluşsun"
+      // (ore-gen-01) ve "her otuz saniyede bir zombi belirsin" (mob-timer-01)
+      // tamamen yapılabilir istekler, yanlış engellenirlerdi. 24 eval isteği
+      // üzerinde ölçüldü: yanlış engelleme sıfır.
+      //
+      // Ek olarak m[ae]: Türkçe ünlü uyumu. "dokunmadan" ve "basmadan"
+      // "ma" alıyor ama "değmeden" "me" alıyor; yalnızca "ma" yazınca
+      // sonuncusu kaçıyordu ve bunu testin kendisi yakaladı.
+      /(klavye|keyboard|fare|mouse|tu[şs]a?)\w*\s*(dokun|bas|de[ğg])\w*m[ae]/i,
     ],
     reason:
       "@minecraft/server oyuncu girdisini simüle edemez. Girdiyi okuyabilir " +
