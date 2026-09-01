@@ -15,8 +15,8 @@ kötü.** İkisi farklı sonuç doğurur, o yüzden ayrıştırılmadan yazılma
 
 ## Durum
 
-**01-09-2026 — bağlayıcı bağlı, senaryo 1 tamamlandı, BİTİŞ KRİTERİ
-KARŞILANDI.** Altı senaryodan biri bitti.
+**01-09-2026 — bağlayıcı bağlı, BİTİŞ KRİTERİ KARŞILANDI.** Altı senaryodan
+ikisi bitti.
 
 Koşulmamış senaryonun satırına sayı yazılmaz; "koşulmadı" bir eksiklik değil,
 o satırın bugünkü doğru cevabı.
@@ -100,20 +100,20 @@ sütunu kritik: araç adı telaffuz edilmeden çağrıldıysa `evet`, ancak zorl
 çağrıldıysa `hayır` — ikincisi "araç sağlam ama keşfedilmiyor" demektir ve
 açıklama işidir.
 
-**1 / 6 senaryo koşuldu.** Sayılar geçici, her senaryodan sonra güncelleniyor.
+**2 / 6 senaryo koşuldu.** Sayılar geçici, her senaryodan sonra güncelleniyor.
 Senaryo 1 iki turda koştu (tek dosya → yedi dosyalık paket) ve iki turun
 davranışı FARKLI; ayrım aşağıdaki notlarda.
 
 | Araç | Çağrıldığı senaryo | Kendiliğinden | Not |
 |---|---|---|---|
-| `check_feasibility` | **0 / 1** | — | İki turda da çağrılmadı. Tek gözlem, erken |
-| `get_version_info` | 1 / 1 | evet | 1. turun ilk çağrısı, dosya yazılmadan önce |
-| `get_schema` | 1 / 1 (4 çağrı) | evet | Her iki turda da, hep üretimden önce |
-| `lookup_id` | **0 / 1** | — | Ortada vanilla kimlik yoktu, çağrılmaması savunulabilir |
-| `validate_json` | 1 / 1 (4 çağrı) | evet | Her dosya tek tek, üç ayrı belge tipi |
-| `validate_command` | — | — | S1'de beklenmiyordu |
-| `validate_script` | — | — | S1'de beklenmiyordu |
-| `review_pack` | 1 / 1 | evet | **1. turda çağrılmadı, 2. turda çağrıldı** — ayrım aşağıda |
+| `check_feasibility` | 1 / 2 | evet | S1'de hiç, S2'de **iki kez**. Script isteğinde çağrılıyor |
+| `get_version_info` | 2 / 2 | evet | Her iki senaryoda da, üretimden önce |
+| `get_schema` | 1 / 2 (4 çağrı) | evet | S2'de çağrılmadı — orada JSON'u `review_pack` karşıladı |
+| `lookup_id` | **0 / 2** | — | **İki senaryoda da hiç.** En güçlü "keşfedilmiyor" adayı |
+| `validate_json` | 1 / 2 (4 çağrı) | evet | S2'de manifest tek tek değil `review_pack` içinden geçti |
+| `validate_command` | 1 / 2 | evet | **S2'de beklenmiyordu, kendiliğinden çağrıldı** — aşağıda |
+| `validate_script` | 1 / 2 (2 çağrı) | evet | S2'nin asıl aracı, gerçek `tsc` |
+| `review_pack` | 2 / 2 | evet | S1 1. turda çağrılmadı (tek dosya), sonra hep çağrıldı |
 
 ## Senaryo günlükleri
 
@@ -294,7 +294,75 @@ kaynağı; `validate_script` bunu yakalamak için var.
 
 Beklenen: `check_feasibility`, `validate_script`.
 
-**Koşulmadı.**
+**Koşuldu, 01-09-2026.** Sekiz çağrı, altı ayrı araç:
+
+| # | Araç | Not |
+|---|---|---|
+| 1-2 | `check_feasibility` | **iki kez** |
+| 3 | `get_version_info` | |
+| 4 | `validate_command` | beklenmiyordu |
+| 5-6 | `validate_script` | iki kez |
+| 7 | `review_pack` | paketin tamamı |
+
+Çağrılmayan üç araç: `get_schema`, `lookup_id`, `validate_json`.
+
+Üretilen: `manifest.json` + `scripts/main.js` (zincirleme kazma,
+`playerBreakBlock` → genişlik öncelikli arama → `setblock … air destroy`,
+iş `system.runJob` ile tick'lere bölünmüş).
+
+**`check_feasibility` açık maddesi kapandı.** Senaryo 1'in iki turunda da
+çağrılmamıştı ve "belki keşfedilmiyor" diye açık madde yazılmıştı. Burada iki
+kez çağrıldı. Yani araç sağlam; S1'deki yokluğu isteğin biçiminden geliyor —
+tek bir JSON dosyası için yapılabilirlik sorusu zaten sorulmuyor.
+
+**`validate_command` beklenmiyordu ve tam da işe yaradı.** Bu bir script
+senaryosu, komut senaryosu değil; ama script içinde `setblock … air destroy`
+çalıştırılıyor ve model o satırı doğrulayıcıdan geçirmiş. Bağımsız tekrarlandı:
+
+```
+validate_command("setblock 1 2 3 air destroy")  ->  ok=true  requiresCheats=true
+```
+
+Modelin kullanıcıya yazdığı üçüncü uyarı ("setblock cheat gerektiriyor, dünyada
+cheats kapalıysa ilk bakılacak yer burası") **doğrudan bu araç çıktısından
+geliyor**. Ölçülen en somut değer bu: araç, modelin kendi başına söylemeyeceği
+bir şeyi söyletti.
+
+**Bağımsız doğrulama.** İki dosya olduğu gibi dağıtılmış uca gönderildi:
+
+```
+validate_script -> ok=true, 0 hata
+   @minecraft/server 2.9.0, @minecraft/common 1.3.0, @minecraft/server-ui 2.1.0
+review_pack     -> ok=true, 0 bulgu
+   OK  manifest.json      [json]   general/manifest
+   OK  scripts/main.js    [script] @minecraft/server@2.9.0
+```
+
+Modelin "hatasız geçti" cümlesi doğru. Manifest'te `"type": "script"` +
+`"language": "javascript"` yazılı — `docs/VALIDATION-LIMITS.md` sınıf E tam
+olarak bunun tersinin (`"type": "javascript"`) hiçbir belirti vermeden
+sessizce yüklenmemesiydi. Doğru yazılmış.
+
+**`lookup_id` yine hiç çağrılmadı ve bu ikinci senaryo.** Script dört vanilla
+kimlik içeriyor (`minecraft:bedrock` DENY_LIST'te, `minecraft:coal_ore`,
+`minecraft:deepslate_coal_ore`, `minecraft:oak_log` örnekte). Dördü de
+sonradan kontrol edildi ve **dördü de gerçek**:
+
+```
+VAR minecraft:bedrock              kind=block
+VAR minecraft:coal_ore             kind=block
+VAR minecraft:deepslate_coal_ore   kind=block
+VAR minecraft:oak_log              kind=block
+```
+
+Yani çağrılmaması bu koşuda bir şeye mal olmadı — ama **doğrulanmadı da**,
+model belleğine güvendi ve tuttu. `lookup_id` artık "keşfedilmiyor"
+hipotezinin en güçlü adayı; kontrol koşusu onu sınayacak.
+
+**Ölçülmeyen:** paket oyunda çalıştırılmadı. Modelin kendi saydığı üç sınır
+(`setblock destroy` Fortune/Silk Touch'ı yok sayıyor, alet dayanıklılığı
+düşmüyor, cheats gerekiyor) doğrulamanın değil oyun davranışının konusu —
+`docs/VALIDATION-LIMITS.md` sınıf D. Ne `tsc` ne şema bunları görebilir.
 
 ### 3. `command-fill-01` — "Etrafıma on çarpı on camdan bir kutu yap"
 
@@ -361,11 +429,13 @@ yazılır — `docs/COMMANDS.md` sonundaki `execute ... run` maddesinin kalıbı
 | 1 | `get_schema` dizi düğümünde boş özet döndürüyor (`items` içine inmiyor) | `packages/validator/src/schema-summary.ts` | **Düzeltildi**, aşağıda |
 | 1b | Aynı sınıf: `oneOf`/`anyOf` dalları da okunmuyordu | aynı dosya | **Düzeltildi**, 1'i düzeltirken ölçüldü |
 | 2 | ~~`review_pack` kendiliğinden çağrılmıyor~~ | — | **Kapandı.** Senaryo 1'in ikinci turunda kendiliğinden çağrıldı; eksik araçta değil, tek dosyalık istekte |
-| 3 | `check_feasibility` iki turda da hiç çağrılmadı | `packages/mcp/src/tools/feasibility.ts` açıklaması | Açık, tek senaryoluk gözlem — kontrol koşusu bekliyor |
+| 3 | ~~`check_feasibility` hiç çağrılmıyor~~ | — | **Kapandı.** S2'de iki kez çağrıldı; S1'deki yokluğu isteğin biçiminden |
+| 4 | `lookup_id` iki senaryoda da hiç çağrılmadı | `packages/mcp/src/tools/lookup.ts` açıklaması | Açık. S2'de dört vanilla kimlik vardı ve hiçbiri doğrulanmadı |
 
-Üçüncüsü için tek bir senaryo yeterli veri değil; kalan beş senaryodan sonra
-tekrar bakılacak. Bir kez çağrılmamak "keşfedilmiyor" demek değildir — ikinci
-satır tam olarak bunu gösterdi ve erken yazılsaydı yanlış olurdu.
+İki satırın üstü çizildi ve ikisi de aynı dersi verdi: **bir kez çağrılmamak
+"keşfedilmiyor" demek değil.** Erken yazılsalardı ikisi de yanlış olurdu.
+Dördüncü satır için de aynısı geçerli — iki gözlem hâlâ az, kontrol koşusu
+bekliyor.
 
 ## Düzeltilen: `get_schema`'nın iki kör noktası
 
