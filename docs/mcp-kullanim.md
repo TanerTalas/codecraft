@@ -951,11 +951,19 @@ yukarıdaki adres. Sekiz araç listelenmeli, hepsi salt okunur.
 Beklenen ve hata olmayan üç şey: `GET /mcp` **405** döner (spec, SSE sunmayan
 sunucunun 405 dönmesine izin veriyor); OAuth keşif uçları yok, uç kimlik
 doğrulamasız (M4 kararı, Vercel Authentication kapalı kalmak zorunda); sunucu
-sürümü ~~`0.0.0`~~ **`0.1.0`** görünür (`packages/mcp/src/server.ts`).
+sürümü istemci arayüzünde **hiç görünmüyor** (aşağıdaki şerh).
 
 > **Üç düzeltme, 01-09-2026, Aşama M6.** (1) Sunucu sürümü `0.0.0` idi ve
 > "M6'da bakılacak açık madde" diye buraya yazılmıştı; `0.1.0` oldu ve
-> `package.json` ile eşleştiği artık test ediliyor. (2) Bu dosyada üç yerde
+> `package.json` ile eşleştiği artık test ediliyor. **Ama "görünür" kelimesi
+> yanlıştı ve ölçülerek düzeltildi:** masaüstü uygulamasında sunucu sürümünü
+> gösteren bir yer yok. Kullanıcı bağlayıcıyı ekledi, sekiz aracı gördü,
+> sürümü bulamadı; `%LOCALAPPDATA%\Claude\Logs\mcp.log` **0 bayt** ve içinde
+> `codecraft` geçen tek satır yok. Sebebi yapısal: uzak bağlayıcı Anthropic'in
+> bulut altyapısı üzerinden proxy'leniyor, masaüstü uygulaması onu yerel bir
+> süreç olarak başlatmıyor, dolayısıyla `initialize` cevabını hiç görmüyor.
+> Sürümün tek doğrulanabilir yeri ucun kendisi — `initialize` çağrısının
+> `serverInfo` alanı (`docs/MCP.md`, "Tekrar üretmek için"). (2) Bu dosyada üç yerde
 > "10 kontrol" yazıyordu, probe koşulup ekrandaki `OK` satırları sayıldı:
 > **dokuz.** `probe.ts`'te sekiz `check()` çağrı yeri var ve sonuncusu
 > `["GET","DELETE"]` döngüsünde, yani çalışma anında dokuz doğrulama oluyor.

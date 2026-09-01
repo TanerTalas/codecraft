@@ -337,3 +337,18 @@ npm run mcp:probe -- https://codecraft-ashy-seven.vercel.app/mcp
 Bağlayıcının kendisi elle ekleniyor; otomatik ölçümü yok. Yerel bir koşu
 (`npm run dev` + `mcp:probe`) sunucunun ayakta olduğunu söyler ama bağlanabilir
 olduğunu söylemez — bağlantı Anthropic'in bulut altyapısından kuruluyor.
+
+Sunucu sürümünü doğrulamak için (probe bunu kontrol etmiyor):
+
+```
+curl -sS -X POST https://codecraft-ashy-seven.vercel.app/mcp \
+  -H 'content-type: application/json' \
+  -H 'accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"check","version":"0"}}}'
+```
+
+`serverInfo` alanı `{"name":"codecraft","version":"0.1.0"}` döndürmeli.
+**İstemci arayüzü bu sürümü göstermiyor** ve gösteren bir yer aranmamalı:
+uzak bağlayıcı bulut altyapısı üzerinden proxy'leniyor, masaüstü uygulaması
+sunucuyu yerel bir süreç olarak başlatmıyor ve `initialize` cevabını hiç
+görmüyor — `mcp.log` bu bağlayıcı için boş kalıyor. Ölçüldü 01-09-2026.

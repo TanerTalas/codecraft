@@ -830,10 +830,10 @@ iddia edilmez.
 > diyor. Kriteri olmayan bir aşama, hiçbir şey koşmadan da bitmiş görünürdü —
 > M2'de aynı hata bir kez yapıldı ve orada ayrı bir testle kapatılmıştı.
 
-> **ARA KAYIT, 01-09-2026. Aşama AÇIK.** Yazılacak her şey yazıldı ve yerelde
-> ölçülen her şey yeşil, ama **bitiş kriteri henüz karşılanmadı**: kriterin iki
-> ayağı kullanıcıya bağlı ve ikisi de koşulmadı. Bu satır, koşulduğunda
-> değiştirilecek.
+> **YEŞİL, 01-09-2026. Bitiş kriteri karşılandı ve aşama kapandı.** Sunucu
+> yalnızca `docs/MCP.md`'ye bakılarak bağlandı: kullanıcı dosyadaki adımları
+> izledi ve bağlayıcı **sekiz aracı** listeledi. Dosyadaki adresle
+> `npm run mcp:probe` **HEPSİ YEŞİL** dedi. Doküman koşularak ölçüldü.
 >
 > **Ölçülen (yerel):**
 >
@@ -891,9 +891,9 @@ iddia edilmez.
 > Araç başına bölüm açmak dosyayı ~330 satırdan ~410'a taşır ve eklenen
 > satırların tamamı en hızlı çürüyecek metin olurdu.
 >
-> ### Kriterin iki ayağı — biri koşuldu, biri kalıyor
+> ### Kriterin iki ayağı, ikisi de koşuldu
 >
-> 1. ~~**Deploy.**~~ **Koşuldu, 01-09-2026.** Kullanıcı `npx vercel --prod`
+> 1. **Deploy.** Kullanıcı `npx vercel --prod`
 >    çalıştırdı ve dağıtılmış uç artık `0.1.0` koşuyor. Ölçüldü, iddia
 >    edilmedi: `initialize` cevabı
 >    `"serverInfo":{"name":"codecraft","version":"0.1.0"}` döndürüyor.
@@ -902,14 +902,48 @@ iddia edilmez.
 >    `get_schema` 15.898 bayt). Sürüm yükseltmesinin paketlemeyi bozmadığı da
 >    burada ölçüldü — bozuk payload hâlâ fonksiyon paketinin içinden gerçek
 >    `TS2551` tanısı döndürüyor
-> 2. **Bağlayıcı koşusu.** Yalnızca `docs/MCP.md`'ye bakarak bağlayıcının
->    yeniden eklenmesi ve sekiz aracın listelendiğinin görülmesi. Claude Pro
->    hesabı ve tarayıcı gerekiyor (`CLAUDE.md`, "Takıldığında dur ve sor").
->    **Koşulmadı**
+> 2. **Bağlayıcı koşusu.** Koşuldu: kullanıcı yalnızca `docs/MCP.md`'ye
+>    bakarak bağlayıcıyı ekledi ve **sekiz araç göründü.** Dosyadaki adımlar
+>    başka bir kaynağa bakmadan yetti
 >
-> Kriterin probe ayağı böylece karşılandı. Doküman ayağı — "yalnızca MCP.md'ye
-> bakılarak bağlanabiliyor mu" — karşılanmadı ve **koşulmamış adımın satırına
-> sonuç yazılmıyor.**
+> **Kayda geçen:** bu koşuda "read only tools: 8" sınıflandırması ayrıca
+> bildirilmedi, yani bu sefer gözlenmiş sayılmıyor. M5'te gerçek istemcide
+> ölçülmüştü ve `readOnlyHint` M6'nın kendi testlerinde de yeşil; burada
+> yalnızca **bu koşunun** neyi kapsadığı yazılıyor.
+>
+> ### Dokümanın yanlış yazdığı bir şey kullanımda çıktı
+>
+> Kullanıcıdan bağlayıcıda sürümün `0.1.0` göründüğünü de doğrulaması
+> istendi — bu adım MCP.md'de yazmıyordu, kriterin parçası da değildi, koşuyu
+> isteyen mesajda eklenmişti. Kullanıcı **bulamadı**. Ölçüldü: masaüstü
+> uygulamasında sunucu sürümünü gösteren bir yer yok.
+> `%LOCALAPPDATA%\Claude\Logs\mcp.log` **0 bayt** ve içinde `codecraft` geçen
+> tek satır yok.
+>
+> Sebep yapısal, eksiklik değil: uzak bağlayıcı Anthropic'in bulut altyapısı
+> üzerinden proxy'leniyor, masaüstü uygulaması sunucuyu yerel bir süreç olarak
+> başlatmıyor ve `initialize` cevabını hiç görmüyor.
+>
+> Bu, `docs/mcp-kullanim.md`'nin M5'ten kalan "sunucu sürümü `0.0.0` görünür"
+> satırının da yanlış olduğunu gösterdi — M6'da o satır `0.1.0` diye
+> güncellenmişti, yani **yanlış bir iddia doğrulanmadan taşınmıştı.** İkisi de
+> düzeltildi ve sürümün tek doğrulanabilir yeri yazıldı: `initialize`
+> cevabının `serverInfo` alanı. Komut MCP.md'nin sonunda ve **birebir
+> kopyalanıp koşularak** doğrulandı:
+>
+> ```
+> "serverInfo":{"name":"codecraft","version":"0.1.0"}
+> ```
+>
+> M5'in dördüncü dersi burada tekrarlandı: **en değerli hatayı kullanım
+> buldu, test değil.** Hiçbir birim testi "dokümandaki adım izlenebiliyor mu"
+> sorusunu soramazdı; kriteri "doküman koşularak ölçülür" diye yazmanın
+> karşılığı tam olarak bu oldu.
+>
+> ### Ölçülmeyen
+>
+> Bu aşamada üretilen hiçbir şey oyuna girmedi ve girmesi de gerekmiyordu —
+> M6 doküman aşaması. `docs/VALIDATION-LIMITS.md`'nin cümlesi hâlâ geçerli.
 
 ---
 
