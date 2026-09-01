@@ -552,6 +552,60 @@ function collectAssetRefs(value: unknown, out: { key: string; atlas: TextureAtla
 export type AssetOptions = { version?: string };
 
 /**
+ * Paketin KENDİ tanımladığı doku anahtarları.
+ *
+ * Ölçülerek eklendi (01-09-2026, Aşama M5 senaryo 5). Kontrol yalnızca vanilla
+ * atlasına bakıyordu ve bu bir YANLIŞ POZİTİF üretiyordu: model bir kaynak
+ * paketi de üreten eksiksiz bir eklenti verdi, anahtarları
+ * RP/textures/terrain_texture.json ve item_texture.json içinde tanımladı, ve
+ * review_pack iki ERROR bulgusuyla ok:false döndü. Doğru ve kurulabilir bir
+ * paket "hatalı" raporlandı.
+ *
+ * Kapsam kararı değişmedi — CodeCraft'ın kendi ürettiği şey hâlâ behavior
+ * pack. Değişen şey referansın nasıl ÇÖZÜLDÜĞÜ: bir anahtar paketin kendi
+ * atlas tanımında duruyorsa, o referans çözülüyor demektir. Bunu yok saymak
+ * modele "bizim hatalarımızı yok say" öğretir ve o alışkanlık gerçek bir
+ * hatayı da yok saydırır.
+ *
+ * Atlas ayrımı önce `texture_name` alanından, o yoksa dosya adından okunuyor.
+ *
+ * HAM DOSYA üzerinden çalışıyor, parseJsonFiles çıktısı üzerinden değil: o
+ * fonksiyon belgeyi üst düzey anahtar BAŞINA parçalıyor, yani `texture_data`
+ * ile `texture_name` ayrı kayıtlara düşüyor ve atlas adı görünmez oluyor.
+ * İlk deneme tam bu yüzden sessizce hiçbir anahtar bulamadı.
+ */
+function packTextureKeys(files: readonly PackFile[]): Record<TextureAtlas, Set<string>> {
+  const out: Record<TextureAtlas, Set<string>> = { item: new Set(), terrain: new Set() };
+
+  for (const file of files) {
+    if (!file.path.endsWith(".json")) continue;
+
+    let value: unknown;
+    try {
+      value = JSON.parse(file.content);
+    } catch {
+      continue; // parseJsonFiles aynı dosya için zaten uyarı üretiyor.
+    }
+    const record = asObject(value);
+    if (record === null) continue;
+
+    const data = asObject(record["texture_data"]);
+    if (data === null) continue;
+
+    const name = asString(record["texture_name"]) ?? "";
+    const lower = file.path.toLowerCase();
+    let atlas: TextureAtlas | null = null;
+    if (name === "atlas.items" || lower.endsWith("item_texture.json")) atlas = "item";
+    else if (name === "atlas.terrain" || lower.endsWith("terrain_texture.json")) atlas = "terrain";
+    if (atlas === null) continue;
+
+    for (const key of Object.keys(data)) out[atlas].add(key);
+  }
+
+  return out;
+}
+
+/**
  * Atlasta bu anahtara en yakın birkaç ad.
  *
  * Retry'ın işe yaraması için gerekli: "bu anahtar yok" demek modele ne
@@ -610,12 +664,14 @@ export async function checkAssets(
   const item = await textureKeys("item", options);
   const terrain = await textureKeys("terrain", options);
   const sets: Record<TextureAtlas, ReadonlySet<string>> = { item, terrain };
+  // Paket kendi atlas tanımını getiriyorsa anahtarları oradan da çözülür.
+  const own = packTextureKeys(files);
 
   for (const { file, key, atlas } of refs) {
-    if (sets[atlas].has(key)) continue;
+    if (sets[atlas].has(key) || own[atlas].has(key)) continue;
 
     const other: TextureAtlas = atlas === "item" ? "terrain" : "item";
-    if (sets[other].has(key)) {
+    if (sets[other].has(key) || own[other].has(key)) {
       findings.push({
         check: "asset",
         severity: "warning",
@@ -632,9 +688,9 @@ export async function checkAssets(
       severity: "error",
       path: file.path,
       message:
-        `doku anahtarı "${key}" hiçbir vanilla atlasında yok. Kaynak paketi ` +
-        "üretilmiyor (v1 kapsamı behavior pack), o yüzden var olan bir vanilla " +
-        "anahtarı kullanılmalı" +
+        `doku anahtarı "${key}" ne vanilla atlasında ne de paketin kendi ` +
+        "terrain_texture.json / item_texture.json dosyasında tanımlı. Ya var " +
+        "olan bir vanilla anahtarı kullan ya da anahtarı kaynak paketinde tanımla" +
         (near.length === 0 ? "" : `. Yakın anahtarlar: ${near.join(", ")}`),
       evidence: `${LIMITS} · C ("Missing referenced asset")`,
     });

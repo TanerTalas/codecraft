@@ -16,7 +16,7 @@ kötü.** İkisi farklı sonuç doğurur, o yüzden ayrıştırılmadan yazılma
 ## Durum
 
 **01-09-2026 — bağlayıcı bağlı, BİTİŞ KRİTERİ KARŞILANDI.** Altı senaryodan
-dördü bitti.
+beşi bitti.
 
 Koşulmamış senaryonun satırına sayı yazılmaz; "koşulmadı" bir eksiklik değil,
 o satırın bugünkü doğru cevabı.
@@ -100,7 +100,7 @@ sütunu kritik: araç adı telaffuz edilmeden çağrıldıysa `evet`, ancak zorl
 çağrıldıysa `hayır` — ikincisi "araç sağlam ama keşfedilmiyor" demektir ve
 açıklama işidir.
 
-**4 / 6 senaryo koşuldu.** Sayılar geçici, her senaryodan sonra güncelleniyor.
+**5 / 6 senaryo koşuldu.** Sayılar geçici, her senaryodan sonra güncelleniyor.
 Senaryo 1 iki turda koştu (tek dosya → yedi dosyalık paket) ve iki turun
 davranışı FARKLI; ayrım aşağıdaki notlarda.
 
@@ -111,14 +111,14 @@ sorusunun cevabı bu: hiçbir araç "hiç çağrılmayan" değil. Dört senaryo 
 
 | Araç | Çağrıldığı senaryo | Kendiliğinden | Not |
 |---|---|---|---|
-| `check_feasibility` | S2, S4 | evet | Script isteğinde çağrılıyor; JSON ve komut isteğinde değil |
-| `get_version_info` | S1, S2, S4 | evet | Dosya üretilen her senaryoda, hep üretimden önce |
-| `get_schema` | S1 | evet | Yalnızca yeni bir belge tipi yazarken |
-| `lookup_id` | S4 | evet | Üç senaryo boyunca hiç çağrılmadı, dördüncüde çağrıldı |
-| `validate_json` | S1 | evet | Diğerlerinde `review_pack` içinden geçti |
-| `validate_command` | S2, S3, S4 | evet | En çok çağrılan ikinci araç; ikisinde beklenmiyordu bile |
+| `check_feasibility` | S2, S4, S5 | evet | Komut isteğinde (S3) çağrılmıyor, dosya üretilen her yerde çağrılıyor |
+| `get_version_info` | S1, S2, S4, S5 | evet | Dosya üretilen her senaryoda, hep üretimden önce |
+| `get_schema` | S1, S5 | evet | S5'te **on kez** — en yoğun kullanıldığı senaryo |
+| `lookup_id` | S4, S5 | evet | İlk üç senaryoda hiç yoktu; son ikisinde her ikisinde de |
+| `validate_json` | S1, S5 | evet | Diğerlerinde `review_pack` içinden geçti |
+| `validate_command` | S2, S3, S4 | evet | İkisinde beklenmiyordu bile |
 | `validate_script` | S2, S4 | evet | Gerçek `tsc`, script üretilen her senaryoda |
-| `review_pack` | S1, S2, S4 | evet | Dosya üretilen her senaryoda, hep son adım |
+| `review_pack` | S1, S2, S4, S5 | evet | Dosya üretilen her senaryoda, hep son adım |
 
 ## Senaryo günlükleri
 
@@ -634,7 +634,76 @@ uyarı üretiliyor, hata değil.
 
 Beklenen: `get_schema`, `validate_json`, `review_pack`.
 
-**Koşulmadı.**
+**Koşuldu, 01-09-2026.** Şimdiye kadarki en uzun zincir — yaklaşık 18 çağrı:
+
+`check_feasibility` → `get_version_info` → `get_schema` **×10** →
+`lookup_id` **×3** → `validate_json` ×2 → `review_pack`
+
+Üretilen: 14 dosyalık bir `.mcaddon` — BP (blok, eşya, feature, feature rule,
+loot table, manifest) ve RP (manifest, iki atlas tanımı, iki **PNG**, üç dil
+dosyası). Model dokuları kendisi üretti.
+
+**`get_schema` on kez çağrıldı** ve bu senaryo 1'deki dizi/oneOf düzeltmesinin
+ilk gerçek sınavıydı: feature ve feature rule şemaları artık boş dönmüyor.
+
+#### Bulunan boşluk: `checkAssets` doğru paketi hatalı raporladı
+
+Model cevabının sonunda bizim aracımızı **yanlış ilan etti**:
+
+> "Yalnız iki uyarı düştü: doku anahtarlarının vanilla atlasında bulunmadığını
+> söylüyor. Bu, aracın v1 kapsamının sadece behavior pack olduğunu
+> varsaymasından geliyor. Burada kaynak paketi de ürettiğim ve anahtarlar
+> terrain_texture.json ile item_texture.json içinde tanımlı olduğu için geçerli
+> değil."
+
+Kontrol edildi ve **model haklıydı.** Üstelik bulgular "uyarı" değil
+`severity: "error"` ve `review_pack`'i `ok:false`'a çeviriyorlardı:
+
+```
+ok=false  bulgu 2
+  [error/asset] BP/blocks/yakut_cevheri.json
+    doku anahtarı "yakut_cevheri" hiçbir vanilla atlasında yok. Kaynak paketi
+    üretilmiyor (v1 kapsamı behavior pack) …
+```
+
+Oysa paket o anahtarı kendi içinde tanımlıyor
+(`RP/textures/terrain_texture.json`, `texture_name: "atlas.terrain"`).
+`checkAssets` yalnızca vanilla atlasına bakıyordu ve mesajı artık doğru
+olmayan bir varsayımı ("kaynak paketi üretilmiyor") sabit metin olarak
+taşıyordu.
+
+**Doğru ve kurulabilir bir paket "hatalı" raporlandı — yanlış pozitif.**
+
+**Asıl risk teknik değil.** Model bulguyu yok saydı ve kullanıcıya "bu geçerli
+değil" diye yazdı. Bu sefer haklıydı. Ama aracın kendi yanlış hataları modele
+*"bu aracın hatalarını yok say"* öğretir ve o alışkanlık bir gün gerçek bir
+hatayı da yok saydırır. Senaryo 3'te `execute … run` yanlış pozitifini
+"açıklamaya yaz, model yok saysın" diye çözmüştük; bu, o çözümün sınırını
+gösteriyor.
+
+**Düzeltildi ve kontrol grubuyla ölçüldü:**
+
+| Girdi | Önce | Sonra |
+|---|---|---|
+| Paket + kendi atlas tanımları | 2 error, `ok:false` | **`ok:true`, 0 bulgu** |
+| Aynı paket, atlas tanımları çıkarılmış | 2 error | **2 error** |
+
+İkinci satır belirleyici: düzeltme denetimi kapatmadı. Üç test eklendi, ikisi
+enjekte edilen kırıkla kırmızıya döndü, kontrol testi yeşil kaldı.
+
+Yol boyunca bir de sessiz tuzak çıktı: ilk deneme hiçbir anahtar bulamadı çünkü
+`parseJsonFiles` belgeyi **üst düzey anahtar başına** parçalıyor, yani
+`texture_data` ile `texture_name` ayrı kayıtlara düşüyor ve atlas adı
+görünmez oluyor. Yardımcı ham dosya üzerinden çalışacak şekilde yazıldı.
+
+**Açık kalan (ürün kararı):** `CLAUDE.md` v1 kapsamı "behavior pack üretimi"
+diyor, ama model kendiliğinden kaynak paketi de üretiyor — PNG dahil — ve
+sonuç doğrulamadan geçiyor. Kapsam cümlesi gerçeğe göre güncellenecek mi, karar
+verilmedi. Kod tarafında bir şey beklemiyor.
+
+**Ölçülmeyen:** paket oyunda çalıştırılmadı. Modelin kendi saydığı sınır doğru
+görünüyor ve doğrulamanın konusu değil: feature'lar yalnızca yeni üretilen
+chunk'larda çalışır.
 
 ### 6. `custom-entity-01` — "Köylüleri koruyan bir muhafız yaratığı ekle"
 
@@ -671,6 +740,8 @@ yazılır — `docs/COMMANDS.md` sonundaki `execute ... run` maddesinin kalıbı
 | 3 | ~~`check_feasibility` hiç çağrılmıyor~~ | — | **Kapandı.** S2'de iki kez çağrıldı; S1'deki yokluğu isteğin biçiminden |
 | 4 | ~~`lookup_id` hiç çağrılmıyor~~ | — | **Kapandı.** S4'te kendiliğinden çağrıldı. Sekiz aracın sekizi de çağrıldı |
 | 9 | ~~`check_feasibility` girdi yokluğu ifadesini kaçırıyor~~ | `packages/core/src/feasibility.ts` | **Kapatıldı.** Kendi eval vakamızı kaçırıyordu |
+| 10 | ~~`checkAssets` paketin kendi atlas tanımını görmüyor~~ (**yanlış pozitif**) | `packages/validator/src/checks.ts` | **Kapatıldı.** Doğru paket `ok:false` dönüyordu |
+| 11 | v1 kapsamı "behavior pack" diyor, model kaynak paketi de üretiyor | `CLAUDE.md` | Açık, **ürün kararı** — kod beklemiyor |
 | 5 | ~~Boş enum her değeri reddediyor~~ | `packages/validator/src/command.ts` | **Kapatıldı ve dağıtıldı.** Boş enum artık serbest metin |
 | 6 | ~~Eski veri değeri kabul ediliyordu~~ (**yanlış negatif**) | aynı dosya | **Kapatıldı ve dağıtıldı.** Sohbet kanalı reddediyor |
 | 7 | `ws:probe` sohbetten daha gevşek bir kanalı ölçüyor | `docs/WEBSOCKET.md`, `pipeline/src/ws-probe.ts` | **Şerh düşüldü.** Alet duruyor, tek başına kural yazdırmıyor |

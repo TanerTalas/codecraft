@@ -128,6 +128,39 @@ görsel elde edilmiyor. "Yakut" item'ı zümrüt dokusuyla görünüyor. Özel d
 kullanıcının kendi kaynak paketini yazmasını gerektirir ve arayüz bunu
 çıktının yanında söyleyecek.
 
+### Güncelleme (01-09-2026, Aşama M5 senaryo 5): paket kendi atlasını getirirse
+
+Yukarıdaki karar "kaynak paketi ÜRETİLMİYOR" varsayımına dayanıyordu ve
+`checkAssets` yalnızca vanilla atlasına bakıyordu. Gerçek kullanımda o varsayım
+tutmadı: MCP üzerinden gelen bir istek kaynak paketi de üreten eksiksiz bir
+eklenti verdi — `RP/textures/terrain_texture.json` ve `item_texture.json`
+anahtarları tanımlıyor, PNG'ler pakette. `review_pack` yine de iki **error**
+bulgusuyla `ok:false` döndü.
+
+Yani doğru ve kurulabilir bir paket "hatalı" raporlandı — **yanlış pozitif.**
+
+**Kapsam kararı değişmedi.** CodeCraft'ın kendi ürettiği şey hâlâ behavior
+pack. Değişen tek şey referansın nasıl ÇÖZÜLDÜĞÜ: bir anahtar paketin kendi
+atlas tanımında duruyorsa o referans çözülmüştür, kimin yazdığından bağımsız.
+
+| Girdi | Önce | Sonra |
+|---|---|---|
+| Paket + kendi `terrain_texture.json` / `item_texture.json` | 2 error, `ok:false` | **temiz** |
+| Aynı paket, atlas tanımları çıkarılmış | 2 error | **2 error** (kontrol grubu) |
+
+İkinci satır kritik: düzeltme denetimi kapatmadı, yalnızca çözülebilen
+referansı çözdü. Test olarak da böyle sabitlendi.
+
+**Asıl risk teknik değildi.** Model bulguyu haklı olarak yok saydı ve
+kullanıcıya "bu uyarı geçerli değil" diye yazdı. Aracın kendi yanlış hataları
+modele *"bu aracın hatalarını yok say"* öğretir; o alışkanlık bir gün gerçek
+bir hatayı da yok saydırır. Yanlış pozitifin pahalı olmasının sebebi bu.
+
+**Açık kalan (ürün kararı, kod değil):** `CLAUDE.md` v1 kapsamı "behavior pack
+üretimi" diyor ama model kendiliğinden kaynak paketi de üretiyor ve sonuç
+doğrulamadan geçiyor. Kapsam cümlesi gerçeğe göre güncellenecek mi, karar
+verilmedi.
+
 ## D. Geçerli ama amaçlanmayan — en tehlikeli sınıf
 
 Script şu satırı içeriyordu:

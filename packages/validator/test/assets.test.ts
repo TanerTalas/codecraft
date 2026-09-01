@@ -124,3 +124,64 @@ test("permutations altındaki doku da taranır", async () => {
   assert.equal(result.ok, false, "permutations içindeki doku gözden kaçtı");
   assert.match(result.findings[0]?.message ?? "", /uydurma_doku/);
 });
+
+/**
+ * Paketin KENDİ atlas tanımı.
+ *
+ * Ölçüldü 01-09-2026, Aşama M5 senaryo 5: model kaynak paketi de üreten
+ * eksiksiz bir eklenti verdi, doku anahtarlarını RP içinde tanımladı, ve
+ * review_pack iki ERROR ile ok:false döndü. Doğru ve kurulabilir bir paket
+ * "hatalı" raporlandı — yanlış pozitif.
+ *
+ * Model bulguyu haklı olarak yok saydı. Asıl tehlike o: aracın kendi hataları
+ * modele "bu aracın hatalarını yok say" öğretir ve o alışkanlık gerçek bir
+ * hatayı da yok saydırır.
+ */
+const terrainAtlas = JSON.stringify({
+  resource_pack_name: "yakut",
+  texture_name: "atlas.terrain",
+  texture_data: { yakut_cevheri: { textures: "textures/blocks/yakut_cevheri" } },
+});
+
+const itemAtlas = JSON.stringify({
+  resource_pack_name: "yakut",
+  texture_name: "atlas.items",
+  texture_data: { yakut: { textures: "textures/items/yakut" } },
+});
+
+test("paketin kendi atlas tanımındaki anahtar çözülüyor", async () => {
+  const result = await checkAssets([
+    { path: "BP/blocks/yakut_cevheri.json", content: block("yakut_cevheri") },
+    { path: "BP/items/yakut.json", content: item("yakut") },
+    { path: "RP/textures/terrain_texture.json", content: terrainAtlas },
+    { path: "RP/textures/item_texture.json", content: itemAtlas },
+  ]);
+  assert.equal(result.ok, true, JSON.stringify(result.findings));
+  assert.equal(result.findings.length, 0);
+});
+
+test("atlas tanımı yoksa aynı anahtar hâlâ hata veriyor", async () => {
+  // Kontrol grubu. Düzeltmenin denetimi KAPATMADIĞINI ölçüyor — bu test
+  // olmasa "hep geçiyor" ile "doğru geçiyor" ayırt edilemezdi.
+  const result = await checkAssets([
+    { path: "BP/blocks/yakut_cevheri.json", content: block("yakut_cevheri") },
+    { path: "BP/items/yakut.json", content: item("yakut") },
+  ]);
+  assert.equal(result.ok, false);
+  assert.equal(result.findings.length, 2);
+  for (const finding of result.findings) {
+    assert.equal(finding.severity, "error");
+    assert.equal(finding.check, "asset");
+  }
+});
+
+test("atlas ayrımı texture_name yoksa dosya adından okunuyor", async () => {
+  const isimsiz = JSON.stringify({
+    texture_data: { yakut_cevheri: { textures: "textures/blocks/yakut_cevheri" } },
+  });
+  const result = await checkAssets([
+    { path: "BP/blocks/yakut_cevheri.json", content: block("yakut_cevheri") },
+    { path: "RP/textures/terrain_texture.json", content: isimsiz },
+  ]);
+  assert.equal(result.ok, true, JSON.stringify(result.findings));
+});
