@@ -891,16 +891,25 @@ iddia edilmez.
 > Araç başına bölüm açmak dosyayı ~330 satırdan ~410'a taşır ve eklenen
 > satırların tamamı en hızlı çürüyecek metin olurdu.
 >
-> ### Koşulmayan iki adım — kriterin ikisine de ihtiyacı var
+> ### Kriterin iki ayağı — biri koşuldu, biri kalıyor
 >
-> 1. **Deploy.** `0.1.0` dağıtılmış uçta değil; bugünkü uç hâlâ `0.0.0`
->    koşuyor. `npx vercel --prod` kullanıcı tarafından çalıştırılır
+> 1. ~~**Deploy.**~~ **Koşuldu, 01-09-2026.** Kullanıcı `npx vercel --prod`
+>    çalıştırdı ve dağıtılmış uç artık `0.1.0` koşuyor. Ölçüldü, iddia
+>    edilmedi: `initialize` cevabı
+>    `"serverInfo":{"name":"codecraft","version":"0.1.0"}` döndürüyor.
+>    Ardından `npm run mcp:probe` yeni deploy'a karşı tekrar koşuldu, **dokuz
+>    kontrolün dokuzu yeşil** (initialize 900 ms, `tools/list` 9.036 bayt,
+>    `get_schema` 15.898 bayt). Sürüm yükseltmesinin paketlemeyi bozmadığı da
+>    burada ölçüldü — bozuk payload hâlâ fonksiyon paketinin içinden gerçek
+>    `TS2551` tanısı döndürüyor
 > 2. **Bağlayıcı koşusu.** Yalnızca `docs/MCP.md`'ye bakarak bağlayıcının
 >    yeniden eklenmesi ve sekiz aracın listelendiğinin görülmesi. Claude Pro
->    hesabı ve tarayıcı gerekiyor (`CLAUDE.md`, "Takıldığında dur ve sor")
+>    hesabı ve tarayıcı gerekiyor (`CLAUDE.md`, "Takıldığında dur ve sor").
+>    **Koşulmadı**
 >
-> Probe zaten dağıtılmış uçta koşuldu ve yeşil, ama o kriterin yalnızca bir
-> ayağı. **Koşulmamış adımın satırına sonuç yazılmıyor.**
+> Kriterin probe ayağı böylece karşılandı. Doküman ayağı — "yalnızca MCP.md'ye
+> bakılarak bağlanabiliyor mu" — karşılanmadı ve **koşulmamış adımın satırına
+> sonuç yazılmıyor.**
 
 ---
 
