@@ -273,7 +273,9 @@ yakalanıyor mu, `get_version_info` gerçek sürüm veriyor mu, `GET` ve `DELETE
 derlemeyen bir yoldan da gelebilirdi. O yüzden bozuk bir payload bilerek
 gönderiliyor ve gerçek bir tanı bekleniyor.
 
-Dağıtılmış ölçüm (01-09-2026):
+Dağıtılmış ölçüm (01-09-2026) — **bu tablo sekiz araçlıydı ve henüz
+yenilenmedi:** dokuzuncu araç ile daraltılmış izleme haritası yalnızca yerel
+üretim build'inde doğrulandı, uca deploy edilmedi.
 
 | Adım | Sonuç |
 |---|---|
