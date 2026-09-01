@@ -70,31 +70,37 @@ const PROBES: Probe[] = [
   // Temel: bağlantının ve ayrıştırıcının çalıştığını doğrular.
   { question: "temel (testfor @s)", command: "testfor @s", expect: "parses" },
 
-  // --- AÇIK SORU: blok durumu sözdiziminin gerçek biçimi ---
+  // --- CEVAPLANDI: blok durumu sözdizimi ["ad":değer] ---
   //
-  // 2. turda İKİ biçim de reddedildi ve değer geçerliydi, yani reddedilen
-  // biçimin kendisi:
+  // Bunlar 30-08-2026'da birer HİPOTEZDİ ve expect alanları "ayrışır" diye
+  // yazılmıştı. Cevap bulundu, parseBlockStates'e işlendi, ama expect alanları
+  // güncellenmedi ve dosya bir yıl boyunca yanlış alarm verecekti.
   //
-  //   ["facing_direction"=0]   → Unexpected "="
-  //   [facing_direction=0]     → Unexpected "facing_direction"
+  // 01-09-2026'da tekrar ölçüldü (Bedrock 1.26.45) ve tablo kesinleşti:
   //
-  // Tırnaklı ad "[" sonrasında kabul ediliyor, ardındaki "=" edilmiyor.
-  // Aday biçimler tek tek deneniyor. Hepsi düşerse sonuç da bir sonuçtur:
-  // testforblock bu parametreyi gerçekte desteklemiyor demektir.
+  //   ["facing_direction":0]    ayrıştı      iki nokta DOĞRU ayraç
+  //   []                        ayrıştı      boş dizi geçerli
+  //   ["facing_direction"=0]    HATA         Unexpected "="
+  //   ["facing_direction"]      HATA         Unexpected "]" — değer zorunlu
+  //   ["open_bit"=true]         HATA         Unexpected "="
+  //   ["…cardinal_direction"="north"]  HATA  Unexpected "="
+  //
+  // Doğrulayıcı altısında da oyunla aynı şeyi söylüyor (ölçüldü). Beklentiler
+  // artık ölçülen sonuca göre yazılı; biri değişirse oyun değişmiş demektir.
   {
     question: "ayraç iki nokta",
     command: 'testforblock ~ ~-1 ~ minecraft:acacia_button ["facing_direction":0]',
     expect: "parses",
   },
   {
-    question: "blok adına bitişik",
+    question: "blok adına bitişik + eşittir",
     command: 'testforblock ~ ~-1 ~ minecraft:acacia_button["facing_direction"=0]',
-    expect: "parses",
+    expect: "syntax-error",
   },
   {
     question: "yalnızca ad, değersiz",
     command: 'testforblock ~ ~-1 ~ minecraft:acacia_button ["facing_direction"]',
-    expect: "parses",
+    expect: "syntax-error",
   },
   {
     question: "boş dizi",
@@ -107,14 +113,14 @@ const PROBES: Probe[] = [
     expect: "parses",
   },
   {
-    question: "durum: bool blok (open_bit)",
+    question: "durum: bool, eşittir ayracı",
     command: 'testforblock ~ ~-1 ~ minecraft:acacia_door ["open_bit"=true]',
-    expect: "parses",
+    expect: "syntax-error",
   },
   {
-    question: "durum: string (cardinal_direction)",
+    question: "durum: string, eşittir ayracı",
     command: 'testforblock ~ ~-1 ~ minecraft:acacia_door ["minecraft:cardinal_direction"="north"]',
-    expect: "parses",
+    expect: "syntax-error",
   },
 
   // --- AÇIK SORU: eski veri değeri (int) HANGİ komutlarda kabul ediliyor ---
@@ -170,6 +176,59 @@ const PROBES: Probe[] = [
   {
     question: "kontrol: fill + hollow, int YOK (doğru modern biçim)",
     command: "fill ~ ~ ~ ~ ~ ~ minecraft:air hollow",
+    expect: "parses",
+  },
+
+  // --- 2. TUR: geriye tek değişken kaldı, BLOK ---
+  //
+  // 1. tur üç hipotezi de çürüttü (01-09-2026, Bedrock 1.26.45):
+  //
+  //   testforblock … acacia_button 0        ayrıştı
+  //   fill … minecraft:air 0 replace        ayrıştı
+  //   fill … minecraft:air 0 hollow         ayrıştı   ← beklenen: hata
+  //   fill … minecraft:air 0 outline        ayrıştı   ← beklenen: hata
+  //   fill … air 0 hollow                   ayrıştı   ← beklenen: hata
+  //   setblock … minecraft:air 0 replace    ayrıştı
+  //
+  // Yani sürüm de (H1), komut da (H2), doldurma modu da (H3) değil. Ama
+  // kullanıcının oyunda düşen komutu buydu:
+  //
+  //   /fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass 0 outline
+  //   Syntax error: Unexpected "0": at " ~4 glass >>0<< outline"
+  //
+  // Aynı mod, aynı int, farklı BLOK. H4: eski veri değeri bloğa bağlı —
+  // "air" kabul ediliyor, "glass" edilmiyor. Aşağısı onu ölçüyor.
+  //
+  // Bölge yine tek bloklu: 1x1x1'de hollow/outline "0 blocks filled" veriyor
+  // (1. turda ölçüldü), yani glass yazılsa bile dünyaya blok konmuyor.
+  {
+    question: "H4 int: fill + glass + hollow",
+    command: "fill ~ ~ ~ ~ ~ ~ minecraft:glass 0 hollow",
+    expect: "syntax-error",
+  },
+  {
+    question: "H4 int: fill + glass + outline (kullanıcının biçimi)",
+    command: "fill ~ ~ ~ ~ ~ ~ glass 0 outline",
+    expect: "syntax-error",
+  },
+  {
+    question: "H4 int: fill + stone + hollow (üçüncü blok)",
+    command: "fill ~ ~ ~ ~ ~ ~ minecraft:stone 0 hollow",
+    expect: "syntax-error",
+  },
+  {
+    question: "H4 kontrol: fill + glass, int YOK",
+    command: "fill ~ ~ ~ ~ ~ ~ minecraft:glass hollow",
+    expect: "parses",
+  },
+  {
+    question: "H4 int: testforblock + glass",
+    command: "testforblock ~ ~-1 ~ minecraft:glass 0",
+    expect: "parses",
+  },
+  {
+    question: "H5 bölge büyüklüğü: air, 3x1x3, kafa üstü",
+    command: "fill ~-1 ~2 ~-1 ~1 ~2 ~1 minecraft:air 0 outline",
     expect: "parses",
   },
 ];
