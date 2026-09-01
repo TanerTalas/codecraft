@@ -275,11 +275,79 @@ yazılır — `docs/COMMANDS.md` sonundaki `execute ... run` maddesinin kalıbı
 
 | # | Boşluk | Nerede | Durum |
 |---|---|---|---|
-| 1 | `get_schema` dizi düğümünde boş özet döndürüyor (`items` içine inmiyor) | `packages/validator/src/schema-summary.ts` | Senaryo 1'de ölçüldü, açık |
+| 1 | `get_schema` dizi düğümünde boş özet döndürüyor (`items` içine inmiyor) | `packages/validator/src/schema-summary.ts` | **Düzeltildi**, aşağıda |
+| 1b | Aynı sınıf: `oneOf`/`anyOf` dalları da okunmuyordu | aynı dosya | **Düzeltildi**, 1'i düzeltirken ölçüldü |
 | 2 | `review_pack` kendiliğinden çağrılmıyor | `packages/mcp/src/tools/review.ts` açıklaması ya da `server.ts` `instructions` | 1 senaryoda 1 kez, tek gözlem — kontrol koşusu bekliyor |
 
 İkincisi için tek bir senaryo yeterli veri değil; kalan beş senaryodan sonra
 tekrar bakılacak. Bir kez çağrılmamak "keşfedilmiyor" demek değildir.
+
+## Düzeltilen: `get_schema`'nın iki kör noktası
+
+Senaryo 1'de ölçülen boşluk kapatıldı. Kapatırken aynı sınıftan ikinci bir
+körlük çıktı ve o da kapatıldı — ikisi de `summarizeSchema`'nın "alanlar
+nerede duruyor" sorusuna eksik cevap vermesiydi.
+
+**Kapsam ölçüldü** (60 derlenmiş şema, 01-09-2026):
+
+| Kör nokta | Düğüm sayısı | Arkasında gerçek alan olan |
+|---|---|---|
+| `items` (dizi düğümleri) | 618 | 91 |
+| `oneOf` / `anyOf` | 436 | 144 (123'ünde dallar aynı alan kümesi) |
+| `items` tuple biçimi | 141 | **0** — hepsi koordinat/aralık çifti |
+
+Üçüncü satır bir şeyi kapsam dışı bıraktı: tuple biçimine inilmiyor, çünkü
+inecek bir şey yok. Ölçülmemiş kural kodlanmıyor.
+
+**Önce / sonra.** "Önce" sütunu dağıtılmış uçtan, düzeltme deploy edilmeden
+alındı; "sonra" yerelden. Aynı arayüz, aynı `data/`:
+
+| Yol | Önce | Sonra |
+|---|---|---|
+| `minecraft:spawn_rules/conditions` | 307 B, **0 alan** | 4.342 B, **22 alan**, `arrayItems:true` |
+| `…/conditions/minecraft:herd` | **`isError`** | 1.091 B, **6 alan**, `oneOfBranches:2` |
+| `minecraft:block/permutations` | 383 B, 0 alan, `required:[]` | 641 B, 2 alan, `required:["condition"]` |
+| `minecraft:entity/components` | 15.898 B, names-only | **değişmedi** |
+| `behavior/blocks` kökü | 695 B | **değişmedi** |
+
+İkinci satır en kötüsüydü ve ölçülene kadar görülmemişti — araç yalnızca boş
+dönmüyor, **hata veriyordu**:
+
+```
+Şema yolu çözümlenemedi: "minecraft:spawn_rules/conditions/minecraft:herd".
+"minecraft:spawn_rules/conditions" altında "minecraft:herd" yok. Orada alan yok.
+```
+
+"Orada alan yok" cümlesi kendinden emin ve yanlış. Model `min_size` /
+`max_size` alanlarını orada bulamadığı için belleğinden yazdı; doğru
+çıktılar ama şema rehberlik etmedi, yakalayan şey üretim sonrası
+`validate_json` oldu.
+
+**Ne değişti.** `fieldsOf()` dört yere sırayla bakıyor: `properties`,
+`additionalProperties`, `items`, `oneOf`/`anyOf`. İki tasarım kararı
+ayrıca yazılı:
+
+- **`required` alanların durduğu düğümden okunuyor**, dıştaki düğümden değil.
+  `permutations` satırı bunu gösteriyor: zorunluluk `items` içinde yazılı,
+  dışa bakılınca kayboluyordu
+- **`oneOf`'ta zorunluluk KESİŞİM**, birleşim değil. Yalnızca her dalda
+  zorunlu olan alan gerçekten zorunlu; birleşim alsaydık modele olmayan bir
+  kısıt dayatırdık. Alanlar birleşimden geliyor ve kaç daldan geldiği
+  `oneOfBranches` ile bildiriliyor — hepsi aynı anda geçerli olmayabilir
+
+**Üç test eklendi, üçü de bilerek kırılarak doğrulandı** (M2-M4'teki
+enjekte-et-ve-kırmızıya-dön yöntemi):
+
+| Enjekte edilen hata | Kırmızıya dönen |
+|---|---|
+| `items` inişi kapatıldı | üç testin üçü de |
+| `oneOf` dalları kapatıldı | yalnızca `oneOf` testi |
+
+`npm test` **214/214** (senaryo 1 öncesi 211'di), `npm run typecheck` exit 0.
+
+**Bu düğümlerin hiçbiri tavanı zorlamıyor:** en büyüğü 4.342 bayt, tavan
+24.000. En kalabalık düğüm (`minecraft:entity/components`, 390 alan) ve kök
+özetleri bayt bayt aynı kaldı — düzeltme yalnızca boş dönen düğümlere dokundu.
 
 ## Değişen açıklamalar
 
