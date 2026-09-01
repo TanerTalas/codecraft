@@ -696,15 +696,100 @@ ediliyor, Vercel'in rota bazlı logu hangi ARACIN çağrıldığını göstermiy
   araç listeli ve istemci sekizini de **"read only tools"** diye ayrı bir izin
   sınıfında gösteriyor — `readOnlyHint` uçtan uca taşınıyor, M3'te kendi
   testimizle ölçülmüştü, burada gerçek istemcide doğrulandı
-- [ ] Günlük kullanım. Karar dokümanının dördüncü gerekçesi bu: ürünü test
+- [x] Günlük kullanım. Karar dokümanının dördüncü gerekçesi bu: ürünü test
   etmenin en iyi yolu kendim kullanmak. **Sabit senaryo seti**, altısı da
-  `evals/cases/cases.json`'dan: 1/6 bitti
-- [ ] Hangi araçların gerçekten çağrıldığı, hangilerinin hiç çağrılmadığı
-  gözlemlenir ve yazılır. Çağrılmayan araç ya gereksiz ya da açıklaması kötü.
-  Tablo `docs/mcp-kullanim.md` içinde, sekiz satırın sekizi de duruyor
+  `evals/cases/cases.json`'dan: **6/6 koşuldu.** Günlük kullanım M5 kapandıktan
+  sonra da sürüyor
+- [x] Hangi araçların gerçekten çağrıldığı, hangilerinin hiç çağrılmadığı
+  gözlemlenir ve yazılır. **Sekiz aracın sekizi de kendiliğinden çağrıldı**,
+  hiçbiri "gereksiz" ya da "açıklaması kötü" çıkmadı. Tablo
+  `docs/mcp-kullanim.md` içinde
 
 **Bitiş kriteri:** Sunucu bağlı ve gerçek bir Bedrock isteği baştan sona MCP
 üzerinden doğrulanmış çıktı üretiyor.
+
+> **YEŞİL, 01-09-2026. Bitiş kriteri karşılandı ve aşama kapandı.** Sunucu
+> kendi Claude Pro hesabına bağlı, altı gerçek istek baştan sona MCP üzerinden
+> doğrulanmış çıktı üretti. Ayrıntılı ölçüm `docs/mcp-kullanim.md`.
+>
+> **Sekiz aracın sekizi de, kimse söylemeden çağrıldı.** M5'in asıl sorusu
+> buydu ("çağrılmayan araç ya gereksiz ya da açıklaması kötü") ve cevap
+> kimsenin kesilmesini gerektirmedi:
+>
+> | Araç | Çağrıldığı senaryo |
+> |---|---|
+> | `check_feasibility` | S2, S4, S5, S6 |
+> | `get_version_info` | S1, S2, S4, S5, S6 |
+> | `get_schema` | S1, S5, S6 |
+> | `lookup_id` | S4, S5 |
+> | `validate_json` | S1, S5, S6 |
+> | `validate_command` | S2, S3, S4, S6 |
+> | `validate_script` | S2, S4 |
+> | `review_pack` | S1, S2, S4, S5, S6 |
+>
+> **Kontrol koşusuna gerek kalmadı.** Plan "altı senaryo sonunda çağrılmayan
+> araç kalırsa adıyla istenir" diyordu; kalmadı.
+>
+> ### Altı boşluk bulundu ve altısı da kapatıldı
+>
+> | # | Ne bozuktu | Bulunduğu yer | Sonucu |
+> |---|---|---|---|
+> | 1 | `get_schema` dizi (`items`) ve `oneOf` düğümlerini görmüyordu | S1 | 618 + 144 düğüm boş dönüyordu |
+> | 2 | `get_schema` `allOf` ve `if/then/else` şemalarını görmüyordu | S6 | 7 tipin kökü boştu, `general/manifest` dahil |
+> | 3 | Boş enum her değeri reddediyordu | S3 | `/scoreboard`, `/tag` yanlış pozitif |
+> | 4 | Eski veri değeri kabul ediliyordu | S3, **oyunda** | **Yanlış negatif** — çalışmayan komut verildi |
+> | 5 | `check_feasibility` girdi yokluğu ifadesini kaçırıyordu | S4 | Kendi eval vakamızı kaçırıyordu |
+> | 6 | `checkAssets` paketin kendi dokularını görmüyordu | S5 | Doğru paket `ok:false` dönüyordu |
+>
+> `npm test` **211 → 226**, `npm run typecheck` exit 0. Yeni testlerin hepsi
+> enjekte edilen kırıkla kırmızıya döndürülerek doğrulandı (M2'den beri
+> kullanılan yöntem). Her düzeltme dağıtılmış uçta ayrıca doğrulandı.
+>
+> ### Öğrenilen dört şey
+>
+> **1. En değerli hatayı kullanım buldu, test değil.** 4 numaralı boşluk
+> yalnızca üretilen komut oyunda denendiği için ortaya çıktı. Hiçbir birim
+> testi, şema ya da `tsc` onu yakalayamazdı. Karar dokümanının dördüncü
+> gerekçesi ("ürünü test etmenin en iyi yolu kendim kullanmak) tek bir
+> bulguyla karşılığını verdi.
+>
+> **2. Kendi ölçüm aletimiz yanlış kanalı ölçüyormuş.** `ws:probe` komutu
+> WebSocket üzerinden gönderiyor, oyuncu sohbete yazıyor ve **iki ayrıştırıcı
+> aynı değil** — WebSocket daha gevşek. 30-08'de bu aletle alınmış bir karar
+> bu yüzden yanlıştı. Şerh `docs/WEBSOCKET.md` içinde ve geçmişe dönük.
+>
+> **3. "Henüz çağrılmadı" ile "keşfedilmiyor" aynı şey değil.** Üç kez bir araç
+> için "çağrılmıyor, açıklaması kötü olmalı" yazıldı (`review_pack`,
+> `check_feasibility`, `lookup_id`) ve üçünde de sonraki senaryo bunu çürüttü.
+> Erken yazılan sonuç yanlış düzeltme yaptırırdı.
+>
+> **4. Aracın kalitesi modelin davranışını değiştiriyor.** S6'da `get_schema`
+> boş cevap verince model şemayı okumayı **bıraktı** ve sekiz kez
+> `validate_json` ile deneme-yanılmaya geçti. Kötü araç, modeli aracı
+> kullanmamaya itiyor — ve bu ancak gerçek kullanımda görülüyor.
+>
+> ### İki yönlü hata
+>
+> S5'te model bizim bulgumuzu yok saydı ve **haklıydı** (paket kendi dokusunu
+> tanımlıyordu). S6'da model şemayı suçladı ve **yanıldı** (`scripts.animate`
+> yalnızca `format_version: "1.8.0"` altında reddediliyor). İkincisinde araç
+> haklıydı ama mesajı anlaşılmazdı, o yüzden model yanlış teşhis koydu.
+>
+> Buradan çıkan risk teknik değil: aracın kendi yanlış hataları modele *"bu
+> aracın hatalarını yok say"* öğretir ve o alışkanlık bir gün gerçek bir hatayı
+> da yok saydırır.
+>
+> ### Ölçülmeyen
+>
+> **Hiçbir üretilen paket Minecraft'a yüklenmedi.** Tek oyun içi ölçüm 4
+> numaralı boşluğun komutuydu. `docs/VALIDATION-LIMITS.md`'nin kapanış cümlesi
+> aynen geçerli: "doğrulamadan geçti" ile "oyunda çalışıyor" aynı şey değil.
+>
+> **Açık kalan üç madde** (`docs/mcp-kullanim.md` sonunda, hiçbiri M5'i
+> engellemiyor): `dimension.runCommand` hangi ayrıştırıcıyı kullanıyor
+> ölçülmedi; koşullu dalda düşen doğrulama hatası hangi `format_version`'ın
+> kabul edeceğini söylemiyor; `prompt.ts` hâlâ "vanilla dokusu ödünç al" diyor
+> ve değiştirmek eval koşusu gerektiriyor.
 
 > **KARŞILANDI, 01-09-2026 — ama aşama kapanmadı.** Bitiş kriteri senaryo 1'de
 > karşılandı: gerçek bir Bedrock isteği ("Muhafız yaratığı gece yüzeyde
