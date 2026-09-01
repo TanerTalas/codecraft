@@ -141,6 +141,7 @@ Atlanan bir adım varsa açıkça yazılır. Yarım iş, yanlış tamamlanmış 
 - Doğrulamanın yakalayamadıkları: `docs/VALIDATION-LIMITS.md`
 - WebSocket köprüsü ve ölçümü: `docs/WEBSOCKET.md`
 - Komut doğrulama ve kapsamı: `docs/COMMANDS.md`
+- MCP sunucusu ve kurulumu: `docs/MCP.md`
 - Legal metinler (taslak): `docs/LEGAL.md`
 - Arayüz sayfaları ve tasarım brief'i: `docs/UI.md`
 
