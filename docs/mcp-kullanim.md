@@ -15,15 +15,20 @@ kötü.** İkisi farklı sonuç doğurur, o yüzden ayrıştırılmadan yazılma
 
 ## Durum
 
-**01-09-2026 — taban çizgisi alındı, bağlayıcı bağlandı, altı senaryodan
-BİRİ koşuldu.**
+**01-09-2026 — bağlayıcı bağlı, senaryo 1 tamamlandı, BİTİŞ KRİTERİ
+KARŞILANDI.** Altı senaryodan biri bitti.
 
 Koşulmamış senaryonun satırına sayı yazılmaz; "koşulmadı" bir eksiklik değil,
 o satırın bugünkü doğru cevabı.
 
-**Bitiş kriteri henüz karşılanmadı** ve karşılandığı iddia edilmiyor. Senaryo
-1'in gerekçesi aşağıda: üretilen dosya şemadan temiz geçti ama paket
-incelemesi çağrılsaydı `ok:false` dönecekti.
+**Bitiş kriteri karşılandı** (senaryo 1, ikinci tur): gerçek bir Bedrock
+isteği bağlayıcı üzerinden baştan sona doğrulanmış çıktı üretti — yedi
+dosyalık, kurulabilir bir `.mcaddon`. `review_pack` `ok:true` döndü ve bu
+sonuç bağımsız olarak tekrarlandı.
+
+**Karşılanmayan:** paket Minecraft'a hiç yüklenmedi. `docs/VALIDATION-LIMITS.md`
+tam bunun için var — "doğrulamadan geçti" ile "oyunda çalışıyor" aynı şey
+değil.
 
 ## Nasıl ölçülecek
 
@@ -96,17 +101,19 @@ sütunu kritik: araç adı telaffuz edilmeden çağrıldıysa `evet`, ancak zorl
 açıklama işidir.
 
 **1 / 6 senaryo koşuldu.** Sayılar geçici, her senaryodan sonra güncelleniyor.
+Senaryo 1 iki turda koştu (tek dosya → yedi dosyalık paket) ve iki turun
+davranışı FARKLI; ayrım aşağıdaki notlarda.
 
 | Araç | Çağrıldığı senaryo | Kendiliğinden | Not |
 |---|---|---|---|
-| `check_feasibility` | 0 / 1 | — | S1'de beklendi, çağrılmadı |
-| `get_version_info` | 1 / 1 | evet | İlk çağrı, dosya yazılmadan önce |
-| `get_schema` | 1 / 1 (iki çağrı) | evet | İlki boş döndü, aşağıdaki boşluk |
-| `lookup_id` | 0 / 1 | — | S1'de beklendi; ortada vanilla kimlik yoktu, savunulabilir |
-| `validate_json` | 1 / 1 | evet | `ok:true`, bağımsız doğrulandı |
+| `check_feasibility` | **0 / 1** | — | İki turda da çağrılmadı. Tek gözlem, erken |
+| `get_version_info` | 1 / 1 | evet | 1. turun ilk çağrısı, dosya yazılmadan önce |
+| `get_schema` | 1 / 1 (4 çağrı) | evet | Her iki turda da, hep üretimden önce |
+| `lookup_id` | **0 / 1** | — | Ortada vanilla kimlik yoktu, çağrılmaması savunulabilir |
+| `validate_json` | 1 / 1 (4 çağrı) | evet | Her dosya tek tek, üç ayrı belge tipi |
 | `validate_command` | — | — | S1'de beklenmiyordu |
 | `validate_script` | — | — | S1'de beklenmiyordu |
-| `review_pack` | **0 / 1** | — | **Beklendi, çağrılmadı. Cevabın durumunu değiştirdi** |
+| `review_pack` | 1 / 1 | evet | **1. turda çağrılmadı, 2. turda çağrıldı** — ayrım aşağıda |
 
 ## Senaryo günlükleri
 
@@ -204,6 +211,82 @@ yani ağ tutmadı çünkü düşen olmadı. Ama üretim anında modele rehberlik
 
 Düzeltmenin yeri `packages/validator`, MCP değil.
 
+#### İkinci tur — paket tamamlandı, bitiş kriteri karşılandı
+
+Modelin kendi sorusuna doğal cevap verildi ("yaratığı da sen oluştur,
+identifier'ı sen seç"). Yönlendirme yok, araç adı telaffuz edilmedi.
+
+Zincir altı çağrı:
+
+| # | Araç | Argüman |
+|---|---|---|
+| 1 | `get_schema` | `{type: "behavior/entities"}` |
+| 2 | `get_schema` | `{type: "behavior/entities", path: "minecraft:entity"}` |
+| 3 | `validate_json` | behavior entity |
+| 4 | `validate_json` | resource client entity |
+| 5 | `validate_json` | render controllers |
+| 6 | **`review_pack`** | paketin tamamı |
+
+**`review_pack` bu turda kendiliğinden çağrıldı.** Birinci turda çağrılmamıştı.
+Aradaki tek fark ortada gerçek bir paket olması: 1 dosya → 7 dosya, tek belge
+tipi → üç belge tipi, iki ayrı pack. Yani ilk turdaki eksik "aracın
+keşfedilmemesi" değil; tek dosyada model doğrulamayı zaten `validate_json` ile
+yapmış sayıyor. **Tek gözlem yeterli veri değil**, ama şu ana kadarki
+en açıklayıcı hipotez bu ve kalan beş senaryo onu sınayacak.
+
+**Bağımsız doğrulama.** `.mcaddon` açıldı, yedi dosya olduğu gibi dağıtılmış
+uca gönderildi:
+
+```
+ok=true  validation=true  measured=true  ·  956 bayt  ·  bulgu 0
+
+OK  muhafiz_bp/entities/muhafiz.json                         [behavior/entities/entities]
+OK  muhafiz_bp/manifest.json                                 [general/manifest]
+OK  muhafiz_bp/spawn_rules/muhafiz.json                      [behavior/spawn_rules/spawn_rules]
+OK  muhafiz_rp/entity/muhafiz.entity.json                    [resource/entity/entity]
+OK  muhafiz_rp/manifest.json                                 [general/manifest]
+OK  muhafiz_rp/render_controllers/muhafiz.render_controllers.json
+OK  muhafiz_rp/texts/en_US.lang                              [atlandı — doğrulayıcı yok]
+```
+
+Modelin "hata yok" cümlesi doğru çıktı. Birinci turdaki kimlik bulgusu da
+kapandı: spawn rule artık `codecraft:muhafiz` diyor ve o kimliği paketin
+kendisi tanımlıyor.
+
+**Beş sürüm ekseninin beşi de doğru** — CodeCraft'ın var olma sebebi tam olarak
+bu tablonun karışması:
+
+| Alan | Değer | Doğru mu |
+|---|---|---|
+| manifest `format_version` | `2` | ✓ manifestin kendi şema sürümü |
+| `min_engine_version` | `[1, 26, 40]` | ✓ üç parçalı dizi, oyun sürümü |
+| behavior entity `format_version` | `"1.21.100"` | ✓ |
+| client entity `format_version` | `"1.8.0"` | ✓ |
+| render controllers `format_version` | `"1.10.0"` | ✓ |
+| spawn rules `format_version` | `"1.8.0"` | ✓ |
+
+Pazarlama numarası (`26.40`) hiçbir alana yazılmadı. BP'nin `dependencies`
+girdisi RP'nin header UUID'sine işaret ediyor, dört UUID de birbirinden farklı.
+
+**Ağın gerçekten tuttuğu ölçüldü.** "`ok:true` gördük" tek başına, hiçbir şeyi
+denetlemeyen bir yoldan da gelebilirdi. İki uydurma bileşen enjekte edildi:
+
+```
+spawn rule + "minecraft:uydurma_filtre"   -> ok=false
+   must NOT have additional properties: "minecraft:uydurma_filtre"
+entity     + "minecraft:uydurma_bilesen"  -> ok=false
+   must NOT have additional properties: "minecraft:uydurma_bilesen"
+```
+
+Şema `additionalProperties: false` taşıyor, yani uydurulmuş bileşen adı
+sessizce geçmiyor. Ayrıca modelin kullandığı altı spawn koşulu bileşeninin
+altısı da düğümün gerçek 22 bileşeninin içinde.
+
+**Ölçülmeyen — ve bu kayda geçiyor:** paket Minecraft'a yüklenmedi. Modelin
+kendi söylediği bir sınır da var ve doğru: kendi geometrisi ve dokusu olmadığı
+için vanilla zombie modelini kullanıyor. `.mcaddon` depoya girmiyor
+(`.gitignore` `*.mcaddon`), doğru davranış.
+
 ### 2. `chain-mining-01` — "Kırdığım bloğun aynı türden komşularını da kırsın"
 
 Script yolu. Ezberden yazılan `@minecraft/server` API'si en sık sessiz hata
@@ -277,10 +360,12 @@ yazılır — `docs/COMMANDS.md` sonundaki `execute ... run` maddesinin kalıbı
 |---|---|---|---|
 | 1 | `get_schema` dizi düğümünde boş özet döndürüyor (`items` içine inmiyor) | `packages/validator/src/schema-summary.ts` | **Düzeltildi**, aşağıda |
 | 1b | Aynı sınıf: `oneOf`/`anyOf` dalları da okunmuyordu | aynı dosya | **Düzeltildi**, 1'i düzeltirken ölçüldü |
-| 2 | `review_pack` kendiliğinden çağrılmıyor | `packages/mcp/src/tools/review.ts` açıklaması ya da `server.ts` `instructions` | 1 senaryoda 1 kez, tek gözlem — kontrol koşusu bekliyor |
+| 2 | ~~`review_pack` kendiliğinden çağrılmıyor~~ | — | **Kapandı.** Senaryo 1'in ikinci turunda kendiliğinden çağrıldı; eksik araçta değil, tek dosyalık istekte |
+| 3 | `check_feasibility` iki turda da hiç çağrılmadı | `packages/mcp/src/tools/feasibility.ts` açıklaması | Açık, tek senaryoluk gözlem — kontrol koşusu bekliyor |
 
-İkincisi için tek bir senaryo yeterli veri değil; kalan beş senaryodan sonra
-tekrar bakılacak. Bir kez çağrılmamak "keşfedilmiyor" demek değildir.
+Üçüncüsü için tek bir senaryo yeterli veri değil; kalan beş senaryodan sonra
+tekrar bakılacak. Bir kez çağrılmamak "keşfedilmiyor" demek değildir — ikinci
+satır tam olarak bunu gösterdi ve erken yazılsaydı yanlış olurdu.
 
 ## Düzeltilen: `get_schema`'nın iki kör noktası
 
