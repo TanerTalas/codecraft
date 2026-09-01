@@ -418,16 +418,38 @@ async function checkBlockStates(
   blockId: string | null,
   version: string | undefined,
 ): Promise<string | null> {
-  // Eski veri değeri biçimi — OYUNDA ÖLÇÜLDÜ (30-08-2026, ws:probe):
+  // Eski veri değeri biçimi (blok adından sonra çıplak tam sayı).
   //
-  //   fill ~ ~ ~ ~ ~ ~ minecraft:air 0 replace       → ayrıştı
-  //   fill ~ ~ ~ ~ ~ ~ minecraft:air BOGUS replace   → sözdizimi hatası
+  // ~~30-08-2026: ws:probe ile ölçüldü, oyun kabul ediyor, serbest bırakıldı.~~
+  // **ÇÜRÜTÜLDÜ 01-09-2026, Aşama M5 senaryo 3.** O ölçüm WebSocket kanalında
+  // alınmıştı ve o kanal SOHBETTEN DAHA GEVŞEK. Aynı komutlar iki kanalda
+  // farklı davranıyor, aynı oyunda (Bedrock 1.26.45), aynı dünyada:
   //
-  // Mojang'ın yayımladığı tanımda bu biçim yok (hiçbir aşırı yüklemede blok
-  // adından sonra INT parametresi geçmiyor) ama gerçek ayrıştırıcı geriye
-  // dönük uyumluluk için kabul ediyor. Doğrulayıcı önce reddediyordu; bu bir
-  // yanlış pozitifti ve ölçüm onu çürüttü.
-  if (INT_RE.test(raw.trim())) return null;
+  //   komut                                          ws        sohbet
+  //   testforblock ~ ~-1 ~ minecraft:acacia_button 0 ayrıştı   SÖZDİZİMİ HATASI
+  //   fill ~ ~ ~ ~ ~ ~ glass 0 outline               ayrıştı   SÖZDİZİMİ HATASI
+  //   fill ~ ~ ~ ~ ~ ~ glass 0 hollow                ayrıştı   SÖZDİZİMİ HATASI
+  //
+  // Birinci satır, kaçamağı kuran ölçümün BİREBİR kendisi.
+  //
+  // Kullanıcının yaşadığı hata buydu ve bir YANLIŞ NEGATİFTİ — doğrulayıcı
+  // "geçerli" dedi, oyuncu oyunda yazdı, oyun reddetti:
+  //
+  //   /fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass 0 outline
+  //   Syntax error: Unexpected "0": at " ~4 glass >>0<< outline"
+  //
+  // Doğrulanan kanal SOHBET/komut bloğu, çünkü kullanıcı komutu oraya yazıyor.
+  // Daha gevşek olan kanala göre doğrulamak yanlış negatif üretir ve bu proje
+  // için en pahalı hata odur. Ayrıntı: docs/COMMANDS.md, docs/WEBSOCKET.md.
+  //
+  // AÇIK: script içinden (dimension.runCommand) hangi ayrıştırıcının koştuğu
+  // ÖLÇÜLMEDİ. Üçüncü bir kanal olabilir; ölçülmeden kural yazılmıyor.
+  if (INT_RE.test(raw.trim())) {
+    return (
+      `eski veri değeri "${raw.trim()}" sohbette kabul edilmiyor; ` +
+      'blok durumu kullan: ["ad":değer]'
+    );
+  }
 
   const parsed = parseBlockStates(raw);
   if (!parsed.ok) return parsed.reason;

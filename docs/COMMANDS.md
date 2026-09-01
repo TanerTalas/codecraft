@@ -110,8 +110,9 @@ olabilir ve komut grameri onu bilemez. Aynı ilke enum eşleşmesinde de var —
 `/setblock ~ ~ ~ codecraft:ruby_ore` reddedilmiyor. Bu ölçülerek eklendi:
 başta kullanıcının kendi bloğu "geçersiz" görünüyordu.
 
-Ayrıca **eski veri değeri biçimi** (`minecraft:glass 0`) kabul ediliyor —
-gerekçe aşağıdaki ölçüm bölümünde.
+~~Ayrıca **eski veri değeri biçimi** (`minecraft:glass 0`) kabul ediliyor.~~
+**Çürütüldü 01-09-2026, reddediliyor.** Gerekçe aşağıda, "Kanal farkı"
+bölümünde: o kabul kararı WebSocket kanalında ölçülmüştü, sohbet reddediyor.
 
 ## Kapatılan boşluk: blok durumu SÖZDİZİMİ
 
@@ -124,7 +125,7 @@ Ayraç **iki nokta**, eşittir değil. Oyundan ölçüldü (30-08-2026):
 | `[facing_direction:0]` | `Syntax error: Unexpected "facing_direction"` — ad tırnaksız olamaz |
 | `["facing_direction"]` | `Syntax error: Unexpected "]"` — değer zorunlu |
 | `[]` | ayrıştı |
-| `0` | ayrıştı — eski veri değeri |
+| `0` | ws'te ayrıştı, **sohbette HATA** — aşağıya bak |
 
 Doğrulayıcının ilk hâli `=` bekliyordu ve **her iki yönde de yanlıştı**:
 oyunun reddettiği biçimi geçiriyor, kabul ettiğini reddediyordu. Bu bir yanlış
@@ -160,6 +161,10 @@ ayrıştırıcı geriye dönük uyumluluğu koruyor; yayımlanan tanım bunu anl
 
 Fixture geri alındı, doğrulayıcı tam sayıyı kabul ediyor, ve ders teste
 yazıldı: **yayımlanan tanım tek başına yeterli değil, ölçüm onun üstünde.**
+
+> **Bu paragrafın sonucu 01-09-2026'da çürütüldü.** Ders yanlış değildi, ölçüm
+> eksikti: hangi KANALDA ölçüldüğü sorulmamıştı. Ayrıntı bir alttaki bölümde.
+> Doğrulayıcı bugün tam sayıyı **reddediyor**.
 
 Durum kodlarının ayrımı da bu turda öğrenildi ve kendi başına önemli:
 
@@ -278,3 +283,75 @@ yazılı ve model onu yok saymayı biliyor — senaryo 3'te üç kez tetiklendi 
 model doğru komutu korudu. Bu yazılıydı bile değildi; model yine yanılmadı ama
 uyarı okuduğu için değil kendi muhakemesiyle. O yüzden bu boşluk belgelenmedi,
 **kapatıldı**.
+
+## Kanal farkı: `ws:probe` sohbetten daha gevşek
+
+**Ölçüldü 01-09-2026, Aşama M5 senaryo 3.** Bu bölüm yalnızca bir komut
+kuralını değil, **ölçüm yönteminin kendisini** düzeltiyor.
+
+### Nasıl bulundu
+
+Kullanıcı MCP üzerinden üretilen bir komutu oyunda denedi:
+
+```
+/fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass 0 outline
+Syntax error: Unexpected "0": at " ~4 glass >>0<< outline"
+```
+
+Doğrulayıcı o komuta `ok=true` demişti. **Yanlış negatif** — bu proje için en
+pahalı hata, çünkü kullanıcı araca güvenip komutu denedi.
+
+### Dört hipotez, dördü de çürüdü
+
+`ws:probe` ile iki tur ölçüldü (Bedrock 1.26.45):
+
+| Hipotez | Ölçüm | Sonuç |
+|---|---|---|
+| H1 sürüm değişti | İki ölçüm de 1.26.45 | çürüdü |
+| H2 komuta bağlı | `fill`, `setblock`, `testforblock` üçü de ayrıştı | çürüdü |
+| H3 doldurma moduna bağlı | `replace`, `hollow`, `outline` üçü de ayrıştı | çürüdü |
+| H4 bloğa bağlı | `air`, `glass`, `stone` üçü de ayrıştı | çürüdü |
+| H5 bölge büyüklüğü | 1x1x1 ve 3x1x3 ayrıştı | çürüdü |
+
+Yani `ws:probe` kullanıcının düşen komutunu **ayrıştırıyordu**.
+
+### H6: kanal — doğrulandı
+
+Geriye tek fark kaldı: probe komutu WebSocket üzerinden gönderiyor, kullanıcı
+sohbete yazıyor. Aynı komutlar elle sohbete yazıldı:
+
+| Komut | `ws:probe` | Sohbet |
+|---|---|---|
+| `testforblock ~ ~-1 ~ minecraft:acacia_button 0` | ayrıştı | **SÖZDİZİMİ HATASI** |
+| `fill ~ ~ ~ ~ ~ ~ glass 0 outline` | ayrıştı | **SÖZDİZİMİ HATASI** |
+| `fill ~ ~ ~ ~ ~ ~ glass 0 hollow` | ayrıştı | **SÖZDİZİMİ HATASI** |
+
+Aynı oyun, aynı dünya, aynı oturum. **İki ayrıştırıcı aynı değil.**
+
+Birinci satır kritik: 30-08-2026'da "int serbest" kararını kuran ölçümün
+**birebir kendisi**. O ölçüm doğru yapılmıştı ve doğru sonuç vermişti — sadece
+başka bir kanalın sonucuydu.
+
+### Sonuç ve kural
+
+Doğrulayıcı **sohbet/komut bloğu** kanalını hedefliyor, çünkü kullanıcı komutu
+oraya yazıyor. Daha gevşek kanala göre doğrulamak yanlış negatif üretir.
+
+Bugün:
+
+```
+/fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass 0 outline
+  ok=false  eski veri değeri "0" sohbette kabul edilmiyor;
+            blok durumu kullan: ["ad":değer]
+/fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass outline        ok=true
+```
+
+**`ws:probe` ile ölçülen her kural artık sohbette de doğrulanmalı.** Alet
+atılmıyor — hâlâ tek otomatik ölçüm yolu — ama tek başına yeterli değil.
+`docs/WEBSOCKET.md` bu şerhi taşıyor.
+
+### Açık kalan
+
+**Script içinden çalışan komutlar (`dimension.runCommand`) hangi ayrıştırıcıyı
+kullanıyor ÖLÇÜLMEDİ.** Üçüncü bir kanal olabilir. Ölçülmeden kural yazılmıyor;
+bugünkü doğrulayıcı üçü için de sohbetin kuralını uyguluyor, yani en katı olanı.

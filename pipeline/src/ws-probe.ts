@@ -31,6 +31,18 @@ const ANSWER_MS = 5000;
 
 type Expectation = "parses" | "syntax-error";
 
+/**
+ * ⚠ BU ALET SOHBETİ ÖLÇMÜYOR.
+ *
+ * Ölçüldü 01-09-2026 (Bedrock 1.26.45): WebSocket kanalı sohbetten DAHA GEVŞEK.
+ * Aynı komut burada ayrışıp sohbette sözdizimi hatası verebiliyor — üç örneği
+ * aşağıdaki "eski veri değeri" ölçümlerinde duruyor.
+ *
+ * Yani buradaki "ayrıştı" sonucu **ws kanalının gerçeği**, oyuncunun gerçeği
+ * değil. Bir kural yazmadan önce sohbette elle tekrarla.
+ * Ayrıntı: docs/WEBSOCKET.md, docs/COMMANDS.md.
+ */
+
 type Probe = {
   /** Neyi ölçüyoruz. */
   question: string;
@@ -156,17 +168,17 @@ const PROBES: Probe[] = [
   {
     question: "int: fill + hollow",
     command: "fill ~ ~ ~ ~ ~ ~ minecraft:air 0 hollow",
-    expect: "syntax-error",
+    expect: "parses", // ws kabul ediyor, SOHBET ETMİYOR
   },
   {
     question: "int: fill + outline (kullanıcının düşen biçimi)",
     command: "fill ~ ~ ~ ~ ~ ~ minecraft:air 0 outline",
-    expect: "syntax-error",
+    expect: "parses", // ws kabul ediyor, SOHBET ETMİYOR
   },
   {
     question: "int: fill, namespace'siz blok",
     command: "fill ~ ~ ~ ~ ~ ~ air 0 hollow",
-    expect: "syntax-error",
+    expect: "parses", // ws kabul ediyor, SOHBET ETMİYOR
   },
   {
     question: "int: setblock + replace",
@@ -204,17 +216,17 @@ const PROBES: Probe[] = [
   {
     question: "H4 int: fill + glass + hollow",
     command: "fill ~ ~ ~ ~ ~ ~ minecraft:glass 0 hollow",
-    expect: "syntax-error",
+    expect: "parses", // ws kabul ediyor, SOHBET ETMİYOR
   },
   {
     question: "H4 int: fill + glass + outline (kullanıcının biçimi)",
     command: "fill ~ ~ ~ ~ ~ ~ glass 0 outline",
-    expect: "syntax-error",
+    expect: "parses", // ws kabul ediyor, SOHBET ETMİYOR
   },
   {
     question: "H4 int: fill + stone + hollow (üçüncü blok)",
     command: "fill ~ ~ ~ ~ ~ ~ minecraft:stone 0 hollow",
-    expect: "syntax-error",
+    expect: "parses", // ws kabul ediyor, SOHBET ETMİYOR
   },
   {
     question: "H4 kontrol: fill + glass, int YOK",

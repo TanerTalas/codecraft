@@ -285,26 +285,36 @@ test("uydurulmuş vanilla kimliği hâlâ reddedilir", async () => {
   assert.equal(result.ok, false);
 });
 
-test("eski veri değeri biçimi KABUL edilir — oyunda ölçüldü", async () => {
-  // Mojang'ın yayımladığı tanımda bu biçim YOK: hiçbir fill aşırı yüklemesi
-  // blok adından sonra INT almıyor. Doğrulayıcı bu yüzden önce reddediyordu
-  // ve elle yazılmış bir eval fixture'ını "hatalı" sanıp değiştirdim.
-  //
-  // Oyun tersini söyledi (30-08-2026, npm run ws:probe):
-  //
-  //   fill ... minecraft:air 0 replace       ayrıştı        (-2147352576)
-  //   fill ... minecraft:air BOGUS replace   sözdizimi hatası (-2147483648)
-  //
-  // Kontrol grubu belirleyici: sayı ayrışıyor, saçma değer ayrışmıyor. Gerçek
-  // ayrıştırıcı geriye dönük uyumluluğu koruyor, yayımlanan tanım anlatmıyor.
-  // Yayımlanan tanım tek başına yeterli değil; ölçüm onun üstünde.
-  const legacy = await check("/fill ~-5 ~ ~-5 ~5 ~4 ~5 minecraft:glass 0 hollow");
-  assert.equal(legacy.ok, true, legacy.errors[0]?.message ?? "");
-
-  const modern = await check("/fill ~-5 ~ ~-5 ~5 ~4 ~5 minecraft:glass hollow");
-  assert.equal(modern.ok, true, modern.errors[0]?.message ?? "");
-
-  // Sınır: gevşetme yalnızca tam sayıyı kapsıyor, her şeyi değil.
+/**
+ * ÜSTÜ ÇİZİLEN ÖLÇÜM — burada bir test vardı:
+ *
+ *   test("eski veri değeri biçimi KABUL edilir — oyunda ölçüldü")
+ *
+ * 30-08-2026'da yazılmıştı ve gerekçesi ölçümdü: `ws:probe` ile oyuna
+ * `fill … minecraft:air 0 replace` gönderilmiş, ayrışmıştı; kontrol grubu da
+ * vardı (`BOGUS` ayrışmadı). Yayımlanan tanımda bu biçim yok, o yüzden ölçüm
+ * tanımın üstüne konmuştu. Yöntem doğruydu, sonuç yanlıştı.
+ *
+ * **ÇÜRÜTÜLDÜ 01-09-2026, Aşama M5 senaryo 3.** Eksik olan şey kanaldı:
+ * ws:probe komutu WebSocket üzerinden gönderiyor, oyuncu ise sohbete yazıyor
+ * ve İKİ AYRIŞTIRICI AYNI DEĞİL. Aynı oyun (1.26.45), aynı dünya, aynı komut:
+ *
+ *   testforblock ~ ~-1 ~ minecraft:acacia_button 0   ws: ayrıştı  sohbet: HATA
+ *   fill ~ ~ ~ ~ ~ ~ glass 0 outline                 ws: ayrıştı  sohbet: HATA
+ *   fill ~ ~ ~ ~ ~ ~ glass 0 hollow                  ws: ayrıştı  sohbet: HATA
+ *
+ * Birinci satır kaçamağı kuran ölçümün birebir kendisi.
+ *
+ * Bulunuş biçimi kayda değer: kullanıcı MCP üzerinden üretilen komutu oyunda
+ * denedi ve düştü. Doğrulayıcı "geçerli" demişti — yanlış negatif.
+ *
+ * Yerine geçen testler dosyanın sonunda ("eski veri değeri reddediliyor…" ve
+ * "veri değerinin doğru karşılığı hâlâ geçiyor"). Kanal farkı
+ * docs/WEBSOCKET.md ve docs/COMMANDS.md içinde yazılı.
+ */
+test("saçma bir veri değeri de reddediliyor", async () => {
+  // Eski testten korunan tek parça: gevşetme kalktı ama BOGUS'un reddi zaten
+  // ayrı bir yoldan geliyordu ve o yol bozulmamalı.
   const bogus = await check("/fill ~-5 ~ ~-5 ~5 ~4 ~5 minecraft:glass BOGUS hollow");
   assert.equal(bogus.ok, false);
 });
@@ -353,5 +363,45 @@ test("dolu enum hâlâ uydurma değeri reddediyor", async () => {
     const result = await check(line);
     assert.equal(result.ok, false, `${line} geçti, oysa geçmemeliydi`);
     assert.equal(result.errors[0]?.kind, "argument");
+  }
+});
+
+/**
+ * Eski veri değeri (blok adından sonra çıplak tam sayı).
+ *
+ * Bu testler bir YANLIŞ NEGATİFİ kapatıyor — doğrulayıcı "geçerli" demişti,
+ * kullanıcı oyunda yazmıştı, oyun reddetmişti (Aşama M5 senaryo 3):
+ *
+ *   /fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass 0 outline
+ *   Syntax error: Unexpected "0": at " ~4 glass >>0<< outline"
+ *
+ * Kaçamak 30-08-2026'da ws:probe ölçümüne dayanarak konmuştu; o ölçüm
+ * WebSocket kanalındaydı ve o kanal sohbetten daha gevşek. Ölçüm 01-09-2026'da
+ * iki kanalda birden tekrarlandı, fark belgelendi (docs/WEBSOCKET.md).
+ */
+test("eski veri değeri reddediliyor ve ne yapılacağı söyleniyor", async () => {
+  for (const line of [
+    "/fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass 0 outline",
+    "/fill ~ ~ ~ ~ ~ ~ glass 0 hollow",
+    "/testforblock ~ ~-1 ~ minecraft:acacia_button 0",
+    "/setblock ~ ~ ~ minecraft:air 0 replace",
+  ]) {
+    const result = await check(line);
+    assert.equal(result.ok, false, `${line} geçti, oysa oyun sohbette reddediyor`);
+    // Hata eyleme dönüştürülebilir olmalı: doğru biçimi söylesin.
+    assert.match(result.errors[0]?.message ?? "", /eski veri değeri/);
+    assert.match(result.errors[0]?.message ?? "", /["ad":değer]/);
+  }
+});
+
+test("veri değerinin doğru karşılığı hâlâ geçiyor", async () => {
+  // Kaçamak kaldırılırken blok durumu yolu bozulmasın — bu testin tek işi o.
+  for (const line of [
+    "/fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass outline",
+    '/testforblock ~ ~-1 ~ minecraft:acacia_button ["facing_direction":0]',
+    "/testforblock ~ ~-1 ~ minecraft:acacia_button []",
+  ]) {
+    const result = await check(line);
+    assert.equal(result.ok, true, `${line} reddedildi: ${JSON.stringify(result.errors)}`);
   }
 });

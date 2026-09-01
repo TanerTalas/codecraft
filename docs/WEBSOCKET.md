@@ -8,6 +8,30 @@ yolu bu.
 sürümde sessizce kırılabilir. Bu doküman ne zaman, neyin ölçüldüğünü kaydeder;
 bir sonraki sürümde aynı ölçüm tekrarlanır ve fark buradan okunur.
 
+> ## ⚠ Bu kanal sohbetten DAHA GEVŞEK
+>
+> **Ölçüldü 01-09-2026, Bedrock 1.26.45.** WebSocket üzerinden gönderilen bir
+> komut ile sohbete yazılan aynı komut **aynı ayrıştırıcıdan geçmiyor.**
+>
+> | Komut | ws | sohbet |
+> |---|---|---|
+> | `testforblock ~ ~-1 ~ minecraft:acacia_button 0` | ayrıştı | **HATA** |
+> | `fill ~ ~ ~ ~ ~ ~ glass 0 outline` | ayrıştı | **HATA** |
+> | `fill ~ ~ ~ ~ ~ ~ glass 0 hollow` | ayrıştı | **HATA** |
+>
+> Aynı oyun, aynı dünya, aynı oturum.
+>
+> **Sonuç: `ws:probe` ile "oyun kabul ediyor" diye bir kural yazılamaz.**
+> Ölçüm sohbette tekrarlanmadan kurala dönüşmez. Bu şerh geçmişe de dönük —
+> `docs/COMMANDS.md` içinde bu yüzden çürütülmüş bir ölçüm var: doğrulayıcı
+> "eski veri değeri" biçimini kabul ediyordu, sohbet reddediyor, ve kullanıcı
+> oyunda çalışmayan bir komut aldı.
+>
+> Alet atılmıyor — hâlâ tek otomatik ölçüm yolu ve seçici harfleri, blok durumu
+> sözdizimi gibi kuralları doğru ölçtü. Yalnızca **tek başına yeterli değil**.
+>
+> Nasıl bulundu: `docs/mcp-kullanim.md`, senaryo 3.
+
 ## Nasıl koşulur
 
 ```
