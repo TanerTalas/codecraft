@@ -232,6 +232,9 @@ export const CHECKED_TYPES = new Set([
   "postfix_d",
   "postfix_l",
   "BLOCK_STATE_ARRAY",
+  // Zincirleme: ikisi de özyinelemeyle denetleniyor (02-09-2026).
+  "EXECUTECHAINEDOPTION_0",
+  "CODEBUILDERARGS",
 ]);
 
 const OPERATORS = new Set(["=", "+=", "-=", "*=", "/=", "%=", "<", ">", "><"]);
@@ -498,6 +501,28 @@ const WIDTHS: Record<string, number> = {
 /** Satırın kalanını tüketen tipler. */
 const REST_TYPES = new Set(["MESSAGE_ROOT", "RAWTEXT"]);
 
+/**
+ * Zincirlenmiş komut taşıyan iki tip. İkisi de YALNIZCA `execute`'ta geçiyor —
+ * 83 komutun tamamı tarandı (02-09-2026).
+ *
+ *   EXECUTECHAINEDOPTION_0  zincirin devamı: ya başka bir alt komut, ya `run …`
+ *   CODEBUILDERARGS         `run`dan sonraki gerçek komut, tam bir satır
+ *
+ * `execute`'un 18 aşırı yüklemesinin 17'sinde birincisi son parametre;
+ * 18.'si (`run <command>`) zincirin terminali ve ikinci tipi taşıyor. Düzeltme
+ * ikisine birden dokunmak zorunda — yalnızca birincisi ele alınırsa
+ * `/execute run say hi` düşmeye devam eder.
+ */
+const EXECUTE_CHAIN = "EXECUTECHAINEDOPTION_0";
+const CHAINED_COMMAND = "CODEBUILDERARGS";
+
+/**
+ * Özyineleme tavanı. Her basamak en az bir jeton tüketiyor, yani sonlanma zaten
+ * garantili; bu tavan yalnızca patolojik girdiye karşı. Tavana varılırsa
+ * KABUL ediliyor, hata uydurulmuyor — dosyanın kendi ilkesi.
+ */
+const MAX_CHAIN_DEPTH = 16;
+
 type Attempt = {
   /** Kaç argüman sorunsuz tüketildi. En iyi adayı seçmek için. */
   consumed: number;
@@ -532,12 +557,98 @@ function matchesEnum(values: readonly string[], value: string): boolean {
   return CUSTOM_IDENTIFIER_RE.test(value);
 }
 
+/**
+ * En çok argüman tüketen aday, kullanıcının kastettiğine en yakın olan.
+ * Beraberlikte "yanlış değer" hatası "eksik argüman" hatasına yeğleniyor:
+ * ilki neyin yanlış olduğunu söyler, ikincisi yalnızca eksiği.
+ */
+const rank = (attempt: Attempt): number =>
+  attempt.consumed * 2 + (attempt.errors[0]?.kind === "argument" ? 1 : 0);
+
+/** Alt seviyeden gelen hataların indekslerini dış satıra kaydırır. */
+const shiftIndex = (errors: readonly CommandError[], by: number): CommandError[] =>
+  errors.map((error) => ({
+    ...error,
+    index: error.index === null ? null : error.index + by,
+  }));
+
+/**
+ * Aşırı yüklemeleri dener. Biri uyuyorsa **null** döner — yani "hata yok".
+ * Hiçbiri uymuyorsa en iyi adayın denemesi döner.
+ */
+async function bestOf(
+  overloads: readonly CommandOverload[],
+  args: readonly string[],
+  index: CommandIndex,
+  version: string | undefined,
+  depth: number,
+): Promise<Attempt | null> {
+  // Aşırı yüklemesi olmayan komut argümanlarına bakmaz; bugünkü davranış.
+  if (overloads.length === 0) return null;
+
+  const attempts: Attempt[] = [];
+  for (const overload of overloads) {
+    attempts.push(await tryOverload(overload, args, index, version, depth));
+  }
+  if (attempts.some((attempt) => attempt.errors.length === 0)) return null;
+
+  return attempts.reduce((a, b) => (rank(b) > rank(a) ? b : a));
+}
+
+/**
+ * Zincirin devamı: kalan jetonlar `execute`'un KENDİ aşırı yükleme tablosuna
+ * uymalı. Veri bunu böyle söylüyor — `run …` o tablonun 18. satırı, yani
+ * ayrı bir kural değil aynı tablonun bir dalı.
+ */
+async function chainIntoExecute(
+  rest: readonly string[],
+  index: CommandIndex,
+  version: string | undefined,
+  depth: number,
+): Promise<Attempt | null> {
+  const execute = index.commands["execute"];
+  // Veri beklenmedik biçimdeyse engelleme; uydurma hata üretmekten iyidir.
+  if (execute === undefined) return null;
+  return await bestOf(execute.overloads, rest, index, version, depth);
+}
+
+/** `run`dan sonrası: kalan jetonlar başlı başına bir komut satırı. */
+async function chainIntoCommand(
+  rest: readonly string[],
+  index: CommandIndex,
+  version: string | undefined,
+  depth: number,
+): Promise<Attempt | null> {
+  const name = rest[0] as string;
+  const lower = name.toLowerCase();
+  const definition =
+    index.commands[lower] ??
+    Object.values(index.commands).find((command) => command.aliases.includes(lower));
+
+  if (definition === undefined) {
+    // index 1: bu satırın kendi başlangıcına göre. Üst seviyede komut adı
+    // token 0'dır ve `index: 0` alır, ama zincirlenmiş bir komutun adı token 0
+    // DEĞİL — dosyanın "index = argüman sırası + 1" sözleşmesine uyuyor ki
+    // dışarıdaki kaydırma onu doğru jetona oturtsun.
+    return {
+      consumed: 0,
+      errors: [{ kind: "unknown-command", message: `"${name}" diye bir komut yok`, index: 1 }],
+    };
+  }
+
+  const failure = await bestOf(definition.overloads, rest.slice(1), index, version, depth);
+  if (failure === null) return null;
+  // +1: alt komutun argüman indeksleri kendi adından sonra başlıyor.
+  return { consumed: 1 + failure.consumed, errors: shiftIndex(failure.errors, 1) };
+}
+
 /** Tek bir aşırı yüklemeyi dener. */
 async function tryOverload(
   overload: CommandOverload,
   args: readonly string[],
   index: CommandIndex,
   version: string | undefined,
+  depth: number,
 ): Promise<Attempt> {
   const errors: CommandError[] = [];
   let cursor = 0;
@@ -577,6 +688,32 @@ async function tryOverload(
       }
       cursor += width;
       continue;
+    }
+
+    // ZİNCİRLEME. Buraya kadar bu iki tip tanınmıyordu: enum tablosunda
+    // yokları, CHECKED_TYPES'ta da yokları, dolayısıyla checkStructural
+    // undefined dönüp genişlik 1 alınıyordu — yani yalnızca `run` jetonu
+    // yutuluyor, arkasındaki gerçek komut "fazladan argüman" sayılıyordu.
+    // Geçerli bir komutu geçersiz raporlamak, bu projenin önlemek için var
+    // olduğu hatanın ters yönden aynısı.
+    if (param.type === EXECUTE_CHAIN || param.type === CHAINED_COMMAND) {
+      const rest = args.slice(cursor);
+      if (depth >= MAX_CHAIN_DEPTH) {
+        cursor = args.length;
+        continue;
+      }
+      const failure =
+        param.type === EXECUTE_CHAIN
+          ? await chainIntoExecute(rest, index, version, depth + 1)
+          : await chainIntoCommand(rest, index, version, depth + 1);
+      if (failure === null) {
+        cursor = args.length;
+        continue;
+      }
+      // Alt seviyenin indeksleri kendi satırına göre; dış satıra kaydırılıyor,
+      // yoksa kullanıcıya yanlış argüman gösterilir.
+      errors.push(...shiftIndex(failure.errors, cursor));
+      return { consumed: cursor + failure.consumed, errors };
     }
 
     const values = index.enums[param.type.toLowerCase()];
@@ -708,13 +845,9 @@ export async function validateCommand(
   }
 
   const args = tokens.slice(1);
-  const attempts: Attempt[] = [];
-  for (const overload of definition.overloads) {
-    attempts.push(await tryOverload(overload, args, index, options.version));
-  }
-  const matched = attempts.find((attempt) => attempt.errors.length === 0);
+  const failure = await bestOf(definition.overloads, args, index, options.version, 0);
 
-  if (matched !== undefined || definition.overloads.length === 0) {
+  if (failure === null) {
     return {
       ok: true,
       command: definition.name,
@@ -724,18 +857,14 @@ export async function validateCommand(
     };
   }
 
-  // En çok argüman tüketen aday, kullanıcının kastettiğine en yakın olan.
-  // Beraberlikte "yanlış değer" hatası "eksik argüman" hatasına yeğleniyor:
-  // ilki neyin yanlış olduğunu söyler, ikincisi yalnızca eksiği.
-  const rank = (attempt: Attempt): number =>
-    attempt.consumed * 2 + (attempt.errors[0]?.kind === "argument" ? 1 : 0);
-  const best = attempts.reduce((a, b) => (rank(b) > rank(a) ? b : a));
-
+  // usage YALNIZCA dış komutunki. Zincirin içinden gelen bir hatada alt
+  // komutun biçimlerini de basmak çıktıyı şişirirdi — `execute` tek başına 18
+  // biçim listeliyor ve ölçülen en büyük araç çıktısı zaten o.
   return {
     ok: false,
     command: definition.name,
     requiresCheats: definition.requiresCheats,
-    errors: best.errors,
+    errors: failure.errors,
     usage: usageOf(definition),
   };
 }

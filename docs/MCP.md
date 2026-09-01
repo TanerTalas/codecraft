@@ -125,21 +125,20 @@ ve M5 tam bunu ölçtü — iki açıklama senaryolar sırasında değişti
 Sekizinde de `annotations: {readOnlyHint: true, openWorldHint: false}`
 (`packages/mcp/src/tool.ts`).
 
-### Araç yüzeyinde yazılı bilinen boşluk
+### Araç yüzeyinde yazılıydı, kapatıldı
 
-`validate_command` geçerli bir `execute ... run <komut>` satırını geçersiz
-raporluyor. Boşluk kapatılmadı ve gizlenmedi; aracın kendi açıklamasının
-sonunda modele yazılı duruyor:
+`validate_command` bir süre geçerli `execute ... run <komut>` satırlarını
+geçersiz raporladı ve bu, aracın açıklamasında modele **açıkça yazılı**
+duruyordu ("o biçimdeki arity hatasını yok say"). Boşluk 02-09-2026'da
+kapatıldı; zincir artık çözülüyor, `run` sonrasındaki komut da doğrulanıyor
+(iç içe `execute` dahil) ve o uyarı açıklamadan kaldırıldı.
 
-```
-BİLİNEN BOŞLUK: `execute ... run <komut>` zincirlemesi çözülmüyor, run
-sonrası fazladan argüman sanılıyor — o biçimdeki arity hatasını yok say
-(docs/COMMANDS.md).
-```
+Kapanışın ölçümü ve düzeltmenin şekli `docs/COMMANDS.md`, "Kapatılan boşluk:
+`execute ... run`".
 
-Ölçümü ve düzeltmenin nereye gireceği `docs/COMMANDS.md` sonunda. Gerçek
-kullanımda modelin bu uyarıyla yanılmadığı `docs/mcp-kullanim.md` senaryo
-3'te görüldü.
+> **Neden burada duruyor:** kötü bir aracın modele *"bu aracın hatalarını yok
+> say"* öğretmesi M5'in kaydettiği bir risk. Uyarı yazıldığı sürece o
+> alışkanlığı besliyordu; kaldırıldı.
 
 ## Çıktı boyutu ve token bütçesi
 
@@ -310,8 +309,10 @@ Challenge Mode ve kullanım uyarısı.
 Windows'un iki `tsc` ikilisini birden paketlemesinden geliyor. "Linux'ta yakın
 kalır" hâlâ tahmin.
 
-**`execute ... run <komut>` yanlış pozitifi kapatılmadı.** Düzeltme
-`packages/validator` işi; ölçümü `docs/COMMANDS.md` sonunda.
+**Namespace toleransı tek yönlü.** `matchesEnum` değerden `minecraft:`
+soyuyor ama eklemiyor; tamamı önekli tutulan altı enumda çıplak değer
+reddediliyor (`/locate biome plains`). Oyunun çıplak biçimi kabul edip
+etmediği ölçülmediği için değiştirilmedi — `docs/COMMANDS.md`.
 
 **Sunucu tarafında log yok.** Sunucu durumsuz ve her istekte yok ediliyor;
 Vercel'in rota bazlı logu hangi ARACIN çağrıldığını göstermiyor. Yani araç

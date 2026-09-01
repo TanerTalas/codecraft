@@ -36,9 +36,8 @@ export const validateCommandTool: ToolModule = {
           "geçerli mi. Eşleşen bir kullanım yoksa geçerli biçimleri döndürür ve " +
           "komutun hile (cheats) gerektirip gerektirmediğini söyler. " +
           "Kullanıcıya komut vermeden önce buradan geçir. " +
-          "BİLİNEN BOŞLUK: `execute ... run <komut>` zincirlemesi çözülmüyor, " +
-          "run sonrası fazladan argüman sanılıyor — o biçimdeki arity hatasını " +
-          "yok say (docs/COMMANDS.md).",
+          "`execute ... run <komut>` zincirlemesi çözülüyor: run sonrasındaki " +
+          "komut da doğrulanır, iç içe execute dahil.",
         inputSchema: {
           line: z
             .string()

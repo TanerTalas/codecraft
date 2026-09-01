@@ -230,29 +230,50 @@ test("validate_command eksik argümanı yakalıyor ve kullanımı gösteriyor", 
 });
 
 /**
- * ÖLÇÜLMÜŞ BOŞLUK — bilerek kırmızı değil, bilerek sabitlenmiş (01-09-2026).
+ * KAPATILAN BOŞLUK (02-09-2026).
  *
- * `validateCommand` `execute ... run <komut>` zincirlemesini çözmüyor: `run`
- * sonrasındaki gerçek komutu "fazladan argüman" sayıyor. Yani GEÇERLİ bir
- * komut geçersiz raporlanıyor — yanlış pozitif.
+ * Burada `execute ... run <komut>` zincirlemesinin YANLIŞ POZİTİF verdiğini
+ * sabitleyen bir test duruyordu: doğrulayıcı `run` sonrasındaki gerçek komutu
+ * "fazladan argüman" sayıyordu, yani geçerli bir komutu geçersiz raporluyordu.
+ * Düzeltilince o test tasarlandığı gibi kırmızıya döndü ve yerini bunlar aldı.
  *
- * Veri eksik değil, indekste duruyor: execute'un 18 aşırı yüklemesinin
- * hepsinde `chainedCommand: EXECUTECHAINEDOPTION_0` var. Doğrulayıcı o
- * parametreye özyinelemiyor, tek bir jeton gibi tüketiyor.
- *
- * Bu test o davranışı olduğu gibi yazıyor. Doğrulayıcı düzeltilince kırmızıya
- * döner ve boşluğun kapandığı görülür — cases.json'daki expect:"gap"
- * kalıbının aynısı. Kapsamı ve kararı: docs/COMMANDS.md.
+ * Tek bir "artık geçiyor" testi yetmez: özyineleme her şeyi kabul ederek de
+ * yeşil görünürdü. O yüzden zincirin İÇİNDEKİ hatanın hâlâ yakalandığı ayrıca
+ * ölçülüyor.
  */
-test("BOŞLUK: execute zincirlemesi yanlış pozitif veriyor", async () => {
+test("execute zincirlemesi çözülüyor, gövdesi de doğrulanıyor", async () => {
   const client = await connect();
   try {
-    const result = JSON.parse((await call(client, "validate_command", { line: "/execute as @a run say hi" })).text) as {
-      ok: boolean;
-      errors: { kind: string; message: string }[];
-    };
-    assert.equal(result.ok, false, "Zincirleme boşluğu kapanmış — docs/COMMANDS.md güncellenmeli");
-    assert.equal(result.errors[0]?.kind, "arity");
+    const check = async (line: string) =>
+      JSON.parse((await call(client, "validate_command", { line })).text) as {
+        ok: boolean;
+        errors: { kind: string; message: string; index: number | null }[];
+      };
+
+    // Geçerli zincirler: tek seviye, iki seviye, ve iç içe execute.
+    for (const line of [
+      "/execute as @a run say hi",
+      "/execute as @a at @s run say hi",
+      "/execute run say hi",
+      "/execute as @a run execute at @s run say hi",
+    ]) {
+      assert.equal((await check(line)).ok, true, `${line} geçerli olmalıydı`);
+    }
+
+    // Zincirin gövdesi gerçekten doğrulanıyor mu — "her şeyi kabul et" değil.
+    const unknown = await check("/execute as @a run uydurmakomut");
+    assert.equal(unknown.ok, false, "zincir gövdesi doğrulanmıyor");
+    assert.equal(unknown.errors[0]?.kind, "unknown-command");
+    // index gövdedeki jetonu göstermeli, `run`u değil. Kaydırma yanlışsa
+    // kullanıcıya yanlış argüman gösterilir ve bunu başka hiçbir test ölçmüyor.
+    assert.equal(unknown.errors[0]?.index, 4);
+
+    // `run` sonrası boş: bugün eksik argüman. ESKİDEN ok=true dönüyordu ve
+    // docs/COMMANDS.md bunu doğru davranış diye gösteriyordu — veri aksini
+    // söylüyor, 18. aşırı yüklemede `command` zorunlu.
+    const dangling = await check("/execute as @a run");
+    assert.equal(dangling.ok, false, "run sonrası boş kabul ediliyor");
+    assert.equal(dangling.errors[0]?.kind, "arity");
   } finally {
     await client.close();
   }

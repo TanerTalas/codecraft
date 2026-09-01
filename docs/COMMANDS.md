@@ -85,6 +85,11 @@ kırmızıya döner ve karar zorlanır — sessizce kabul edilmez.
 
 - **Seçici filtre anahtarları doğrulanmıyor** (`type=`, `r=`, `scores=`).
   Mojang'ın tanımında yoklar.
+- **Namespace toleransı tek yönlü.** `matchesEnum` değerden `minecraft:`
+  soyuyor ama eklemiyor, yani tamamı önekli tutulan altı enumda çıplak değer
+  reddediliyor (`/locate biome plains` → `ok=false`). Ölçüldü 02-09-2026;
+  oyunun çıplak biçimi kabul edip etmediği ölçülmediği için değiştirilmedi.
+  Ayrıntı "Kapatılan boşluk: `execute ... run`" bölümünün sonunda.
 
 ## Kapatılan boşluk: seçici harfleri
 
@@ -178,19 +183,21 @@ Durum kodlarının ayrımı da bu turda öğrenildi ve kendi başına önemli:
 
 ## Testler
 
-`packages/validator/test/command.test.ts` — 28 test, iki yön de ölçülüyor:
+`packages/validator/test/command.test.ts` — 32 test (ölçüldü 02-09-2026;
+bu satır 28 diyordu), iki yön de ölçülüyor:
 geçerli komutlar geçmeli, bozuk komutlar düşmeli, ve kapsam sınırı (hangi
 tipler denetlenmiyor) sabitlenmiş. Eval tarafında `command-give-01` ve
 `command-fill-01` vakaları `commandSyntax` kontrolünü istiyor; negatif kontrol
 koşuldu — koordinat bileşeni silinince vaka kırmızıya döndü.
 
-## Bilinen boşluk: `execute ... run <komut>` zincirlemesi
+## Kapatılan boşluk: `execute ... run <komut>` zincirlemesi
 
-**Ölçüldü 01-09-2026, Aşama M3'te `validate_command` MCP'ye açılırken.**
+**Bulundu 01-09-2026** (Aşama M3'te `validate_command` MCP'ye açılırken),
+**kapatıldı 02-09-2026.**
 
-Doğrulayıcı `execute`'un zincirleme biçimini çözmüyor. `run` sonrasındaki
+Doğrulayıcı `execute`'un zincirleme biçimini çözmüyordu. `run` sonrasındaki
 gerçek komutu fazladan argüman sayıyor, yani **geçerli bir komutu geçersiz
-raporluyor** — yanlış pozitif:
+raporluyordu** — yanlış pozitif. Bulunduğu gündeki ölçüm:
 
 ```
 /execute as @a run say hi          ok=false  arity: fazladan argüman: "say hi"
@@ -199,27 +206,103 @@ raporluyor** — yanlış pozitif:
 /give @p diamond 1                 ok=true
 ```
 
-**Veri eksik değil.** `execute`'un 18 aşırı yüklemesinin hepsinde son parametre
-`chainedCommand: EXECUTECHAINEDOPTION_0` olarak duruyor. Doğrulayıcı o
-parametreye özyinelemiyor, tek bir jeton gibi tüketip duruyor. Yani düzeltme
-sınırlı ve belirli bir yerde: zincirleme parametresi görüldüğünde kalan
-jetonlar yeni bir komut satırı gibi yeniden ayrıştırılmalı.
+**Neden özellikle kötüydü:** `execute ... run` Bedrock'un en yaygın komut
+biçimlerinden biri. Model doğru yazdığı bir komutu "hatalı" görüp bozmaya
+çalışır — CodeCraft'ın önlemek için var olduğu hatanın aynısı, ters yönden.
 
-Aynı biçime sahip başka komutlar da var ve hepsi taranarak bulundu —
-`function`, `place`, `schedule` (`PATHCOMMAND`), `help` (`COMMANDNAME`),
-`locate`, `project`. Bunlar `execute` kadar sık kullanılmıyor ama aynı yoldan
-geçiyorlar.
+### Düzeltmeden önce iki ölçüm, ikisi de bu dosyayı yanlış çıkardı
 
-**Neden yanlış pozitif özellikle kötü:** `execute ... run` Bedrock'un en yaygın
-komut biçimlerinden biri. Model doğru yazdığı bir komutu "hatalı" görüp
-bozmaya çalışır — CodeCraft'ın önlemek için var olduğu hatanın aynısı, ters
-yönden.
+**1. "18 aşırı yüklemesinin hepsinde" yanlıştı — doğrusu 17.** 18.'si zincirin
+terminali ve başka bir tip taşıyor:
 
-**Bugünkü durum:** boşluk kapatılmadı, gizlenmedi. İki yerde yazılı:
-`validate_command` aracının açıklamasında (model o biçimdeki arity hatasını
-yok saysın diye) ve `packages/mcp/test/tools.test.ts` içinde bugünkü davranışı
-sabitleyen bir testte. Doğrulayıcı düzeltilince o test kırmızıya döner ve
-boşluğun kapandığı görülür — `cases.json`'daki `expect: "gap"` kalıbının aynısı.
+```
+ 0-16   subcommand:…  chainedCommand:EXECUTECHAINEDOPTION_0
+   17   subcommand:OPTION_RUN  command:CODEBUILDERARGS
+```
+
+Bu ayrım düzeltmeyi belirledi: **iki tipe birden** dokunmak gerekiyordu.
+Yalnızca birincisi ele alınsaydı `/execute run say hi` düşmeye devam ederdi.
+
+**2. "Aynı biçime sahip başka komutlar da var" yanlıştı.** Bu dosya
+`function`, `place`, `schedule`, `help`, `locate` ve `project`'i sayıyordu.
+83 komutun tamamı tarandı: **`chainedCommand` yalnızca `execute`'ta var.**
+Diğerleri `PATHCOMMAND` (fonksiyon yolu) ya da dolu bir enum (`COMMANDNAME`)
+üzerinden gidiyor, zincirleme taşımıyorlar ve zaten doğru çalışıyorlardı.
+
+Kapsam bu cümlenin ima ettiğinden çok daha dardı — ve o cümleye güvenip
+düzeltmeyi altı komuta yaymak gereksiz yüzey açardı.
+
+**3. Yanlış pozitif dokümandakinden genişti.** İki vaka hiç yazılmamıştı:
+
+```
+/execute run say hi                düşüyordu — zincirlemeyle ilgisi yok,
+                                   terminal aşırı yüklemenin kendisi bozuktu
+/execute as @a at @s run           düşüyordu — yani "zincir uzunluğu > 1 olan
+                                   HER execute yanlış pozitif" demek daha doğru
+```
+
+### Düzeltme
+
+`tryOverload` iki tipi de tanıyor ve özyineliyor
+(`packages/validator/src/command.ts`):
+
+| Tip | Kalan jetonlar neye karşı denenir |
+|---|---|
+| `EXECUTECHAINEDOPTION_0` | `execute`'un **kendi** aşırı yükleme tablosu |
+| `CODEBUILDERARGS` | Başlı başına bir komut satırı |
+
+İkisi tek bir sabit nokta: `run …` zaten o tablonun 18. satırı, yani ayrı bir
+kural değil aynı tablonun bir dalı. Bugün:
+
+```
+/execute as @a run say hi                     ok=true
+/execute as @a at @s run say hi               ok=true
+/execute run say hi                           ok=true
+/execute as @a run execute at @s run say hi   ok=true   (iç içe)
+/execute if block ~ ~ ~ stone run say hi      ok=true
+/execute if block ~ ~ ~ stone                 ok=true   (opsiyonel zincir)
+/execute as @a run uydurmakomut               ok=false  unknown-command
+```
+
+Son satır kritik: özyineleme **her şeyi kabul ederek** de yeşil görünürdü.
+Zincirin gövdesinin gerçekten doğrulandığı ayrıca ölçülüyor, ve hata indeksinin
+gövdedeki jetonu gösterdiği de — kaydırma yanlış olsaydı kullanıcıya yanlış
+argüman gösterilirdi ve bunu başka hiçbir test ölçmüyordu.
+
+### Bir davranış tersine döndü
+
+```
+/execute as @a run        önce ok=true      şimdi ok=false
+                          "eksik argüman: command (CODEBUILDERARGS)"
+```
+
+Bu dosya eski hâlinde o satırı **doğru davranış** diye gösteriyordu. Veri
+aksini söylüyor: 18. aşırı yüklemede `command` zorunlu, yani `run`dan sonra
+hiçbir şey gelmemesi geçerli değil.
+
+> **Oyunda ölçülmedi.** Depo kuralı "ölçülmeden kural yazılmaz" diyor ve bu
+> satır bir davranış tersine dönüşü. Veriye dayanıyor (zorunlu parametre), ama
+> sohbet kanalında denenmedi. Denenirse sonucu buraya yazılır; oyun kabul
+> ediyorsa karar geri alınır.
+
+### Yan etki: yanlış pozitif riski yer değiştirdi
+
+Zincir gövdesi artık doğrulandığı için, gövdedeki **her** doğrulayıcı boşluğu
+`execute` satırlarına da bulaşıyor. Ölçülmüş somut örnek:
+
+```
+/locate biome plains    ok=false   "plains" biome için geçerli değil
+```
+
+`matchesEnum` namespace toleransı tek yönlü: değerden `minecraft:` **soyuyor**
+ama **eklemiyor**. Altı enum tamamen önekli — `biome` (88), `features` (286),
+`featurerules` (170), `structurefeature` (35), `jigsawstructure` (20),
+`camerapresets` (7). Yani çıplak `plains` reddediliyor, ve artık
+`/execute … run locate biome plains` de reddedilecek.
+
+**Açık madde:** ters yön eklenmedi, çünkü oyunun çıplak `plains`'i kabul edip
+etmediği ölçülmedi. Tek yönlülük bilinçli yazılmış bir karardı; ölçmeden
+değiştirilmiyor.
 
 ## Kapatılan boşluk: boş enum her değeri reddediyordu
 

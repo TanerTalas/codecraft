@@ -156,8 +156,6 @@ test("denetlenmeyen yapısal tipler kayıt altında", async () => {
   // Kapsam gizlenmiyor, sabitleniyor. Bu liste küçüldükçe test güncellenir;
   // Mojang yeni bir yapısal tip eklerse burada görünür ve kararı zorlar.
   assert.deepEqual(unchecked, [
-    "CODEBUILDERARGS",
-    "EXECUTECHAINEDOPTION_0",
     "ID",
     "JSON_OBJECT",
     "MESSAGE_ROOT",
