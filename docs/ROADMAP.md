@@ -176,16 +176,27 @@ fonksiyonlardan oluşuyor (mimari kural 3), araca dönüşmeleri sarmalama işi.
 ### Açığa çıkarılacak araçlar
 
 ```
-validate_json(içerik, tip, sürüm)
-validate_script(kod, apiSürümü)
-lookup_block(id, sürüm)
-get_schema(tip, sürüm)
-get_version_info()
-check_feasibility(niyet)
+check_feasibility(istek)
+get_version_info(sürüm?)
+get_schema(tip, yol?, sürüm?)
+lookup_id(id, sürüm?)
+validate_json(içerik, tip, sürüm?)
+validate_command(satır, sürüm?)
+validate_script(kod, sürüm?, kanal?)
+review_pack(dosyalar, sürüm?)
 ```
 
 Hepsi salt okunur ve hepsine `readOnlyHint` konuyor. Yazma işlemi olmaması hem
-güvenliği hem onay akışını basitleştiriyor.
+güvenliği hem onay akışını basitleştiriyor. Kurulum ve güncel yüzey:
+`docs/MCP.md`.
+
+> **Bu liste 01-09-2026'da düzeltildi.** Önce ALTI araç ve eski adlarıyla
+> yazılıydı (`lookup_block`, `validate_script(kod, apiSürümü)`), yani kodla
+> çelişiyordu. İki araç sonradan onaylandı — `validate_command` (zaten yazılmış
+> bir doğrulayıcıydı, dışarı açılmaması kayıptı) ve `review_pack` (tek çağrıda
+> en çok değer üreten toplayıcı). `lookup_block` ise `lookup_id` oldu: lookup
+> katmanı on iki tür tanıyor ve blokla sınırlamak `minecraft:blaze` sorusunu
+> hiç sorulamaz yapardı. Sıra da değişti — alfabetik değil, kullanım sırası.
 
 ### Kısıtlar
 
@@ -210,6 +221,12 @@ Claude'da değil; sunucu tek, istemci çok.
 Serverless bunu koşturamazsa container tabanlı barındırma gerekir. Bu ölçüm
 erken yapılır çünkü mimariyi etkiler. Ücretsiz kademe yetmezse `CLAUDE.md`'nin
 "ücretli hosting yok" maddesiyle çelişir — o zaman durulup sorulur.
+
+> **Ölçüldü 31-08-2026 ve risk gerçekleşmedi (Aşama M1).** Dağıtılmış Vercel
+> Node runtime'ında altı ön koşulun altısı da yeşil: alt süreç açılıyor, `/tmp`
+> yazılabilir, paketlenen `tsc` çalışma zamanında bulunuyor. Container tabanlı
+> barındırmaya inilmedi, ücretli plana geçilmedi, hiçbir araç üründen
+> çıkarılmadı. Rakamlar `TODO.md` Aşama M1, özeti `docs/MCP.md`.
 
 **Kitle hâlâ teknik.** MCP bağlayıcı ekleyebilen oyuncu, API anahtarı alabilen
 oyuncudan çok daha fazla ama yine de genel kitle değil. MCP web arayüzünün
