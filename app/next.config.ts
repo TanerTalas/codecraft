@@ -2,6 +2,32 @@ import { join } from "node:path";
 
 import type { NextConfig } from "next";
 
+/**
+ * data/ altından fonksiyon paketine giren dosyalar.
+ *
+ * Önce `../data/**` yazıyordu, yani KLASÖRÜN TAMAMI. Ölçüldü (02-09-2026):
+ * çalışma zamanında okunmayan 11 MB ham Mojang şeması ve 4,3 MB Blockception
+ * kaynağı da paketleniyordu. `packages/*` ve `app/src` içinde `schemas/`,
+ * `schemas-index` ve `release-notes` için SIFIR referans var; doğrulama
+ * Blockception'ın DERLENMİŞ çıktısını kullanıyor (`schema-map.json` →
+ * `index.sources.blockception.compiled`).
+ *
+ * Bu yalnızca boyut meselesi değil: uç herkese açık ve ham Mojang şemaları
+ * Minecraft EULA'ya tabi. Okunmayan dosyayı üçüncü bir tarafa yüklememek
+ * doğru taraf (`docs/SOURCES.md`).
+ *
+ * Sürüm klasörü adı GLOB ile geçiliyor — `1.26.40.5` sabitlenirse Mojang
+ * sonraki sürümü yayınladığında paket sessizce boşalırdı.
+ *
+ * İlk glob hem `data/<sürüm>/` altındaki JSON indeksleri hem
+ * `data/blockception/schema-map.json` dosyasını yakalıyor.
+ */
+const DATA_FILES = [
+  "../data/*/*.json",
+  "../data/*/script-types/**",
+  "../data/blockception/compiled/**",
+];
+
 const config: NextConfig = {
   // @codecraft/* ham TypeScript olarak yayınlanıyor (derleme adımı yok, göreli
   // import'larda .ts uzantısı zorunlu), o yüzden Next'in hepsini kendi
@@ -53,9 +79,9 @@ const config: NextConfig = {
   //     build'inde tek paket dahil oluyor, 20 tanesi değil.
   outputFileTracingRoot: join(import.meta.dirname, ".."),
   outputFileTracingIncludes: {
-    "/api/context": ["../data/**", "../codecraft.config.json"],
+    "/api/context": [...DATA_FILES, "../codecraft.config.json"],
     "/api/review": [
-      "../data/**",
+      ...DATA_FILES,
       "../codecraft.config.json",
       "../node_modules/typescript/**",
       "../node_modules/@typescript/**",
@@ -66,7 +92,7 @@ const config: NextConfig = {
     // maddesi yalnızca ikisini yazıyordu; eksik olan ikisi tam olarak M1'de
     // ölçülen iki kırığın sebebiydi (yukarıdaki blokta anlatılıyor).
     "/mcp": [
-      "../data/**",
+      ...DATA_FILES,
       "../codecraft.config.json",
       "../node_modules/typescript/**",
       "../node_modules/@typescript/**",

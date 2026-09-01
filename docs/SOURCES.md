@@ -42,15 +42,55 @@ yok (HTTP 404)" yazıyordu ve EULA *varsayılıyordu*. Artık varsayım değil:
 Yani "tüm hakları saklı" + EULA, açıkça yazılı. Varsayımımız doğruymuş ama
 kaynak artık kesin — ve bu, aşağıdaki uyarıyı zayıflatmıyor, **güçlendiriyor**.
 
-**Repo public yapılırsa bu karar yeniden değerlendirilmeli** — git geçmişinden
-temizlemek zahmetlidir. Alternatif: şemaları `pipeline/raw/` içinde tutup
-`data/` altına sadece türetilmiş `schemas-index.json` yazmak.
-
 **Aşama 2 notu:** birinci gerekçe zayıfladı. Doğrulama Blockception'ın
 derlenmiş şemalarını kullanıyor, Mojang'ınkileri değil (aşağıdaki karar
 bölümü). 1313 dosya artık doğrulama için değil, sürüm farklarını okumak ve
-ikinci bir kontrol için duruyor. Repo public yapılırsa kaldırma maliyeti
-düşük — bu karar da o anda birlikte gözden geçirilmeli.
+ikinci bir kontrol için duruyor.
+
+### Karar: depo private kalıyor, ama dağıtım kanalı depo değilmiş
+
+> ~~**Repo public yapılırsa bu karar yeniden değerlendirilmeli** — git
+> geçmişinden temizlemek zahmetlidir.~~ **Kapandı 02-09-2026.** Depo asla
+> public yapılmayacak (kullanıcı kararı), yani bu koşul hiç gerçekleşmiyor.
+> Şemalar `data/` altında kalıyor.
+
+Ama bu madde kapatılırken **bu dokümanın hiç hesaba katmadığı ikinci bir
+dağıtım kanalı** ortaya çıktı, ve deponun görünürlüğünden bağımsız:
+
+**MCP sunucusu 01-09-2026'dan beri yayında ve kimlik doğrulaması yok**
+(`docs/MCP.md`). `app/next.config.ts` üç rota için `data/` klasörünü Vercel
+fonksiyon paketine koyuyordu — yani 1313 Mojang EULA dosyası üçüncü bir tarafa
+yükleniyor ve herkese açık bir ucun içinde duruyordu. Depo private, paket
+değil.
+
+**Ölçüldü 02-09-2026 ve daraltıldı.** `packages/*/src` ve `app/src` içinde
+`schemas/`, `schemas-index` ve `release-notes` için **sıfır** referans var;
+doğrulama yalnızca `blockception/compiled/`, `script-types/` ve türetilmiş
+JSON indeksleri okuyor. İzleme haritası buna göre daraltıldı
+(`app/next.config.ts`, `DATA_FILES`):
+
+| | Önce | Sonra |
+|---|---|---|
+| `/mcp` toplam dosya | 4.152 | **731** |
+| └ `data/` | 3.372 | **88** |
+| └ ham Mojang şeması | 1.313 | **0** |
+| └ Blockception kaynağı | 1.140 | **0** |
+| İzlenen boyut (Windows) | 70,8 MB | **59,1 MB** |
+
+Kritik dördü yerinde kaldı ve ayrıca sayıldı — `codecraft.config.json` 1,
+`@typescript/` 114, `script-types/` 11, `blockception/compiled/` 60. M1'de tam
+bu haritadan iki kırık çıkmıştı, o yüzden daraltma tahminle değil manifest
+sayımıyla ve ardından gerçek bir üretim build'i üzerinde `mcp:probe` ile
+doğrulandı: dokuz kontrolün dokuzu yeşil, `tsc` hâlâ paketin içinden koşuyor.
+
+**Dışarı giden şey zaten türetilmiş veriydi:** `get_schema` ham şema
+döndürmüyor, yalnızca özet veriyor ve ham şemayı açıkça reddediyor. Yani
+ihlal olmuş değil — ama okunmayan 11 MB EULA içeriğini public bir pakete
+koymamak doğru taraf.
+
+Klasörün kendisi de artık kaynağını söylüyor: `data/<sürüm>/schemas/NOTICE.md`
+(pipeline üretiyor — `writeTree` haritada olmayan her dosyayı sildiği için
+elle yazılamıyor).
 
 **Çekme notları:**
 - bedrock-samples: `main` dalı kararlı sürümü izler, `preview` haftalık.

@@ -21,6 +21,49 @@ import { BEDROCK_SAMPLES_REF, BEDROCK_SAMPLES_REPO, resolveVersion } from "./lib
 
 const PREFIX = "metadata/json_schemas/";
 
+/**
+ * Klasörün kaynağını ve lisansını yazan künye.
+ *
+ * writeTree haritada olmayan HER dosyayı siliyor, yani bu dosya elle
+ * yazılamaz — ilk pipeline koşusunda sessizce silinirdi. Aynı sebeple
+ * script-types de künyesini üretiyor (`pipeline/src/script-types.ts`).
+ */
+export function renderNotice(version: string, fileCount: number): string {
+  return `# Mojang şema kaynak künyesi
+
+Bu klasördeki JSON şemaları \`${BEDROCK_SAMPLES_REPO}\` deposundaki
+\`${PREFIX}\` içeriğinin **birebir** kopyasıdır. Dosyalar elle düzenlenmez,
+\`pipeline/src/schemas-mojang.ts\` üretir.
+
+| | |
+|---|---|
+| Kaynak | \`${BEDROCK_SAMPLES_REPO}\` → \`${PREFIX}\` |
+| Sürüm | ${version} |
+| Dosya | ${fileCount} (bu künye hariç) |
+| Lisans | Minecraft End User License Agreement |
+
+Deponun \`LICENSE.md\` dosyasının metni (doğrulandı 30-08-2026, HTTP 200):
+
+> (c) Mojang AB. All rights reserved.
+>
+> By downloading the files in this repository, you agree to the Minecraft End
+> User License Agreement and that these files are subject to its terms.
+
+## Bunlar doğrulamada kullanılmıyor
+
+CodeCraft'ın JSON doğrulaması **Blockception'ın derlenmiş şemalarını**
+kullanıyor (\`data/blockception/compiled/\`, BSD-3-Clause). Bu klasör sürüm
+farklarını okumak ve ikinci bir kontrol için duruyor.
+
+Ölçüldü 02-09-2026: \`packages/*/src\` ve \`app/src\` içinde bu klasöre
+**sıfır** referans var. Bu yüzden dosyalar Vercel fonksiyon paketine de
+girmiyor (\`app/next.config.ts\`, \`DATA_FILES\`) — okunmayan içerik üçüncü bir
+tarafa yüklenmiyor.
+
+Karar ve gerekçesi: \`docs/SOURCES.md\`.
+`;
+}
+
 export type MojangSchemaResult = {
   files: number;
   written: string[];
@@ -69,14 +112,19 @@ export async function collectMojangSchemas(version: string): Promise<MojangSchem
   for (const [path, content] of downloaded) files.set(path.slice(PREFIX.length), content);
 
   const outDir = join(DATA_DIR, version, "schemas");
+  // İndeks künyeden ÖNCE çıkarılıyor: NOTICE.md bir şema değil ve
+  // indexFormatVersions'a girerse schemas-index.json'a sahte bir tip düşerdi.
+  const schemaPaths = [...files.keys()];
+  const fileCount = files.size;
+  files.set("NOTICE.md", renderNotice(version, fileCount));
   const { written, deleted } = await writeTree(outDir, files);
 
-  const formatVersions = indexFormatVersions([...files.keys()]);
+  const formatVersions = indexFormatVersions(schemaPaths);
   if (await writeIfChanged(join(DATA_DIR, version, "schemas-index.json"), toJson(formatVersions))) {
     written.push("../schemas-index.json");
   }
 
-  return { files: files.size, written, deleted, formatVersions };
+  return { files: fileCount, written, deleted, formatVersions };
 }
 
 runIfMain(import.meta.url, async () => {
