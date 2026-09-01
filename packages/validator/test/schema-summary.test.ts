@@ -172,3 +172,62 @@ test("oneOf dallarındaki alanlar birleştiriliyor ve kaç dal olduğu yazılıy
   assert.ok(names.includes("max_size"), names.join(", "));
   assert.equal(summary.oneOfBranches, 2);
 });
+
+/**
+ * Koşullu ve birleşik şemalar — allOf, if/then/else.
+ *
+ * Ölçüldü 01-09-2026, Aşama M5 senaryo 6: 60 derlenmiş şemadan YEDİSİNİN kökü
+ * tamamen boş dönüyordu ve aralarında en çok kullanılan tip vardı,
+ * general/manifest. Sebep alanların `allOf` (manifest, attachables, items) ya
+ * da `if/then/else` (resource/entity, model_entity) içinde durması.
+ *
+ * Gerçek kullanımdaki bedeli ölçüldü: model bir client entity yazarken
+ * get_schema'yı iki kez çağırdı, işe yarar bir şey alamadı ve stratejisini
+ * değiştirip sekiz kez validate_json ile deneme-yanılmaya geçti.
+ */
+test("allOf içindeki alanlar kökte görünüyor — general/manifest", async () => {
+  const summary = await summarizeSchema("general/manifest", { limit: LIMIT });
+
+  const names = summary.properties.map((property) => property.name);
+  assert.ok(summary.properties.length > 0, "manifest kökü boş döndü");
+  assert.ok(names.includes("format_version"), names.join(", "));
+  assert.ok(names.includes("header"), names.join(", "));
+  // Zorunluluk allOf'ta BİRLEŞİM: kökün kendi required'ı da sayılmalı.
+  assert.deepEqual(summary.required, ["format_version", "header"]);
+});
+
+test("if/then/else dalları birleştiriliyor — resource/entity", async () => {
+  const summary = await summarizeSchema("resource/entity", { limit: LIMIT });
+
+  const names = summary.properties.map((property) => property.name);
+  assert.ok(names.includes("minecraft:client_entity"), names.join(", "));
+  assert.equal(summary.oneOfBranches, 2, "iki dal birleştirilmiş olmalı");
+
+  // Asıl kazanç derinde: senaryo 6'da modelin bulamadığı düğüm.
+  const description = await summarizeSchema("resource/entity", {
+    path: "minecraft:client_entity/description",
+    limit: LIMIT,
+  });
+  const fields = description.properties.map((property) => property.name);
+  assert.ok(fields.includes("scripts"), fields.join(", "));
+  assert.ok(fields.includes("geometry"), fields.join(", "));
+  assert.ok(fields.includes("render_controllers"), fields.join(", "));
+});
+
+test("hiçbir belge tipinin kökü boş dönmüyor", async () => {
+  // Yedi tip boş dönüyordu ve hangileri olduğu ölçülene kadar bilinmiyordu.
+  // Bu test yeni bir şema biçimi çıkarsa kırmızıya döner.
+  for (const type of [
+    "general/manifest",
+    "resource/entity",
+    "resource/attachables",
+    "resource/items",
+    "behavior/blocks",
+    "behavior/entities",
+    "behavior/spawn_rules",
+  ]) {
+    const summary = await summarizeSchema(type, { limit: LIMIT });
+    assert.ok(summary.properties.length > 0, `${type} kökü boş`);
+    assert.ok(summary.required.length > 0, `${type} zorunlu alan bildirmiyor`);
+  }
+});

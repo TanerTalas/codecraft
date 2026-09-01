@@ -16,7 +16,7 @@ kötü.** İkisi farklı sonuç doğurur, o yüzden ayrıştırılmadan yazılma
 ## Durum
 
 **01-09-2026 — bağlayıcı bağlı, BİTİŞ KRİTERİ KARŞILANDI.** Altı senaryodan
-beşi bitti.
+**altısı da bitti.**
 
 Koşulmamış senaryonun satırına sayı yazılmaz; "koşulmadı" bir eksiklik değil,
 o satırın bugünkü doğru cevabı.
@@ -100,7 +100,7 @@ sütunu kritik: araç adı telaffuz edilmeden çağrıldıysa `evet`, ancak zorl
 çağrıldıysa `hayır` — ikincisi "araç sağlam ama keşfedilmiyor" demektir ve
 açıklama işidir.
 
-**5 / 6 senaryo koşuldu.** Sayılar geçici, her senaryodan sonra güncelleniyor.
+**6 / 6 senaryo koşuldu — set tamamlandı.** Sayılar geçici, her senaryodan sonra güncelleniyor.
 Senaryo 1 iki turda koştu (tek dosya → yedi dosyalık paket) ve iki turun
 davranışı FARKLI; ayrım aşağıdaki notlarda.
 
@@ -111,14 +111,14 @@ sorusunun cevabı bu: hiçbir araç "hiç çağrılmayan" değil. Dört senaryo 
 
 | Araç | Çağrıldığı senaryo | Kendiliğinden | Not |
 |---|---|---|---|
-| `check_feasibility` | S2, S4, S5 | evet | Komut isteğinde (S3) çağrılmıyor, dosya üretilen her yerde çağrılıyor |
-| `get_version_info` | S1, S2, S4, S5 | evet | Dosya üretilen her senaryoda, hep üretimden önce |
-| `get_schema` | S1, S5 | evet | S5'te **on kez** — en yoğun kullanıldığı senaryo |
+| `check_feasibility` | S2, S4, S5, S6 | evet | Dosya üretilen her senaryoda; yalnız komut isteğinde (S3) yok |
+| `get_version_info` | S1, S2, S4, S5, S6 | evet | Dosya üretilen her senaryoda, hep üretimden önce |
+| `get_schema` | S1, S5, S6 | evet | S5'te on kez, S6'da yalnız iki kez — sebebi aşağıda |
 | `lookup_id` | S4, S5 | evet | İlk üç senaryoda hiç yoktu; son ikisinde her ikisinde de |
-| `validate_json` | S1, S5 | evet | Diğerlerinde `review_pack` içinden geçti |
-| `validate_command` | S2, S3, S4 | evet | İkisinde beklenmiyordu bile |
+| `validate_json` | S1, S5, S6 | evet | S6'da **sekiz kez** — deneme-doğrulama döngüsü |
+| `validate_command` | S2, S3, S4, S6 | evet | Üçünde beklenmiyordu bile |
 | `validate_script` | S2, S4 | evet | Gerçek `tsc`, script üretilen her senaryoda |
-| `review_pack` | S1, S2, S4, S5 | evet | Dosya üretilen her senaryoda, hep son adım |
+| `review_pack` | S1, S2, S4, S5, S6 | evet | Dosya üretilen her senaryoda, hep son adım |
 
 ## Senaryo günlükleri
 
@@ -714,7 +714,104 @@ tavan 24.000. Ölçülecek: model daralmayı bildiren `truncated` alanını okuy
 
 Beklenen: `get_schema` (daralmış), `validate_json`, `review_pack`.
 
-**Koşulmadı.**
+**Koşuldu, 01-09-2026.** On dört çağrı:
+
+`check_feasibility` → `get_version_info` → `validate_json` ×3 →
+`get_schema` ×2 → `validate_json` ×5 → `review_pack` → `validate_command`
+
+Üretilen: dokuz dosyalık BP + RP çifti (`codecraft:village_guard`), demir golem
+modeli ve dokusu ödünç alınmış. Bağımsız doğrulandı: `review_pack` **`ok:true`,
+0 bulgu**.
+
+#### Beklenen ölçüm gerçekleşmedi — ve sebebi bir boşluk çıktı
+
+Bu senaryo bayt tavanını sınamak için seçilmişti: `behavior/entities` şemasının
+390 alanlı düğümü `names-only` basamağına iniyor ve model `truncated`
+bildirimini okuyup `path` ile inmeli.
+
+**Olmadı.** `get_schema` yalnızca iki kez çağrıldı, sonra model stratejisini
+değiştirip **sekiz kez `validate_json`** ile deneme-yanılmaya geçti.
+
+Sebebi ölçüldü ve aracımızda: `resource/entity` şeması kökte
+`if`/`then`/`else` kullanıyor, `properties` hiç yok. `get_schema` o tip için
+**sıfır alan** döndürüyordu, alt yola inmek de mümkün değildi:
+
+```
+get_schema("resource/entity")                          ->  0 alan
+get_schema("resource/entity", "minecraft:client_entity/description")
+  ->  HATA: "(kök)" altında "minecraft:client_entity" yok. Orada alan yok.
+```
+
+Yani model şemayı okumayı bırakıp denemeye geçti çünkü **şema ona hiçbir şey
+söylemiyordu.** Araç tasarımının model davranışını doğrudan değiştirdiği
+ölçülmüş tek vaka bu.
+
+**Kapsam ölçüldü:** 60 derlenmiş şemanın **yedisinin** kökü boş dönüyordu ve
+aralarında en çok kullanılan tip vardı — `general/manifest`. Sebep `allOf`
+(manifest, attachables, items) ya da `if`/`then`/`else` (resource/entity,
+model_entity). 60 şemada 517 `if/then`, 18 `allOf` düğümü var.
+
+**Düzeltildi:**
+
+| Tip | Önce | Sonra |
+|---|---|---|
+| `general/manifest` | **0 alan** | 8 alan, zorunlu `format_version`, `header` |
+| `resource/entity` | **0 alan** | 2 alan, iki dal birleşmiş |
+| `resource/entity` @ `client_entity/description` | **hata** | **16 alan** (`scripts` dahil) |
+| `behavior/entities` @ `components` | 15.898 B | değişmedi |
+
+`allOf` ile `oneOf` arasında karıştırılırsa sessizce yanlış cevap veren bir
+ayrım var: `allOf`'ta bütün dallar aynı anda geçerli, zorunluluk **birleşim**;
+`oneOf` ve `if/then/else`'te dallar alternatif, zorunluluk **kesişim**.
+Düğümün kendi `required`'ı da sayılıyor — `general/manifest` zorunlularını
+kökte, alanlarını `allOf` içinde tutuyor.
+
+Üç test eklendi, ikisi ayrı ayrı enjekte edilen kırıklarla doğrulandı.
+
+#### Modelin şema iddiası — bu sefer model yanılmış
+
+Cevabın sonunda bir bulgu bildirdi:
+
+> "resource/entity şeması description.scripts.animate alanını reddediyor,
+> 'additional property' diyor. Oysa vanilla client entity dosyalarının çoğu
+> animasyonu tam olarak oradan sürüyor. … şema verinde gerçek bir boşluk gibi
+> duruyor."
+
+Ölçüldü. Şema `format_version`'a göre dallanıyor (`if: format_version ===
+"1.8.0"`) ve `scripts` düğümü iki dalda **farklı**:
+
+| `format_version` | `scripts` içeriği | `scripts.animate` |
+|---|---|---|
+| `1.8.0` | `pre_animation` … | **yok** |
+| diğerleri | `animate` … | **var** |
+
+```
+1.8.0    + scripts.animate  ->  ok=false  must NOT have additional properties: "animate"
+1.10.0   + scripts.animate  ->  ok=true
+1.21.100 + scripts.animate  ->  ok=true
+```
+
+**Şemada boşluk yok.** Model `format_version: "1.8.0"` seçmişti; doğru çözüm
+sürümü yükseltmekti, `animation_controllers`'a dolanmak değil. Ürettiği dosya
+gerçekten `1.8.0` ile yazılmış ve dolanma yolunu kullanıyor.
+
+**Ama araç da yardımcı olmadı** ve asıl ders bu. Dönen mesaj şuydu:
+
+```
+must NOT have additional properties: "animate"
+must match "then" schema
+```
+
+Bu mesaj "bu alan var ama başka bir format_version dalında" demiyor. Model
+elindeki bilgiyle makul bir yanlış sonuca vardı. Senaryo 5'in aynası: orada
+model haklıydı araç yanlıştı, burada araç haklı ama **anlaşılmaz**.
+
+**Açık madde:** koşullu dal içinde düşen bir doğrulama hatası, alanın hangi
+`format_version` ile kabul edileceğini söylemeli. Bugün söylemiyor.
+
+**Ölçülmeyen:** `scripts.animate`'in oyunda gerçekten 1.10.0 gerektirdiği
+ölçülmedi — yalnızca şemanın öyle dediği ölçüldü. Paket de oyunda
+çalıştırılmadı.
 
 ### Kontrol koşusu — "çağrılmadı" iki farklı şey
 
@@ -743,6 +840,8 @@ yazılır — `docs/COMMANDS.md` sonundaki `execute ... run` maddesinin kalıbı
 | 10 | ~~`checkAssets` paketin kendi atlas tanımını görmüyor~~ (**yanlış pozitif**) | `packages/validator/src/checks.ts` | **Kapatıldı.** Doğru paket `ok:false` dönüyordu |
 | 11 | ~~v1 kapsamı "behavior pack" diyor, model kaynak paketi de üretiyor~~ | `CLAUDE.md` | **Karara bağlandı 01-09-2026:** kaynak paketi üretilebilir, teşvik ediliyor |
 | 12 | `prompt.ts` hâlâ "vanilla dokusu ödünç al" diyor | `packages/core/src/prompt.ts` | Açık. **Üretim davranışını değiştirir**, eval koşusu gerektirir |
+| 13 | ~~`get_schema` `allOf` ve `if/then/else` şemalarında boş dönüyor~~ | `packages/validator/src/schema-summary.ts` | **Kapatıldı.** 7 tipin kökü boştu, `general/manifest` dahil |
+| 14 | Koşullu dalda düşen hata hangi `format_version`'ın kabul edeceğini söylemiyor | `packages/validator/src/json.ts` | Açık. Model bu yüzden yanlış teşhis koydu |
 
 On ikinci satır bilerek açık: `prompt.ts` MCP yolunda hiç kullanılmıyor
 (model kendi kararıyla üretiyor), yalnızca CLI/web üretim yolunu yönlendiriyor.

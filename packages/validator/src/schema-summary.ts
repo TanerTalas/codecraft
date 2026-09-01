@@ -19,6 +19,9 @@
  *   · Kök düğüm özetleri 1 KB'ın altında (entities 583 B, blocks 597 B).
  *     Patlama derinlerde: minecraft:entity/components düğümünde 390 alan var
  *     ve tam özeti 59.763 bayt.
+ *   · Kökü tamamen boş dönen 7 şema vardı (60'ta), aralarında EN ÇOK
+ *     kullanılan tip: general/manifest. Sebep `allOf` ve `if/then/else`;
+ *     60 şemada 517 if/then, 18 allOf düğümü var. Ölçüm 01-09-2026, M5 s6.
  *   · Alanlar her zaman `properties` altında DEĞİL. Dizi düğümlerinde
  *     `items` içindeler ve bu yaygın: 60 derlenmiş şemada 618 düğüm `items`
  *     taşıyor, 91'inin arkasında gerçek alanlar var (spawn_rules/conditions
@@ -199,6 +202,25 @@ function mergeBranches(found: Fields[]): Fields {
 }
 
 /**
+ * `allOf` dallarını birleştirir — hepsi AYNI ANDA geçerli.
+ *
+ * Zorunluluk burada BİRLEŞİM, kesişim değil: allOf'ta her dal ayrı ayrı
+ * sağlanmak zorunda, yani bir dalda zorunlu olan alan gerçekten zorunlu.
+ * oneOf'un tam tersi ve karıştırılırsa sessizce yanlış cevap verir.
+ */
+function mergeAll(found: Fields[]): Fields {
+  const properties: Node = {};
+  const required = new Set<string>();
+  for (const branch of found) {
+    for (const [name, spec] of Object.entries(branch.properties)) {
+      if (!(name in properties)) properties[name] = spec;
+    }
+    for (const name of branch.required) required.add(name);
+  }
+  return { properties, required: [...required], viaItems: false };
+}
+
+/**
  * Alanların GERÇEKTE durduğu yer — target'ın `properties`'i olmayabilir.
  *
  * Dört yer var, sırayla bakılıyor: `properties`, `additionalProperties`
@@ -254,6 +276,26 @@ function fieldsOf(node: unknown, root: Node, depth = 0): Fields | null {
   const branches = resolved["oneOf"] ?? resolved["anyOf"];
   if (Array.isArray(branches) && branches.length > 0) {
     const found = branches
+      .map((branch) => fieldsOf(branch, root, depth + 1))
+      .filter((fields): fields is Fields => fields !== null);
+    if (found.length > 0) return mergeBranches(found);
+  }
+
+  const all = resolved["allOf"];
+  if (Array.isArray(all) && all.length > 0) {
+    const found = all
+      .map((branch) => fieldsOf(branch, root, depth + 1))
+      .filter((fields): fields is Fields => fields !== null);
+    if (found.length > 0) return mergeAll(found);
+  }
+
+  // Koşullu şema: if/then/else. Dallar ALTERNATİF, o yüzden oneOf gibi
+  // birleştiriliyor ve zorunluluk kesişimden alınıyor.
+  const conditional = [resolved["then"], resolved["else"]].filter(
+    (branch) => branch !== undefined,
+  );
+  if (conditional.length > 0) {
+    const found = conditional
       .map((branch) => fieldsOf(branch, root, depth + 1))
       .filter((fields): fields is Fields => fields !== null);
     if (found.length > 0) return mergeBranches(found);
@@ -385,7 +427,10 @@ export async function summarizeSchema(
   // `required` alanların durduğu düğümden okunuyor, target'tan değil. Dizi
   // düğümünde zorunluluk items içinde yazılı; target'a bakmak onu düşürürdü.
   const fields = fieldsOf(target, root);
-  const required = new Set(fields?.required ?? requiredOf(target));
+  // Düğümün KENDİ required'ı da sayılıyor: general/manifest.json zorunlu
+  // alanlarını kökte, alanları allOf içinde tutuyor. Yalnızca birine bakmak
+  // o tipte zorunluları düşürürdü.
+  const required = new Set([...requiredOf(target), ...(fields?.required ?? [])]);
   const children = fields?.properties ?? {};
 
   const summary: SchemaSummary = {
