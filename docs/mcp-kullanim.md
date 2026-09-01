@@ -299,8 +299,9 @@ nerede duruyor" sorusuna eksik cevap vermesiydi.
 Üçüncü satır bir şeyi kapsam dışı bıraktı: tuple biçimine inilmiyor, çünkü
 inecek bir şey yok. Ölçülmemiş kural kodlanmıyor.
 
-**Önce / sonra.** "Önce" sütunu dağıtılmış uçtan, düzeltme deploy edilmeden
-alındı; "sonra" yerelden. Aynı arayüz, aynı `data/`:
+**Önce / sonra.** İkisi de **aynı dağıtılmış uçtan**, deploy'un iki yakasından:
+"önce" düzeltme gönderilmeden, "sonra" `codecraft-f548r62mb` (Ready 36 sn)
+sonrası. Aynı arayüz, aynı `data/`, aynı istemci:
 
 | Yol | Önce | Sonra |
 |---|---|---|
@@ -348,6 +349,11 @@ enjekte-et-ve-kırmızıya-dön yöntemi):
 **Bu düğümlerin hiçbiri tavanı zorlamıyor:** en büyüğü 4.342 bayt, tavan
 24.000. En kalabalık düğüm (`minecraft:entity/components`, 390 alan) ve kök
 özetleri bayt bayt aynı kaldı — düzeltme yalnızca boş dönen düğümlere dokundu.
+
+**Dağıtılmış uçta doğrulandı** (`codecraft-f548r62mb`, 01-09-2026): üç yolun
+üçü de yereldeki rakamların birebir aynısını döndürdü (4.342 / 1.091 / 641
+bayt), `npm run mcp:probe` on kontrolün onunda yeşil. Yani düzeltme yalnızca
+yerelde değil, bağlayıcının konuştuğu uçta da yürürlükte.
 
 ## Değişen açıklamalar
 
