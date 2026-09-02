@@ -23,7 +23,7 @@ izinli küme Blockception'ın şemaları; Mojang'ınkiler `data/` içinde duruyo
 | Kaynak | Ne için | Lisans | `data/` içine nasıl girer |
 |---|---|---|---|
 | `Mojang/bedrock-samples` → `vanilladata_modules` | Blok, entity, item tanımları | Minecraft EULA, **tüm hakları saklı** | Türetilmiş indeks (id listeleri, blok durumları) |
-| `Mojang/bedrock-samples` → `metadata/json_schemas/` | Mojang'ın kendi JSON şemaları | Minecraft EULA | Birebir kopya, **yalnızca depoda** — servis edilmiyor |
+| `Mojang/bedrock-samples` → `metadata/json_schemas/` | Mojang'ın kendi JSON şemaları | Minecraft EULA | Birebir kopya **git dışında** (`pipeline/raw/`); `data/` içine yalnızca türetilmiş `schemas-index.json` |
 | `Mojang/bedrock-samples` → `metadata/command_modules/` | Komut grameri: 83 komut, 270 aşırı yükleme, 225 enum | Minecraft EULA | Türetilmiş indeks (açıklama metinleri atılır) |
 | `Mojang/bedrock-schemas` | Resmi şema deposu | — | **Bugün kullanılmıyor.** İncelenecek; lisansı ve içeriği henüz kaynağa karşı doğrulanmadı |
 | `Blockception/Minecraft-bedrock-json-schemas` | Doğrulamanın kullandığı şemalar | **BSD-3-Clause**, atıf zorunlu | Birebir kopya + `LICENSE` + türetilmiş `schema-map.json` |
@@ -49,9 +49,33 @@ Sonuç, bizim için üç kural:
 3. **Ham içerik geri sunulmaz.** `get_schema` ham şema döndürmez; özet verir ve
    ham şema isteğini açıkça reddeder.
 
-`data/<sürüm>/schemas/` altındaki 1313 Mojang şeması bu kuralın istisnası değil,
-kapsamı dışında: depoda duruyorlar (sürüm farkı okumak ve ikinci bir kontrol
-için), ama hiçbir uçtan dışarı çıkmıyorlar.
+> **Bu paragraf 02-09-2026'da düştü.** Repo o gün public yapıldı; gerekçesi
+> deponun private olmasına dayanıyordu ve dayanak kalmadı.
+
+~~`data/<sürüm>/schemas/` altındaki 1313 Mojang şeması bu kuralın istisnası
+değil, kapsamı dışında: depoda duruyorlar (sürüm farkı okumak ve ikinci bir
+kontrol için), ama hiçbir uçtan dışarı çıkmıyorlar.~~
+
+Yanlış olan kısım "hiçbir uçtan dışarı çıkmıyorlar" değildi — o hâlâ doğru,
+`/mcp` paketine girmiyorlar. Yanlış olan, **git'i bir uç saymamaktı.** Public
+bir repoda depo kendisi bir dağıtım kanalıdır ve bu dosyalar EULA'ya tabi
+birebir kopyalar.
+
+1313 şema git'ten çıkarıldı ve `pipeline/raw/bedrock-samples/<sürüm>/json_schemas/`
+altına taşındı (`.gitignore` içinde). Yerelde durmaya devam ediyorlar — sürüm
+farkı okumak, ikinci bir kontrol ve `npm run validator:compare` için — ama
+yayınlanmıyorlar. Yoksa `npm run pipeline:schemas` yeniden üretir.
+
+`data/<sürüm>/schemas-index.json` **git'te kalıyor:** o bir olgu indeksi
+(doküman tipi → hangi `format_version`'lar var), ham metin değil.
+
+Ölçüldü 02-09-2026, taşımadan sonra: `npm run validator:compare` aynı sonucu
+verdi (blockception 26/26, mojang 12/26, karşılaştırılabilir 17 vakada 12/17).
+Taşıma ölçümü bozmadı.
+
+Geçmiş git nesnelerinde içerik kalıyor. `filter-repo`/force push yapılmadı:
+geri alınması zor bir işlem ve upstream aynı içeriği aynı şartlarla zaten
+GitHub'da yayınlıyor. İleriye dönük düzeltme yeterli görüldü.
 
 ### Ne dışarı çıkıyor
 
@@ -86,7 +110,6 @@ Bunlar lisans şartıdır, kolaylık değil:
 
 ```
 data/blockception/LICENSE                  BSD-3-Clause, (c) 2020 Blockception Ltd
-data/1.26.40.5/schemas/NOTICE.md           Mojang künyesi + EULA metni
 data/1.26.40.5/script-types/NOTICE.md      @minecraft/* MIT beyanı
 data/1.26.40.5/script-types/@minecraft/**/package.json
 data/1.26.40.5/release-notes/Update1.26.40.md   CC-BY-4.0 atıf başlığı
@@ -94,6 +117,11 @@ data/1.26.40.5/release-notes/Update1.26.40.md   CC-BY-4.0 atıf başlığı
 
 `NOTICE.md` dosyalarını pipeline üretiyor — `writeTree` haritada olmayan her
 dosyayı sildiği için elle yazılamıyorlar.
+
+Mojang şema künyesi bu listeden 02-09-2026'da çıktı: klasörle birlikte
+`pipeline/raw/bedrock-samples/<sürüm>/json_schemas/NOTICE.md` altına taşındı ve
+artık git'te değil. Üretilmeye devam ediyor, çünkü yerel kopyanın da nereden
+geldiği ve hangi lisansa tabi olduğu yazılı durmalı.
 
 npm paketleri MIT olduklarını `package.json` içinde beyan ediyor ama tarball'a
 lisans metnini ve telif satırını koymuyorlar. Telif sahibi uydurulmadı: beyanın
