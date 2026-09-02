@@ -184,8 +184,31 @@ her biri bir kez gerçekten patlamış bir şeyin kaydı.
 
 ## Git kuralları
 
-Repo **private**. Yine de gizli bilgi asla commit edilmez, private olması bir
-güvenlik önlemi değil.
+Repo **public** (02-09-2026'dan beri). Gizli bilgi asla commit edilmez ve
+artık git'in kendisi de bir dağıtım kanalı: bir dosyanın Vercel paketine
+girmemesi tek başına "yayınlanmıyor" demek değil.
+
+### Dallar
+
+İki dal var, üçüncüsü açılmaz:
+
+| Dal | İşi |
+|---|---|
+| `dev` | Çalışma dalı. Günlük iş burada |
+| `main` | Bitmiş sürümler. Varsayılan dal, üretime dağıtılan ve public'te görünen |
+
+**Günlük veri cron'u `main` üzerinde koşar** — GitHub zamanlanmış işleri her
+zaman varsayılan dalda çalıştırır, bu seçilebilir bir şey değil. Üretimdeki
+MCP ucu `main`'den dağıtıldığı için verinin orada taze olması gerekiyor.
+
+Sonuç: `dev` düzenli olarak `main`'i almalı (`git merge origin/main`), yoksa
+veri indeksleri geride kalır. Çakışma beklenmez, `data/` elle düzenlenmiyor.
+
+> Bu kural bir kez gerçekten patladı. 02-09-2026'da çalışma dalı `main`'in
+> **81 commit** ilerisindeydi ve `main` hâlâ silinmiş asistan katmanını, 1313
+> EULA'ya tabi Mojang şemasını ve kişisel not dosyasını taşıyordu — public'te
+> görünen oydu. Ayrıca çalışma dalının `index.json`'ı, cron main'e yazdığı için
+> iki toplayıcı kadar eksikti.
 
 ### Commit sıklığı
 
@@ -248,9 +271,21 @@ build/
 ```
 pipeline/cache/
 pipeline/raw/
+data/*/schemas/
 ```
 Bu önemli. `bedrock-samples` içeriği Minecraft EULA'ya tabi, ham hâli repoya
 girmez. Sadece ondan türetilen indeksler commit edilir.
+
+`data/*/schemas/` satırı 02-09-2026'da eklendi: Mojang'ın 1313 birebir şeması
+o güne kadar commit ediliyordu, gerekçesi deponun private olmasıydı ve repo o
+gün public yapıldı (`docs/SOURCES.md`).
+
+**Kişisel notlar**
+```
+notlar/
+```
+İş kararları ve altyapı listesi. Gizli bilgi içermiyor ama public bir repoda
+duracak dosyalar değil.
 
 **Yerel test dosyaları**
 ```
