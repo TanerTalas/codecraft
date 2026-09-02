@@ -1,22 +1,52 @@
 # CodeCraft
 
-> **Bu doküman canlı.** Buradaki yapı ve isimlendirmeler öneri niteliğinde, kural değil. Daha iyi bir yaklaşım varsa öner ve gerekçesini söyle. Kod ile bu doküman çeliştiğinde kodu değil dokümanı güncelle.
+> **Bu doküman canlı.** Buradaki yapı ve isimlendirmeler öneri niteliğinde,
+> kural değil. Daha iyi bir yaklaşım varsa öner ve gerekçesini söyle. Kod ile
+> bu doküman çeliştiğinde kodu değil dokümanı güncelle.
 >
-> Değiştirilemez olanlar sadece "Mimari kurallar" ve "Yapılmayacaklar" başlıkları altındaki maddeler. Onları değiştirmek istiyorsan önce sor.
+> Değiştirilemez olanlar sadece "Değişmezler" başlığı altındaki maddeler.
+> Onları değiştirmek istiyorsan önce sor.
 
-Minecraft Bedrock için komut, behavior pack ve otomasyon script'i üreten yapay zeka asistanı. Kullanıcı oyuncu diliyle isteğini söyler, araç doğrulanmış çıktı verir.
+Minecraft Bedrock için **doğrulama ve veri sorgulama araçları sunan bir MCP
+sunucusu.** Modeli kullanıcı getiriyor — kendi Claude istemcisinde, kendi
+aboneliğiyle. CodeCraft araya girmiyor, üretmiyor; ürettirilen şeyin gerçekten
+çalışıp çalışmayacağını ölçüyor.
 
-Genel modellerden iki farkı var: sürekli güncellenen resmi veri kaynaklarına bağlı olması, ve ürettiği çıktıyı şemaya karşı gerçekten doğrulaması.
+Var olma sebebi tek cümle: **Bedrock'ta yanlış hatırlanan bir alan adı sessizce
+çalışmayan çıktı üretir.** Genel bir model `format_version`'ı uydurur, olmayan
+bir `minecraft:` kimliğine referans verir, `@minecraft/server`'da bulunmayan
+bir API çağırır — ve hiçbiri hata vermez, oyuna yüklenene kadar. Araçlar bu
+boşluğu kapatıyor: değerler sürüme kilitli veriden okunuyor, çıktı resmi
+şemaya ve `tsc`'ye karşı gerçekten doğrulanıyor.
 
-## v1 kapsamı
+## İki bileşen
 
-**İçeride:** Bedrock Edition, PC, tek oyunculu. Komut ve behavior pack üretimi, çıktı doğrulama, dışarıdan çalışan otomasyon script'leri. **Kaynak paketi de üretilebilir** (01-09-2026): önce "üretilmiyor" deniyordu, ama MCP üzerinden gelen bir istek kendiliğinden doku tanımlarıyla birlikte eksiksiz bir kaynak paketi üretti ve doğrulamadan geçti. Doğrulayıcı artık paketin kendi atlas tanımını çözüyor. Teşvik ediliyor, zorunlu değil.
+1. **MCP sunucusu.** Dokuz salt okunur araç. Bugünkü tek çalışan parça.
+2. **Kullanım sitesi.** MCP'nin nasıl kurulup kullanılacağını anlatan web
+   sayfası ya da sayfaları. **Henüz üretilmedi** — tasarım ve içerik ayrı bir
+   süreçte ele alınacak. Bugün `app/` yalnızca MCP ucunun barındığı yer.
 
-**Dışarıda:** Java Edition, Bedrock dışı platformlar, Realms ve sunucular, kullanıcı hesabı sistemi, ödeme.
+## Katmanlar
+
+Klasör adları bugünkü hâli; ad değiştirmek serbest, katman sınırını
+bulanıklaştırmak değil.
+
+| Katman | Bugün nerede | İşi |
+|---|---|---|
+| MCP araç katmanı | `packages/mcp/` | Araç yüzeyi, açıklamalar, HTTP transport. Araçların gövdesi `src/bedrock/` altında |
+| Doğrulama | `packages/validator/` | Şema (ajv), script (`tsc`), komut sözdizimi, Python sözdizimi, şemanın yakalayamadığı semantik kontroller |
+| Veri erişimi | `packages/knowledge/` | `data/` üzerinde lookup. Sürüm çözümü, kimlik arama, blok durumları |
+| Veri indeksleri | `data/` | Üretilen indeksler, oyun sürümüne göre klasörlenmiş |
+| Veri boru hattı | `pipeline/` | Kaynakları çekip indeks üreten script'ler + günlük cron |
+| Site | `app/` | Bugün yalnızca `app/src/app/mcp/route.ts` — ince kabuk |
+
+Bağımlılık yönü tek taraflı: `mcp → validator → knowledge → data`. Ters yönde
+import yok.
 
 ## Sürüm numaralandırma (dikkat)
 
-Bedrock'ta **beş** ayrı sürüm biçimi dolaşıyor ve sürekli karıştırılıyor:
+Bedrock'ta **beş** ayrı sürüm biçimi dolaşıyor ve sürekli karıştırılıyor.
+`get_version_info` aracının döndürdüğü değerlerin anlamı bu tablo:
 
 | Numara | Örnek | Nerede kullanılır |
 |---|---|---|
@@ -26,23 +56,20 @@ Bedrock'ta **beş** ayrı sürüm biçimi dolaşıyor ve sürekli karıştırıl
 | `@minecraft/server` modül sürümü | `2.9.0` | `manifest.json` → `dependencies` |
 | `format_version` | `1.21.100`, `1.13.0`, `2` | İçerik dosyaları. **Oyun sürümüyle ilgisi yok** |
 
-`min_engine_version` oyun sürümüdür ve `1.26.xx` biçiminde yazılır. Pazarlama
-numarasını hiçbir dosyaya yazma.
-
 **`format_version` bunlardan tamamen ayrı bir eksen** ve en çok can yakan
 karışıklık burada. O, dosya tipinin **kendi şema sürümü**: blok `1.21.100`,
 feature rule `1.13.0`, spawn rule `1.8.0`, manifest `2`. Oyun sürümü değişince
 değişmez; o dosya biçiminin şeması değiştiğinde değişir.
 
-> Bu satır önce yanlış yazılmıştı ("format_version ve min_engine_version
+> Bu satır bir kez yanlış yazılmıştı ("`format_version` ve `min_engine_version`
 > alanlarına her zaman 1.26.xx yazılır"). Niyeti "pazarlama numarasını yazma"
-> idi ama kural gibi okundu, prompt'a öyle geçti, model uydu ve şema reddetti
-> — ilk gerçek kapı koşusunda ölçüldü (`spawn-rule-01`). Doğru değerler artık
-> şemadan ve ölçülmüş fixture'lardan okunup prompt'a tipe özel yazılıyor
-> (`packages/core/src/context.ts`).
+> idi ama kural gibi okundu, model uydu ve şema reddetti. Doğru değerler
+> hatırlanmaz, **şemadan okunur** — `get_schema` ve `get_version_info` tam
+> bunun için var.
 
-Dördüncü satır en çok tuzak olan yer: `@minecraft/server` npm'de kendi semver'iyle
-yayınlanıyor ve oyun sürümü prerelease etiketinin **içine gömülü** geliyor:
+Dördüncü satır en çok tuzak olan yer: `@minecraft/server` npm'de kendi
+semver'iyle yayınlanıyor ve oyun sürümü prerelease etiketinin **içine gömülü**
+geliyor:
 
 ```
 2.9.0                              kararlı modül sürümü (npm "latest")
@@ -54,87 +81,80 @@ yüklenmez. Modül sürümü ile oyun sürümü asla birbirinin yerine kullanıl
 
 ## Stack
 
-- TypeScript (zorunlu, script doğrulaması `tsc` ile yapılıyor)
-- Veri pipeline: Node script'leri + GitHub Actions
+- TypeScript. Derleme adımı yok — Node `.ts` dosyalarını doğrudan koşuyor,
+  göreli import'larda `.ts` uzantısı zorunlu. `tsc` sadece tip kontrolü için
 - JSON doğrulama: `ajv`
-- Script doğrulama: `typescript` derleyicisi
-- Arayüz: Next.js + Tailwind
-- LLM soyutlaması: Vercel AI SDK (`ai@7`). Sağlayıcı yapılandırmadan okunur;
-  bugünkü varsayılan `@ai-sdk/google` (Gemini, ücretsiz kademe)
-- Hosting: Vercel veya Cloudflare, ücretsiz kademe
+- Script doğrulama: `typescript` derleyicisi (alt süreç)
+- MCP: `@modelcontextprotocol/sdk`, durumsuz Streamable HTTP
+- Barındırma: Vercel Node runtime, ücretsiz kademe
+- Veri pipeline: Node script'leri + GitHub Actions (günlük cron)
 
-Python sadece **üretilen** otomasyon script'lerinin dili. ~~Altyapıda Python
-çalıştırılmıyor.~~
+Python bir alt süreç olarak açılıyor: `validate_python` sözdizimini gerçek
+yorumlayıcıyla ölçüyor. Yorumlayıcı yoksa o ayak atlanıyor ve çıktıda
+söyleniyor — sessizce "ok" dönmüyor (`packages/validator/src/python.ts`).
 
-> **Bu satır 02-09-2026'da esnetildi, sorularak.** `validate_python` aracı
-> sözdizimini gerçek yorumlayıcıyla ölçüyor, yani bir alt süreç açıyor. Eski
-> hâli bunu yasaklıyordu. Gerekçe: üretilen Python çıktısı o güne kadar
-> **hiçbir** doğrulamadan geçmiyordu ve bu, aracın var olma sebebine aykırıydı.
-> Yorumlayıcı yoksa sözdizimi ayağı atlanıyor ve çıktıda söyleniyor — sessizce
-> "ok" dönmüyor. Bu bölüm dokümanın kendi tanımına göre değiştirilebilir;
-> değiştirilemez olanlar yalnızca "Mimari kurallar" ve "Yapılmayacaklar".
-> Ayrıntı: `packages/validator/src/python.ts`.
+## Değişmezler
 
-## Repo yapısı
+Bunları değiştirmek istiyorsan önce sor.
 
-```
-data/                 # üretilen indeksler, sürüme göre (1.26.40/ gibi)
-pipeline/             # veri toplayıcı script'ler
-packages/core/        # üretim döngüsü, CLI ve web ortak kullanır
-packages/validator/   # doğrulama, saf TS, LLM yok
-packages/knowledge/   # lookup katmanı
-evals/                # test vakaları ve runner
-app/                  # Next.js
-.github/workflows/    # günlük cron
-```
-
-## Mimari kurallar
-
-1. **Çekirdek mantık `packages/core` içinde.** CLI ve web arayüzü ince kabuklar. Mantığı arayüz koduna gömme.
-2. **CodeCraft modeli kendi çalıştırmaz, kullanıcının anahtarını görmez.** Model çağrısı istemci tarafında olur: web'de tarayıcıda, kullanıcının kendi anahtarıyla (anahtar sunucuya hiç uğramaz); MCP'de kullanıcının kendi Claude istemcisinde (ortada anahtar yok). `tsc` ve şema doğrulaması her iki durumda da sunucuda.
-3. **Validator LLM'siz.** `packages/validator` saf fonksiyonlardan oluşur, hiçbir model çağrısı yapmaz.
-4. **`data/` git içinde durur.** Veritabanı yok, dosya olarak tutulur ve versiyonlanır.
-
-> **2. kural 31-08-2026'da genelleştirildi.** Önce "Üretim tarayıcıda,
-> doğrulama sunucuda" yazıyordu. Yanlış değildi ama tek bir dünyayı, web
-> arayüzünü anlatıyordu; MCP'de tarayıcı da yok, anahtar da yok. Niyet
-> değişmedi — CodeCraft araya girip modeli kendi çalıştırmaz, kullanıcının
-> anahtarını tutmaz — sadece kelimeleri iki istemciyi birden kapsayacak hâle
-> geldi. Karar: `docs/anlik_karar_degisikligi.md`.
+1. **Doğrulama katmanı LLM çağırmaz.** `packages/validator` saf
+   fonksiyonlardan oluşur. Depo genelinde hiçbir paket bir LLM SDK'sına
+   bağlanmaz — modeli kullanıcı getiriyor, sunucu doğrular, üretmez. Kural laf
+   olarak değil ölçüyle duruyor: `packages/mcp/test/no-llm.test.ts`.
+2. **Uç salt okunur.** Dokuz aracın dokuzu da `readOnlyHint`. Sunucu hiçbir şey
+   yazmıyor, hiçbir yere veri göndermiyor, kullanıcı verisi tutmuyor.
+3. **`data/` git içinde durur.** Veritabanı yok, dosya olarak tutulur ve
+   versiyonlanır.
+4. **Ücretsiz kademe bir kısıt değil, gereksinim.** Bütçe yok. İstek limiti ve
+   fonksiyon süresi tasarıma girer; ölçülmeden "yetmez" denmez.
+5. **Ham kaynak verisi repoya girmez.** `bedrock-samples` içeriği Minecraft
+   EULA'ya tabi. Sadece ondan türetilen indeksler commit edilir, ham içerik
+   geri sunulmaz (`docs/SOURCES.md`).
 
 ## Yapılmayacaklar
 
 | Yapma | Neden |
 |---|---|
 | Vektör DB, embedding, RAG altyapısı | Veri yapılandırılmış ve küçük. Sürüm ve niyet belliyse hangi JSON'un gideceği de belli |
-| Kullanıcı hesabı, oturum, veritabanı | v1'de sıfır kişisel veri. Anahtar tarayıcıda, geçmiş yerelde |
+| Kullanıcı hesabı, oturum, veritabanı | Sıfır kişisel veri. Uç kimlik doğrulaması olmadan, salt okunur duruyor |
 | Kendi JSON şemalarını yazmak | Blockception zaten yazmış, BSD-3-Clause |
-| Model ID'lerini koda gömmek | Yapılandırmadan oku, ekosistem sık değişiyor |
-| Ücretli API, tier veya hosting kullanmak | Bütçe yok. Ücretsiz kademe bir kısıt değil, gereksinim — istek limiti de tasarıma girer. **MCP sunucusunun barındırılması da buna dahil** (31-08-2026): ücretsiz kademede `tsc` alt sürecinin koşup koşmadığı önce ölçülür (`TODO.md` Aşama M1), koşmuyorsa ücretsiz kalmayı koruyan alternatifler denenir ve sonuç rakamıyla birlikte sorulur |
-| ~~Komut sözdizimi doğrulayıcısı (v1'de)~~ | **Kaldırıldı, 30-08-2026.** Gerekçesi "makine okunur resmi kaynak yok" idi ve yanlıştı: `bedrock-samples` içinde `metadata/command_modules/mojang-commands.json` var (83 komut, 270 aşırı yükleme, 225 enum). Yapıldı — `packages/validator/src/command.ts` |
+| Model ID'lerini koda gömmek | Bu depoda model çağrısı yok; bir gün gerekirse yapılandırmadan okunur |
+| Ücretli API, tier veya hosting kullanmak | Bütçe yok, MCP sunucusunun barındırılması da dahil |
+
+## Esnek olduğu bilinen kararlar
+
+Bunlar bugünkü hâl, gerekçesi geçerli olduğu sürece. Daha iyisi varsa değiştir:
+
+- Paket sınırları ve klasör adları. Araç gövdesinin `packages/mcp/src/bedrock/`
+  altında durması bir yerleşim tercihi, mimari şart değil
+- Araç sayısı ve isimleri
+- `data/` altındaki indekslerin biçimi
+- Transport'un bir Next rotası olarak durması (`app/src/app/mcp/route.ts`)
 
 ## Takıldığında dur ve sor
 
-Emin olmadığın veya erişemediğin bir şeyle karşılaştığında tahmin etme, uydurma, etrafından dolaşma. **Dur ve kullanıcıya sor.**
-
-Mutlaka sorulacak durumlar:
+Emin olmadığın veya erişemediğin bir şeyle karşılaştığında tahmin etme,
+uydurma, etrafından dolaşma. **Dur ve kullanıcıya sor.**
 
 | Durum | Örnek |
 |---|---|
-| Erişim gerekiyor | Bir siteye giriş yapılamıyor, hesap açılması gerekiyor (GitHub, Vercel, Cloudflare, sağlayıcı konsolları), API anahtarı yok veya süresi dolmuş |
+| Erişim gerekiyor | Bir siteye giriş yapılamıyor, hesap açılması gerekiyor (GitHub, Vercel), API anahtarı yok veya süresi dolmuş |
 | Ödeme veya lisans gerekiyor | Minecraft Bedrock lisansı, ücretli tier, alan adı |
 | Bilgi doğrulanamıyor | Bir sürüm numarası, API adı veya alan adı kaynağa karşı kontrol edilemiyor |
 | İşlem geri alınması zor | Force push, dal silme, dışarıya yayınlama, üçüncü taraf servise veri gönderme |
-| Kural esnetilmesi gerekiyor | "Mimari kurallar" veya "Yapılmayacaklar" tablosuna aykırı bir şey yapmak gerekiyor |
+| Kural esnetilmesi gerekiyor | "Değişmezler" veya "Yapılmayacaklar" tablosuna aykırı bir şey yapmak gerekiyor |
 
-Doğrulanamayan bilgi maddesi bu projede özellikle önemli: Bedrock'ta yanlış hatırlanan bir alan adı sessizce çalışmayan çıktı üretir. CodeCraft'ın var olma sebebi tam olarak bu hata, o yüzden kendi kodunda da aynı hatayı yapma.
+Doğrulanamayan bilgi maddesi bu projede özellikle önemli: aracın var olma
+sebebi tam olarak o hata, kendi kodunda da aynısını yapma.
 
 ### Nasıl sorulur
 
 - Ne denendiğini, tam olarak neye takıldığını ve varsa hata mesajını yaz.
 - Kullanıcının ne yapması gerektiğini tek adımda söyle.
-- Terminalde bir komut çalıştırması gerekiyorsa `! komut` biçiminde ver, çıktı doğrudan oturuma düşer.
-- **Cevabı beklerken o soruya bağlı olmayan işleri bitir.** Bütün işi durdurma, sadece bağımlı olan parçayı beklet.
+- Terminalde bir komut çalıştırması gerekiyorsa `! komut` biçiminde ver, çıktı
+  doğrudan oturuma düşer.
+- **Cevabı beklerken o soruya bağlı olmayan işleri bitir.** Bütün işi durdurma,
+  sadece bağımlı olan parçayı beklet.
 
 ### Yapılmayacak olan
 
@@ -144,24 +164,34 @@ Doğrulanamayan bilgi maddesi bu projede özellikle önemli: Bedrock'ta yanlış
 
 Atlanan bir adım varsa açıkça yazılır. Yarım iş, yanlış tamamlanmış işten iyidir.
 
+## Ölçüm yazma kuralı
+
+Bu depoda "çalışıyor" ve "ölçüldü" ayrı şeyler. Bir iddia ancak ölçüldüğünde
+yazılır, ve nasıl ölçüldüğü yanına yazılır — tarihiyle birlikte. Yanlış çıkan
+bir ölçüm silinmez, üstü çizilir ve nereye gittiği yazılır.
+
+Kod yorumlarındaki "ölçüldü (tarih)" satırları bu yüzden var ve silinmemeliler:
+her biri bir kez gerçekten patlamış bir şeyin kaydı.
+
 ## Ayrıntı
 
 - Veri kaynakları ve lisansları: `docs/SOURCES.md`
-- Aşamalar ve geçiş kapısı: `docs/ROADMAP.md`
+- MCP sunucusu, uç ve kurulum: `docs/MCP.md`
+- Araçların gerçek kullanımı, ölçüm günlüğü: `docs/mcp-kullanim.md`
+- Komut doğrulama ve kapsamı: `docs/COMMANDS.md`
 - Doğrulamanın yakalayamadıkları: `docs/VALIDATION-LIMITS.md`
 - WebSocket köprüsü ve ölçümü: `docs/WEBSOCKET.md`
-- Komut doğrulama ve kapsamı: `docs/COMMANDS.md`
-- MCP sunucusu ve kurulumu: `docs/MCP.md`
-- Legal metinler (taslak): `docs/LEGAL.md`
-- Arayüz sayfaları ve tasarım brief'i: `docs/UI.md`
 
 ## Git kuralları
 
-Repo **private**. Yine de gizli bilgi asla commit edilmez, private olması bir güvenlik önlemi değil.
+Repo **private**. Yine de gizli bilgi asla commit edilmez, private olması bir
+güvenlik önlemi değil.
 
 ### Commit sıklığı
 
-Her tamamlanan değişiklikten sonra commit at. Birden fazla işi tek commit'te toplama, ama yarım kalmış bir değişikliği de commit etme. Bir commit tek bir mantıksal iş olsun.
+Her tamamlanan değişiklikten sonra commit at. Birden fazla işi tek commit'te
+toplama, ama yarım kalmış bir değişikliği de commit etme. Bir commit tek bir
+mantıksal iş olsun.
 
 ### Commit mesajı formatı
 
@@ -171,8 +201,6 @@ type(scope): kısa özet
 - yapılan değişiklik
 - yapılan değişiklik
 ```
-
-Kullanılacak tipler:
 
 | Tip | Ne zaman |
 |---|---|
@@ -185,16 +213,6 @@ Kullanılacak tipler:
 | `chore` | Bağımlılık, yapılandırma, pipeline |
 | `data` | Üretilen veri indekslerinin güncellenmesi |
 
-Örnek:
-
-```
-feat(validator): add script type checking
-
-- add tsc wrapper for @minecraft/server validation
-- add version resolution from data directory
-- add error formatting for CLI output
-```
-
 Kurallar:
 - Özet satırı 72 karakteri geçmesin
 - Özet satırında nokta kullanma
@@ -204,7 +222,8 @@ Kurallar:
 
 ### .gitignore
 
-Aşağıdakiler baştan `.gitignore` içinde olmalı ve yeni bir hassas dosya türü ortaya çıktığında listeye eklenmeli:
+Aşağıdakiler `.gitignore` içinde olmalı ve yeni bir hassas dosya türü ortaya
+çıktığında listeye eklenmeli:
 
 **Kimlik bilgileri ve gizli veri**
 ```
@@ -225,20 +244,13 @@ build/
 *.tsbuildinfo
 ```
 
-**Eval ve test çıktıları**
-```
-evals/output/
-evals/*.html
-*.log
-```
-Eval çıktıları model cevaplarını ve muhtemelen istek metinlerini içerir, commit edilmez.
-
 **Ham kaynak verisi**
 ```
 pipeline/cache/
 pipeline/raw/
 ```
-Bu önemli. bedrock-samples içeriği Minecraft EULA'ya tabi, ham hali repoya girmez. Sadece ondan türetilen indeksler commit edilir.
+Bu önemli. `bedrock-samples` içeriği Minecraft EULA'ya tabi, ham hâli repoya
+girmez. Sadece ondan türetilen indeksler commit edilir.
 
 **Yerel test dosyaları**
 ```
@@ -246,6 +258,7 @@ test-worlds/
 *.mcpack
 *.mcaddon
 .DS_Store
+*.log
 ```
 
-Bir dosyanın hassas olup olduğundan emin değilsen commit etme, önce sor.
+Bir dosyanın hassas olup olmadığından emin değilsen commit etme, önce sor.
