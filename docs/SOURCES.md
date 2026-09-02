@@ -32,7 +32,7 @@ public yapıldı (aşağıda, "Ne dışarı çıkıyor").
 | `Mojang/bedrock-samples` → `behavior_pack/{loot_tables,trading}/` | 207 loot + 27 takas tablosu YOLU | Minecraft EULA | Türetilmiş indeks (yalnızca yollar, içerik değil) |
 | `Mojang/bedrock-samples` → `metadata/doc_modules/` | Bileşen adları: 32 blok, 124 entity, 28 feature tipi | Minecraft EULA | Türetilmiş indeks (yalnızca adlar, açıklamalar atılır) |
 | `Mojang/bedrock-samples` → `metadata/engine_modules/` | 31 modül sürümü için afterEvent sırası | Minecraft EULA | Türetilmiş indeks |
-| `Mojang/bedrock-schemas` | Resmi şema deposu | — | **Bugün kullanılmıyor.** İncelenecek; lisansı ve içeriği henüz kaynağa karşı doğrulanmadı |
+| `Mojang/bedrock-schemas` | Resmi şema deposu | **MIT** (02-09-2026, GitHub API + `LICENSE` ile doğrulandı) | **Bugün kullanılmıyor** — incelendi ve ölçüldü, aşağıda |
 | `Blockception/Minecraft-bedrock-json-schemas` | Doğrulamanın kullandığı şemalar | **BSD-3-Clause**, atıf zorunlu | Birebir kopya + `LICENSE` + türetilmiş `schema-map.json` |
 | `@minecraft/*` (npm, 9 paket) | Script tip tanımları | **MIT** (paketlerin `package.json` beyanı) | Birebir `index.d.ts` + `package.json` |
 | `MicrosoftDocs/minecraft-creator` | Sürüm notları | **CC-BY-4.0** (29-08-2026, GitHub API ile doğrulandı) | Birebir kopya + atıf başlığı |
@@ -331,11 +331,84 @@ hiçbir kodu doğrulayamaz.
   yazarken LF'e normalize eder; yoksa `.gitattributes` ile birlikte her koşuda
   sahte diff üretirdi.
 
+## `Mojang/bedrock-schemas` — incelendi, alınmadı (02-09-2026)
+
+Bu depo `docs/SOURCES.md`'de "incelenecek" diye duruyordu ve hiç ölçülmemişti.
+Ölçüldü. Sonuç: **bugün alınmıyor, ama gelecekteki en güçlü aday.**
+
+### Ne olduğu
+
+| | |
+|---|---|
+| Lisans | **MIT**, (c) Microsoft Corporation — `bedrock-samples`'ın EULA'sından tamamen farklı |
+| npm | `@minecraft/bedrock-schemas` olarak yayınlanıyor |
+| İçerik | 731 şema (`schemas/`), 893 TypeScript tipi (`types/`), 2126 form (`forms/`) |
+| Şema sürümü | JSON Schema draft-07 |
+| Tip haritası | `catalog.json` — 39 giriş, glob → şema |
+
+**Mojang'ın eski şemalarının kaybetme sebeplerinin ikisi de burada yok.**
+30-08-2026'daki ölçüm iki yapısal sorun saymıştı:
+
+1. *Kapsam:* tarif, diyalog, animasyon denetleyicisi ve feature rules için şema
+   yoktu. → Bu depoda **hepsi var.**
+2. *Sarmalayıcı:* şemalar dosyayı değil iç nesneyi tanımlıyordu. →
+   `index.schema.json` dosyanın tamamını tanımlıyor, `format_version` ve
+   `minecraft:` sarmalayıcısı dahil.
+
+Yani bu, Mojang şemalarının yeni bir sürümü değil, **farklı bir şey.**
+
+### Ölçüm
+
+`npm run validator:bedrock-schemas` — `validator:compare`'in kullandığı aynı
+26 fixture.
+
+| | Blockception | bedrock-schemas (bugün) | bedrock-schemas (kırık ref giderilirse) |
+|---|---|---|---|
+| Beklenen sonucu veren | **26 / 26** | 7 / 26 | 12 / 26 |
+| Derlenemeyen şema | 0 | **6 vaka** | 0 |
+| Kapsam dışı | 0 | 7 (hepsi manifest) | 7 |
+
+**Bugün kullanılamamasının somut sebebi bir kırık `$ref`:** 50 şema dosyası
+`schemas/common/expression.schema.json`'a referans veriyor ve **o dosya yok** —
+adı `molang_expression.schema.json`. `catalog.json`'daki 39 şemadan 3'ü
+(Entity Behavior, Block Behavior, Particle) bu yüzden hiç derlenmiyor, yani
+en çok kullanılan üç doküman tipi doğrulanamıyor.
+
+`PATCH=1` ile o referans karşılandığında 39/39 şema derleniyor ve sonuç
+12/26'ya çıkıyor. **Yine de yetmiyor** ve sebebi kaçırma değil, yanlış
+pozitif:
+
+| Vaka | Beklenen | bedrock-schemas |
+|---|---|---|
+| `recipe-ruby-block` (geçerli dosya) | geçti | **reddedildi** |
+| `dialogue-merchant` (geçerli dosya) | geçti | **reddedildi** |
+| `entity-is-spawnable-string` (bozuk) | yakalandı | geçti |
+| `animation-controller-bad-name` (bozuk) | yakalandı | geçti |
+
+İlk iki satır kritik: doğru ve kurulabilir dosyalar "hatalı" raporlanıyor.
+Bu depoda yanlış pozitifin neden pahalı sayıldığı `docs/VALIDATION-LIMITS.md`
+C bölümünde ölçüldü — aracın kendi hataları modele "bu aracın hatalarını yok
+say" öğretiyor.
+
+Manifest için `catalog.json`'da hiç giriş yok, o yüzden 7 manifest vakası
+kapsam dışı kaldı.
+
+### Karar
+
+**Blockception birincil kaynak olmaya devam ediyor.** Değişiklik için gereken
+şey belli: kırık `$ref` giderilsin ve fixture skoru Blockception'a yaklaşsın.
+Ölçüm script'i depoda, yeniden koşturmak tek komut.
+
+Not: MIT olması ayrı bir avantaj — Blockception BSD-3-Clause (atıf zorunlu),
+bu ise yeniden dağıtım açısından daha serbest. Ama lisans tek başına şema
+kalitesini değiştirmiyor ve karar ölçümle veriliyor.
+
 ## Açık kalan
 
-- **`Mojang/bedrock-schemas` incelenmedi.** Resmi bir şema deposu olarak
-  direktifte geçiyor ama içeriği, lisansı ve Blockception'a göre kapsamı bu
-  depoda hiç ölçülmedi. İncelenene kadar buraya bir iddia yazılmayacak.
+- ~~**`Mojang/bedrock-schemas` incelenmedi.**~~ Kapatıldı 02-09-2026:
+  incelendi, ölçüldü ve alınmadı. Gerekçe yukarıda, ölçüm
+  `npm run validator:bedrock-schemas` ile tekrar üretilebilir. Yeniden
+  bakılacak tetik: upstream'in kırık `$ref`'i giderilmesi.
 - ~~**Marka feragatı henüz hiçbir yerde görünmüyor.**~~ Kapatıldı 02-09-2026:
   depo public yapılınca `README.md` görünen yüzey oldu, feragat oraya ve
   `NOTICE` dosyasına girdi. Kullanım sitesi yapıldığında altbilgiye de

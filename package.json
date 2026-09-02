@@ -32,6 +32,7 @@
     "ws:probe": "node pipeline/src/ws-probe.ts",
     "data:version": "node pipeline/src/latest-version.ts",
     "validator:compare": "node packages/validator/scripts/compare-schema-sources.ts",
+    "validator:bedrock-schemas": "node packages/validator/scripts/measure-bedrock-schemas.ts",
     "fixtures:pack": "node packages/validator/scripts/build-test-pack.ts"
   },
   "devDependencies": {
