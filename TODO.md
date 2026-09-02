@@ -1097,10 +1097,34 @@ biri ertelenmişe taşındı. Ölçümler aşağıdaki blokquote'ta.
 >    alır, yani vaat ölçülmemiş ve muhtemelen kısmi
 > 3. Engel para değil (BDS ücretsiz), **değer**
 >
-> ### Ölçülmeyen
+> ### Dağıtılmış uçta ölçüldü (02-09-2026, deploy sonrası)
 >
-> Bu turda dağıtılmış uçta hiçbir şey ölçülmedi — daraltılmış paket ve dokuzuncu
-> araç yalnızca **yerel üretim build'inde** doğrulandı. Deploy kullanıcı adımı.
+> `npm run mcp:probe` → **HEPSİ YEŞİL**, dokuz kontrol. `tools/list` 10.227
+> bayt, yerelle birebir aynı — yani deploy taze. Daraltılmış izleme haritası
+> uçta tuttu: `tsc` hâlâ fonksiyon paketinin içinden koşuyor (gerçek `TS2551`)
+> ve `get_schema` 15.898 baytla bayt bayt aynı sonucu verdi.
+>
+> **`validate_python`'ın sözdizimi ayağı uçta koşmuyor.** Vercel'in Node
+> runtime'ında Python yok — `python3`, `python`, `py`, üçü de bulunamadı.
+> Ölçüm:
+>
+> | Girdi | Uçta |
+> |---|---|
+> | geçerli script | `ok:true`, `syntaxChecked:false` |
+> | bozuk komut | `ok:false` — **yakalandı** |
+> | sözdizimi bozuk Python | **`ok:true`** — yakalanmadı |
+>
+> İlk iki satır tasarlandığı gibi; atlama sessiz değil, sebebi çıktıda.
+> Üçüncüsü bir risk ve **kullanıcıya soruldu.** Karar (02-09-2026): ayrı bir
+> Python runtime'ı **açılmayacak**, araç üretimde iki eksenli kalacak ve durum
+> kayda geçecek. Gerekçe: asıl değeri komut ekseni üretiyor — M5'te oyunda
+> yakalanan hatanın aynısını buluyor. `ok:false` döndürmek de seçenek değildi:
+> bakılamayan bir şeye hata demek doğrulayıcının kendi ilkesine aykırı.
+> Ayrıntı `docs/MCP.md`.
+>
+> ### Hâlâ ölçülmeyen
+>
+> Oyun içi iki soru (yukarıdaki açık maddeler) ve pipeline'ın issue dalı.
 
 ## Ertelendi — arşivde
 
