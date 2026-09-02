@@ -6,7 +6,6 @@
 *.pem
 secrets/
 config.local.*
-codecraft.config.local.json
 # Vercel CLI'in yazdigi proje baglantisi (.env.local'a OIDC token da koyuyor)
 .vercel
 
@@ -20,10 +19,7 @@ build/
 .turbo/
 coverage/
 
-# --- Eval ve test ciktilari ---
-# Model cevaplarini ve istek metinlerini icerir, commit edilmez
-evals/output/
-evals/*.html
+# --- Log ve gecici cikti ---
 *.log
 npm-debug.log*
 yarn-error.log*
