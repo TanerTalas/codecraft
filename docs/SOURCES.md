@@ -146,7 +146,7 @@ koşulan biçim o. Kaynak:
 | Ürün adında "Minecraft" geçmemeli | **Uygun** — ad "CodeCraft" |
 | Alan adında "Minecraft" geçmemeli | Alan adı alınırken dikkat edilecek |
 | Resmi görünüm/onay izlenimi verilmemeli | Mojang logosu, resmi font ve blok dokusu kullanılmayacak |
-| Feragat görünür olmalı | **Açık kalan** — kullanım sitesi yapıldığında altbilgiye konacak |
+| Feragat görünür olmalı | **Uygun** (02-09-2026) — `README.md` altbilgisinde ve `NOTICE` içinde, İngilizce aslı korunarak |
 
 ## Şema kaynağı: Blockception'ın derlenmiş çıktısı
 
@@ -250,6 +250,7 @@ hiçbir kodu doğrulayamaz.
 - **`Mojang/bedrock-schemas` incelenmedi.** Resmi bir şema deposu olarak
   direktifte geçiyor ama içeriği, lisansı ve Blockception'a göre kapsamı bu
   depoda hiç ölçülmedi. İncelenene kadar buraya bir iddia yazılmayacak.
-- **Marka feragatı henüz hiçbir yerde görünmüyor.** Kullanım sitesi
-  yapılmadığı için gösterilecek bir yüzey yok. Site yapıldığında ilk
-  eklenecek şeylerden biri.
+- ~~**Marka feragatı henüz hiçbir yerde görünmüyor.**~~ Kapatıldı 02-09-2026:
+  depo public yapılınca `README.md` görünen yüzey oldu, feragat oraya ve
+  `NOTICE` dosyasına girdi. Kullanım sitesi yapıldığında altbilgiye de
+  konacak — o zaman README yeniden ele alınacak.
