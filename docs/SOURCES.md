@@ -111,6 +111,35 @@ build'i üzerinde `npm run mcp:probe` koşturuldu: dokuz kontrolün dokuzu yeşi
 İhlal olmuş değildi — dışarı giden zaten türetilmiş veriydi. Ama okunmayan
 11 MB EULA içeriğini herkese açık bir pakete koymamak doğru taraf.
 
+### Yeniden ölçüm (02-09-2026, beş yeni indeks eklendikten sonra)
+
+Molang, parçacık/ses/tablo referansları, bileşen adları ve afterEvent sırası
+eklendi; script tipleri altı beta-only modülle büyüdü. Gerçek bir
+`next build` üzerinde `route.js.nft.json` yeniden sayıldı:
+
+| | Daraltmadan sonra | Beş indeks sonrası |
+|---|---|---|
+| `data/` dosyası | 88 | **105** |
+| `data/` boyutu | — | **4,3 MB** |
+| ham Mojang şeması | 0 | **0** |
+| Blockception kaynağı | 0 | **0** |
+| İzlenen toplam boyut | 59,1 MB | **59,8 MB** |
+
+`data/` artışının tamamı hesaplanabiliyor: 5 yeni JSON indeksi
+(`molang`, `particles`, `references`, `components`, `event-order`) ve
+script tiplerinde 12 dosya. Beşinin de pakete girdiği tek tek doğrulandı —
+`DATA_FILES` içindeki `../data/*/*.json` globu onları kendiliğinden yakalıyor,
+yeni satır gerekmedi.
+
+Boyutun %84'ü hâlâ `@typescript/` (50,4 MB): `tsc` alt süreç olarak koşuyor
+ve platforma özel Go ikilisi zorunlu. Veri tarafı 4,3 MB.
+
+> Dosya SAYISI bu ölçümde 731 yerine 1.151 çıktı ve farkın tamamı `data/`
+> dışında. `typescript` kabuk paketi tek başına 417 dosya sayılıyor; önceki
+> ölçüm yalnızca `@typescript/` kapsamını (114) saymıştı. Bu iş kapsamında
+> araştırılmadı ve buraya bir açıklama uydurulmuyor — `data/` tarafı
+> hesaplanabilir olduğu için karar etkilenmiyor.
+
 ## Atıf ve lisans dosyaları — silinmez
 
 Bunlar lisans şartıdır, kolaylık değil:
