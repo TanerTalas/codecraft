@@ -26,6 +26,10 @@
  * tools/list çıktısı 9.036 bayt (~2.260 token), yani bütçenin ~%7'si.
  * Dağıtılmış uçta ölçüldü, 01-09-2026. (Bu satır önce "~6 KB" diyordu; o
  * rakam sekiz araç bağlanmadan önce alınmıştı ve eskimişti.)
+ *
+ * Yeniden ölçüldü 02-09-2026, dokuz araç ve İngilizce açıklamalarla:
+ * **10.297 bayt**. Araç sayısı arttı ama metinler İngilizceye çevrilirken
+ * kısaldı, yani artış beklenenden az. Hâlâ bütçenin ~%8'i.
  */
 
 /** Tek bir araç çıktısının üst sınırı. Gerekçesi dosyanın başında. */

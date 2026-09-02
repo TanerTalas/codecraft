@@ -442,6 +442,29 @@ fixture'lar tek tek ölçüyor.
 > yüzden warning ve bu yüzden ayrı yazılıyor. G aynı yoldan geldi; farkı,
 > boşluğun `cases.json` içinde zaten kayıtlı olması.
 
+### Sıradaki ölçüm — üç sınıf oyunda denenmedi
+
+**A', F ve G warning seviyesinde ve orada kalmalarının tek sebebi ölçüm
+eksikliği.** Üçünün de kaynağı makine okunur ve kontrolleri testle sabitlendi,
+ama hiçbirinin `ContentLog` kanıtı yok.
+
+Yapılacak tek şey, A–E için yapılanın aynısı:
+
+```
+npm run fixtures:pack -- --install
+```
+
+Sonra oyunda dünyayı aç ve
+`%APPDATA%\Minecraft Bedrock\logs\ContentLog*.txt` dosyasına bak
+(Ayarlar → Yaratıcı → "Content Log File" açık olmalı). Fixture üreteci
+bilerek bozulmuş bir Molang sorgusu, uydurulmuş bir bileşen adı ve olmayan
+bir loot tablosu yolu taşımalı — üçü ayrı satır üretiyorsa sınıflar **error**'a
+yükseltilir.
+
+**İki sonuç da kazanç:** oyun şikâyet ederse kontrol güçlenir; etmezse
+"warning kalması doğruymuş" diye buraya yazılır. Ölçülmeden ikisi de
+bilinmiyor.
+
 İki sınır kayda geçmeli:
 
 - **Vanilla feature'lar doğrulanamıyor.** `data/<sürüm>/features.json` yapı

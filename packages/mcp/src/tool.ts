@@ -2,7 +2,7 @@
  * Araçların ortak iskeleti.
  *
  * NEDEN `register` METODU, DÜZ BİR NESNE DEĞİL: SDK'nın `registerTool`'u girdi
- * şemasından dönüş tipini çıkarıyor (generic). Sekiz aracı tek bir dizide
+ * şemasından dönüş tipini çıkarıyor (generic). Dokuz aracı tek bir dizide
  * tutup döngüyle kaydetmeye çalışınca dizinin eleman tipi birleşim oluyor ve
  * çıkarım çöküyor — her aracın `run`'ı kendi şemasını görmez olurdu. Her araç
  * kendini kaydedince çıkarım aracın içinde, somut tiplerle kalıyor.
@@ -39,7 +39,7 @@ export const versionField = z
 /**
  * Salt okunur araç açıklaması.
  *
- * Sekiz aracın hepsi salt okunur: dosya yazmıyor, dışarı istek atmıyor,
+ * Dokuz aracın hepsi salt okunur: dosya yazmıyor, dışarı istek atmıyor,
  * yalnızca data/ okuyor. `openWorldHint: false` da bunun parçası — araç kapalı
  * bir veri kümesine bakıyor, internete değil.
  */

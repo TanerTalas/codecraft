@@ -1,12 +1,12 @@
 /**
- * Sekiz aracın uçtan uca testi.
+ * Dokuz aracın uçtan uca testi.
  *
  * M2'nin server.test.ts kalıbı: gerçek InMemoryTransport, gerçek tools/list ve
  * tools/call, gerçek data/. Mock yok — araç ne döndürüyorsa o ölçülüyor.
  *
  * ÜÇ ŞEY ÖLÇÜLÜYOR:
  *
- *   1. Sekiz araç da listeleniyor, hepsinde readOnlyHint ve title var.
+ *   1. Dokuz araç da listeleniyor, hepsinde readOnlyHint ve title var.
  *   2. Her araç bozuk bir girdiye EYLEME DÖNÜŞTÜRÜLEBİLİR cevap veriyor.
  *      Yalnızca "hata atmadı" görmek yetmez: sessizce hiçbir şey doğrulamayan
  *      bir yol da öyle görünürdü. M1'de aynı tuzak validate_script için

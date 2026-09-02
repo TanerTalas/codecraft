@@ -1,7 +1,7 @@
 /**
  * get_version_info — sürüm ve şema bağlamı.
  *
- * Sekiz aracın ilki ve en ucuzu: alt süreç açmıyor, büyük bir indeks
+ * Dokuz aracın ilki ve en ucuzu: alt süreç açmıyor, büyük bir indeks
  * döndürmüyor. M2'de tek başına duruyordu çünkü oradaki iş araç yazmak değil,
  * MCP SDK'sının bu repoya gerçekten oturduğunu ÖLÇMEKTİ — bir araç uçtan uca
  * çalışmadan "iskelet hazır" cümlesi bir şey söylemiyor.

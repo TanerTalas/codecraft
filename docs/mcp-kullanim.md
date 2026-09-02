@@ -943,6 +943,37 @@ sonucu**. Düzeldiği ölçülmeden "düzeltildi" yazılmaz.
 
 **Henüz yok.**
 
+## Açık kalan: yüzey değişti, ölçüm değişmedi
+
+> **Bu bölüm 03-09-2026'da eklendi ve bu dosyanın en büyük borcu.**
+
+02-09-2026'da dokuz aracın **bütün** `title` ve `description` metinleri
+Türkçeden İngilizceye çevrildi (`CLAUDE.md`, "Dil"). Bu dosyadaki senaryoların
+hepsi **Türkçe açıklamalarla ve sekiz araçla** ölçüldü.
+
+Neden bu önemli: M5 tam olarak açıklama metninin modeli yönlendirdiğini
+ölçtü — iki açıklama senaryolar sırasında değişti ve davranış değişti
+("Değişen açıklamalar"). Yani açıklama metni bu araçta bir uygulama detayı
+değil, ürünün kendisi.
+
+**Bugün ölçülen ve ölçülmeyen:**
+
+| | Durum |
+|---|---|
+| `tools/list` yükünde Türkçe kalmadı | ✅ ölçüldü — `packages/mcp/test/english-surface.test.ts` |
+| `review_pack` çıktısının tamamı İngilizce | ✅ ölçüldü, aynı test |
+| Dağıtılmış uçta dokuz kontrol yeşil | ✅ ölçüldü 03-09-2026, `npm run mcp:probe` |
+| Yükün boyutu | ✅ 10.297 bayt (sekiz araç + Türkçeyken 9.036) |
+| **Yeni açıklamalar modeli doğru yönlendiriyor mu** | ❌ **hiç ölçülmedi** |
+
+Son satır otomatikleştirilemez: "Türkçe karakter yok" ile "bu açıklama işe
+yarıyor" ayrı şeyler ve ikincisi gerçek bir oturum gerektiriyor. Bağlayıcı
+açılıp aşağıdaki senaryolar yeniden koşturulduğunda bu dosyaya **ikinci bir
+ölçüm kümesi** yazılacak; eskiler silinmeyecek, yan yana duracak.
+
+`validate_python` de aynı sepette: 02-09-2026'da eklendi ve **gerçek
+kullanımda henüz hiç çağrılmadı.**
+
 ## Tekrar üretmek için
 
 ```

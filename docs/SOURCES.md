@@ -442,3 +442,16 @@ kalitesini değiştirmiyor ve karar ölçümle veriliyor.
   depo public yapılınca `README.md` görünen yüzey oldu, feragat oraya ve
   `NOTICE` dosyasına girdi. Kullanım sitesi yapıldığında altbilgiye de
   konacak — o zaman README yeniden ele alınacak.
+- **Yeni toplayıcılar CI'da hiç koşmadı.** `molang`, `references` ve
+  `components` 02-09-2026'da eklendi ve yalnızca **yerelde** koşturuldu. O gün
+  `main` dalı geride olduğu için günlük cron eski pipeline'ı çalıştırdı;
+  dallar 03-09-2026'da birleştirildi, yani ilk CI koşusu bundan sonraki
+  05:00 UTC'de olacak.
+
+  İzlenecek şey `references.ts`: günde **189 ayrı dosya** çekiyor
+  (parçacık kimliği dosya adından türetilemediği için hepsi tek tek
+  okunuyor). Yerelde sorun çıkarmadı ama CI'da GitHub API kotası farklı
+  davranabilir — iş akışı `GITHUB_TOKEN` kullanıyor, yine de ölçülmedi.
+
+  Başarısız olursa sessiz kalmaz: `data.yml` bildirim issue'su açıyor.
+  Bir kez yeşil koştuğu görüldüğünde bu madde kapanır ve sayı buraya yazılır.

@@ -1,7 +1,7 @@
 /**
  * get_schema — bir belge tipinin hedefe yönelik şema özeti.
  *
- * SEKİZ ARAÇTAN TEK "SARMALAMA OLMAYAN" ARAÇ BU, ve M3'ün asıl işi buydu.
+ * DOKUZ ARAÇTAN TEK "SARMALAMA OLMAYAN" ARAÇ BU, ve M3'ün asıl işi buydu.
  * Sebep ölçüm: ham şema döndürülemiyor. `entities.json` 585.237 bayt,
  * `commands.json` 650.454 — ikisi de bütçenin kat kat üstünde. Karar dokümanı
  * bunu optimizasyon değil zorunluluk sayıyor.

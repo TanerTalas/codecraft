@@ -1,7 +1,7 @@
 /**
  * validate_script — @minecraft/server kodunu gerçek tsc ile derler.
  *
- * SEKİZ ARAÇTAN ALT SÜREÇ AÇAN TEK ARAÇ BU. `validateScript` tsc'yi ayrı bir
+ * DOKUZ ARAÇTAN ALT SÜREÇ AÇAN TEK ARAÇ BU. `validateScript` tsc'yi ayrı bir
  * süreç olarak çalıştırıyor, `mkdtemp` ile geçici dizin açıyor ve
  * data/<sürüm>/script-types/ altındaki .d.ts dosyalarını okuyor. Serverless
  * bir ortamda üçünün hiçbiri garanti değildi — barındırma ölçümü tam olarak
