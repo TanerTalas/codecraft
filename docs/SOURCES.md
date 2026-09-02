@@ -27,6 +27,9 @@ public yapıldı (aşağıda, "Ne dışarı çıkıyor").
 | `Mojang/bedrock-samples` → `metadata/json_schemas/` | Mojang'ın kendi JSON şemaları | Minecraft EULA | Birebir kopya **git dışında** (`pipeline/raw/`); `data/` içine yalnızca türetilmiş `schemas-index.json` |
 | `Mojang/bedrock-samples` → `metadata/command_modules/` | Komut grameri: 83 komut, 270 aşırı yükleme, 225 enum | Minecraft EULA | Türetilmiş indeks (açıklama metinleri atılır) |
 | `Mojang/bedrock-samples` → `metadata/molang_modules/` | Molang: 315 sorgu, 61 matematik fonksiyonu (02-09-2026) | Minecraft EULA | Türetilmiş indeks (açıklama metinleri atılır) |
+| `Mojang/bedrock-samples` → `resource_pack/particles/` | 189 parçacık kimliği | Minecraft EULA | Türetilmiş indeks (yalnızca `identifier`) |
+| `Mojang/bedrock-samples` → `resource_pack/sounds/` | 1824 ses, 48 müzik olayı | Minecraft EULA | Türetilmiş indeks (yalnızca anahtar adları) |
+| `Mojang/bedrock-samples` → `behavior_pack/{loot_tables,trading}/` | 207 loot + 27 takas tablosu YOLU | Minecraft EULA | Türetilmiş indeks (yalnızca yollar, içerik değil) |
 | `Mojang/bedrock-schemas` | Resmi şema deposu | — | **Bugün kullanılmıyor.** İncelenecek; lisansı ve içeriği henüz kaynağa karşı doğrulanmadı |
 | `Blockception/Minecraft-bedrock-json-schemas` | Doğrulamanın kullandığı şemalar | **BSD-3-Clause**, atıf zorunlu | Birebir kopya + `LICENSE` + türetilmiş `schema-map.json` |
 | `@minecraft/*` (npm, 9 paket) | Script tip tanımları | **MIT** (paketlerin `package.json` beyanı) | Birebir `index.d.ts` + `package.json` |

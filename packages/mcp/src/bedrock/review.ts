@@ -14,6 +14,8 @@ import {
   checkManifest,
   checkMolang,
   checkPatterns,
+  checkReferences,
+  checkSounds,
   validateCommand,
   validateJson,
   validateScript,
@@ -189,6 +191,8 @@ export async function review(files: readonly PackFile[], version: string): Promi
   findings.push(...(await checkAssets(files, { version })).findings);
   // Molang JSON stringlerinin icinde duruyor; ne sema ne tsc oraya bakiyor.
   findings.push(...(await checkMolang(files, { version })).findings);
+  // minecraft:loot ve trade_table bir dosya YOLUNA isaret ediyor, kimlige degil.
+  findings.push(...(await checkReferences(files, { version })).findings);
   for (const file of files) {
     if (isScript(file.path)) {
       findings.push(...checkPatterns(file.content, { path: file.path }).findings);
@@ -198,6 +202,8 @@ export async function review(files: readonly PackFile[], version: string): Promi
     // koşuyor: sözdizimi (Mojang'ın komut tanımına karşı) ve kimlikler.
     if (file.path.endsWith(".txt")) {
       findings.push(...(await commandSyntaxFindings(file, version)));
+      // Ses olaylari kimlik degil, nokta ayrac.li ad: kimlik regex'i gormuyor.
+      findings.push(...(await checkSounds(file.content, { version, path: file.path })).findings);
       findings.push(
         ...(
           await checkCommandIdentities(file.content, {

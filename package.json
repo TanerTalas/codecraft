@@ -19,6 +19,7 @@
     "pipeline:bedrock": "node pipeline/src/bedrock-samples.ts",
     "pipeline:commands": "node pipeline/src/commands.ts",
     "pipeline:molang": "node pipeline/src/molang.ts",
+    "pipeline:refs": "node pipeline/src/references.ts",
     "pipeline:schemas": "node pipeline/src/schemas-mojang.ts",
     "pipeline:blockception": "node pipeline/src/schemas-blockception.ts",
     "pipeline:types": "node pipeline/src/script-types.ts",

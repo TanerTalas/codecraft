@@ -66,6 +66,17 @@
       "math": 61,
       "removed": 6
     },
+    "references": {
+      "particles": {
+        "file": "particles.json",
+        "count": 189
+      },
+      "file": "references.json",
+      "sounds": 1824,
+      "music": 48,
+      "lootTables": 207,
+      "tradeTables": 27
+    },
     "blockception": {
       "repo": "Blockception/Minecraft-bedrock-json-schemas",
       "ref": "main",

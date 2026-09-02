@@ -46,6 +46,20 @@ export type DataIndex = {
      */
     molang?: { file: string; queries: number; math: number; removed: number };
     /**
+     * Parçacık kimlikleri ve yol/nokta-adı taşıyan referans kümeleri.
+     *
+     * Opsiyonel: bu adım eklenmeden önce üretilmiş sürüm klasörleri hâlâ
+     * okunabilmeli.
+     */
+    references?: {
+      particles: { file: string; count: number };
+      file: string;
+      sounds: number;
+      music: number;
+      lootTables: number;
+      tradeTables: number;
+    };
+    /**
      * Mojang'ın makine okunur komut tanımından türetilen indeks.
      *
      * Opsiyonel: pipeline bu adımı kazanmadan önce üretilmiş sürüm klasörleri

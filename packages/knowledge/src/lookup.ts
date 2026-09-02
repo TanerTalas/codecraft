@@ -36,6 +36,11 @@ export const ALL_KINDS = [
   "effect",
   "enchantment",
   "feature",
+  // 02-09-2026'da eklendi ve bir YANLIŞ POZİTİFİ kapattı. Öncesinde
+  // `/particle minecraft:heart_particle` — tamamen geçerli bir vanilla
+  // komutu — checkCommandIdentities'ten "1.26.40.5 sürümünde yok" diye
+  // ERROR alıyordu. Ölçülerek görüldü, sonra düzeltildi.
+  "particle",
   "potion-effect",
   "potion-type",
 ] as const;
@@ -53,6 +58,7 @@ const INDEX_FILE: Record<AnyKind, string> = {
   effect: "effects.json",
   enchantment: "enchantments.json",
   feature: "features.json",
+  particle: "particles.json",
   "potion-effect": "potion-effects.json",
   "potion-type": "potion-types.json",
 };
@@ -250,4 +256,48 @@ const MOLANG_FILE = "molang.json";
 export async function molangIndex(options: { version?: string } = {}): Promise<MolangIndex> {
   const { dir } = await resolveVersion(options.version);
   return readIndex<MolangIndex>(dir, MOLANG_FILE);
+}
+
+
+/** Kimlik değil YOL ya da nokta adı taşıyan referans kümeleri. */
+export type ReferenceIndex = {
+  /** `sound_definitions.json` anahtarları: "ambient.basalt_deltas.mood". */
+  sounds: string[];
+  /** `music_definitions.json` kök anahtarları: "cherry_grove", "menu". */
+  music: string[];
+  /** Paket köküne göreli: "loot_tables/entities/cow.json". */
+  lootTables: string[];
+  /** Paket köküne göreli: "trading/armorer_trades.json". */
+  tradeTables: string[];
+};
+
+export const REFERENCE_KINDS = ["sounds", "music", "lootTables", "tradeTables"] as const;
+export type ReferenceKind = (typeof REFERENCE_KINDS)[number];
+
+const REFERENCES_FILE = "references.json";
+
+/**
+ * Vanilla ses, müzik, loot ve trade tablo referansları.
+ *
+ * Bunlar `lookup` ile aranamıyor çünkü kimlik değiller: ses olayı nokta ayraçlı
+ * bir ad ("mob.cow.say"), loot tablosu ise bir DOSYA YOLU
+ * ("loot_tables/entities/cow.json"). `minecraft:loot` ve
+ * `minecraft:trade_table` bileşenleri o yola işaret ediyor; şema yolun
+ * biçimine bakıyor, işaret ettiği dosyanın var olup olmadığına değil —
+ * docs/VALIDATION-LIMITS.md A ile aynı yapı.
+ */
+export async function referenceSet(
+  kind: ReferenceKind,
+  options: { version?: string } = {},
+): Promise<ReadonlySet<string>> {
+  const { dir } = await resolveVersion(options.version);
+  const key = `${join(dir, REFERENCES_FILE)}#${kind}`;
+
+  const cached = idCache.get(key);
+  if (cached !== undefined) return cached;
+
+  const index = await readIndex<ReferenceIndex>(dir, REFERENCES_FILE);
+  const set = new Set(index[kind] ?? []);
+  idCache.set(key, set);
+  return set;
 }

@@ -14,6 +14,7 @@ import { join } from "node:path";
 import { collectVanillaData } from "./bedrock-samples.ts";
 import { COMMANDS_FILE, collectCommands } from "./commands.ts";
 import { MOLANG_FILE, collectMolang } from "./molang.ts";
+import { PARTICLES_FILE, REFERENCES_FILE, collectReferences } from "./references.ts";
 import { collectMojangSchemas } from "./schemas-mojang.ts";
 import {
   BLOCKCEPTION_DIR,
@@ -55,6 +56,12 @@ export async function runPipeline(): Promise<void> {
   console.log(
     `  molang           ${molang.queries} sorgu (${molang.removed} kaldırılmış), ` +
       `${molang.math} matematik fonksiyonu`,
+  );
+
+  const references = await collectReferences(version);
+  console.log(
+    `  referanslar      ${references.particles} parçacık, ${references.sounds} ses, ` +
+      `${references.music} müzik, ${references.lootTables} loot, ${references.tradeTables} trade`,
   );
 
   const mojang = await collectMojangSchemas(version);
@@ -106,6 +113,18 @@ export async function runPipeline(): Promise<void> {
         math: molang.math,
         // Kaldirilmis sorgular: kullanildiklarinda uyari uretiliyor.
         removed: molang.removed,
+      },
+      // Parcacik kimligi dosya adindan TURETILEMIYOR (arrowspell.json ->
+      // minecraft:arrow_spell_emitter), o yuzden 189 dosyanin hepsi okunuyor.
+      // Ayri bir kimlik indeksi: ALL_KINDS icine giriyor, lookupAny buluyor.
+      references: {
+        particles: { file: PARTICLES_FILE, count: references.particles },
+        // Kimlik degil YOL ya da nokta ayracli ad tasiyan kumeler.
+        file: REFERENCES_FILE,
+        sounds: references.sounds,
+        music: references.music,
+        lootTables: references.lootTables,
+        tradeTables: references.tradeTables,
       },
       blockception: {
         repo: BLOCKCEPTION_REPO,

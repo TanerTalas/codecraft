@@ -11,12 +11,14 @@ export type { DataIndex, DataVersion } from "./version.ts";
 export {
   ALL_KINDS,
   KINDS,
+  REFERENCE_KINDS,
   TEXTURE_ATLASES,
   blockStates,
   lookup,
   lookupAny,
   molangIndex,
   normalizeId,
+  referenceSet,
   textureKeys,
 } from "./lookup.ts";
 export type {
@@ -29,5 +31,7 @@ export type {
   LookupResult,
   MolangEntry,
   MolangIndex,
+  ReferenceIndex,
+  ReferenceKind,
   TextureAtlas,
 } from "./lookup.ts";

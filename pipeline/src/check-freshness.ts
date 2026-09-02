@@ -22,6 +22,11 @@ type IndexFile = {
   sources?: {
     mojangSchemas?: { index?: string; files?: number };
     molang?: { file?: string; queries?: number; math?: number };
+    references?: {
+      file?: string;
+      sounds?: number;
+      particles?: { file?: string; count?: number };
+    };
     blockception?: {
       path?: string;
       files?: number;
@@ -62,7 +67,7 @@ export async function checkFreshness(): Promise<string[]> {
     problems.push(`data/${version}/index.json içindeki sürüm "${index.version}" — klasör adıyla uyuşmuyor`);
   }
 
-  const { mojangSchemas, molang, blockception, scriptTypes } = index.sources ?? {};
+  const { mojangSchemas, molang, references, blockception, scriptTypes } = index.sources ?? {};
 
   if (blockception?.path === undefined || blockception.files === undefined) {
     problems.push("index.json içinde blockception kaydı eksik");
@@ -126,6 +131,20 @@ export async function checkFreshness(): Promise<string[]> {
       await access(join(dir, molang.file));
     } catch {
       problems.push(`molang indeksi yok — ${join(dir, molang.file)}`);
+    }
+  }
+
+  // Referans indeksleri: parcacik kimlikleri ile ses/loot/trade kumeleri.
+  // Ikisi ayri dosya, ikisi de sessizce eksik kalmamali.
+  if (references?.file === undefined || references.particles?.file === undefined) {
+    problems.push("index.json içinde referans kaydı eksik");
+  } else {
+    for (const file of [references.file, references.particles.file]) {
+      try {
+        await access(join(dir, file));
+      } catch {
+        problems.push(`referans indeksi yok — ${join(dir, file)}`);
+      }
     }
   }
 

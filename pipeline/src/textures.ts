@@ -42,8 +42,14 @@ type Atlas = keyof typeof ATLASES;
  * `//` yorumu var, satır içi `//` hiç yok. O yüzden tam satır yorumları
  * atılıyor; genel bir JSONC ayrıştırıcısı yazılmıyor, çünkü satır içi `//`
  * bir URL'in ortasında da geçebilir ve sessizce veri bozardı.
+ *
+ * `references.ts` de bunu kullanıyor ve orası için ayrıca ölçüldü
+ * (02-09-2026): 189 parçacık dosyasının **1'i** tam satır yorumu taşıyor
+ * (`guardian_water_move.json`, "// upwards force"), satır içi `//` ve sondaki
+ * virgül taşıyan **yok**. Aynı varsayım orada da geçerli — varsayılmadı,
+ * 189'unun hepsi ayrıştırılarak sayıldı.
  */
-const stripLineComments = (text: string): string =>
+export const stripLineComments = (text: string): string =>
   text
     .split("\n")
     .filter((line) => !line.trimStart().startsWith("//"))

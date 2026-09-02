@@ -55,6 +55,52 @@ referanslar ona karşı kontrol edilir.
 → Kapatıldı: `checkIdentities` doğrulamadan sonra ikinci bir kimlik kontrolü
 koşuyor, `review_pack` onu çağırıyor.
 
+### Genişletme (02-09-2026): yol referansları ve bir yanlış pozitif
+
+Kimlik kontrolünün iki kör noktası ölçüldü.
+
+**1. Yol taşıyan referanslar.** `minecraft:loot` ve `minecraft:trade_table` bir
+kimliğe değil bir **dosya yoluna** işaret ediyor:
+
+```json
+{ "minecraft:loot": { "table": "loot_tables/entities/cow.json" } }
+```
+
+Şema yolun string olduğunu doğruluyor, işaret ettiği dosyanın var olup
+olmadığını değil — A sınıfının aynısı, farklı kılıkta. `checkReferences`
+kapatıyor: 207 vanilla loot tablosu ve 27 takas tablosu indeksleniyor, paket
+kendi tablosunu getiriyorsa referans çözülmüş sayılıyor (C'deki 01-09-2026
+dersinin aynısı).
+
+**2. Ses olayları kimlik değil.** `mob.cow.say` nokta ayraçlı bir ad ve
+namespace taşımıyor, yani `COMMAND_ID_RE` onu hiç yakalamıyordu.
+`checkSounds` `/playsound` satırlarını 1824 vanilla ses olayına karşı ölçüyor.
+
+**3. Parçacıklar — ölçülmüş bir YANLIŞ POZİTİF.** Bu madde diğer ikisinden
+önemli, çünkü kaçırma değil **uydurma hata** idi:
+
+```
+/particle minecraft:heart_particle ~ ~ ~
+→ "minecraft:heart_particle" 1.26.40.5 sürümünde yok        [error]
+```
+
+Komut tamamen geçerli. Sebep: `checkCommandIdentities` her `minecraft:`
+kimliğini `lookupAny` ile arıyor ve parçacıklar **hiçbir indekste yoktu**.
+189 parçacık `particles.json` olarak indekslendi ve `ALL_KINDS` içine girdi;
+bulgu kayboldu, uydurulmuş bir parçacık ise hâlâ yakalanıyor (kontrol grubu,
+test olarak sabitlendi).
+
+> **Parçacık kimliği dosya adından türetilemiyor** ve bu ölçülerek görüldü:
+> `arrowspell.json` → `minecraft:arrow_spell_emitter`,
+> `balloon_gas.json` → `minecraft:balloon_gas_particle`. 189 dosyanın hepsi
+> okunuyor. Doku atlasındaki %13/%40 bulgusuyla aynı ders: ad türetme kuralı
+> yazmak, kuralı uydurtmak demek.
+
+`checkReferences` ve `checkSounds` bulguları **warning**: eksik bir loot
+tablosunun oyunda ne yaptığı henüz ölçülmedi. Parçacık düzeltmesi ise bir
+ölçüme dayanıyor ve error tarafında duruyor — çünkü orada ölçülen şey aracın
+kendi hatasıydı.
+
 ## B. Dosya adı ile içerik arasındaki kurallar — hiçbir şema yakalayamaz
 
 ```
@@ -326,6 +372,7 @@ tanımlı, kapalı bir küme yok.
 | Sınıf | Şema yakalar mı | Ne ölçüyor | Durum |
 |---|---|---|---|
 | A · kimlik referansı | Hayır, ama çözülebilir | `checkIdentities`, `checkCommandIdentities` | **Bulunuyor** — `review_pack` koşuyor, bulgu eyleme dönüştürülebilir metne giriyor |
+| A' · yol / ses referansı | Hayır | `checkReferences`, `checkSounds` | **Bulunuyor, warning** — oyunda henüz ölçülmedi |
 | B · dosya adı kuralı | **Yapısal olarak hayır** | `checkFileNames` | **Bulunuyor** — doğru ad raporda söyleniyor |
 | C · asset referansı | Hayır | `checkAssets` | **Bulunuyor** — vanilla doku indeksine karşı |
 | D · geçerli ama yanlış | **Yapısal olarak hayır** | `checkPatterns` | **Bulunuyor + önceden anlatılıyor** — `patternGuide()` aynı tablodan besliyor |

@@ -18,7 +18,15 @@
  */
 import { basename } from "node:path";
 
-import { lookup, lookupAny, molangIndex, normalizeId, textureKeys } from "@codecraft/knowledge";
+import {
+  lookup,
+  lookupAny,
+  molangIndex,
+  normalizeId,
+  referenceSet,
+  textureKeys,
+  type ReferenceKind,
+} from "@codecraft/knowledge";
 
 import { validateMolang } from "./molang.ts";
 import type { TextureAtlas } from "@codecraft/knowledge";
@@ -1000,6 +1008,158 @@ export async function checkMolang(
         });
       }
     }
+  }
+
+  return toResult(findings);
+}
+
+// --------------------------------------------------------------------------
+// A' · yol referansları: loot ve trade tabloları
+// --------------------------------------------------------------------------
+
+/**
+ * Yol taşıyan bileşenler ve hangi referans kümesine baktıkları.
+ *
+ * Bunlar kimlik değil DOSYA YOLU taşıyor ("loot_tables/entities/cow.json"),
+ * o yüzden `checkIdentities` görmüyor. Şema yolun string olduğunu doğruluyor,
+ * işaret ettiği dosyanın var olup olmadığını değil — A sınıfının aynısı.
+ */
+const PATH_COMPONENTS: Readonly<Record<string, ReferenceKind>> = {
+  "minecraft:loot": "lootTables",
+  "minecraft:trade_table": "tradeTables",
+  "minecraft:economy_trade_table": "tradeTables",
+};
+
+/** `table` alanı taşıyan bileşenleri, JSON pointer yoluyla toplar. */
+function collectPathRefs(
+  value: unknown,
+  path: string,
+  out: { kind: ReferenceKind; table: string; where: string }[],
+): void {
+  if (Array.isArray(value)) {
+    for (const [i, item] of value.entries()) collectPathRefs(item, `${path}/${i}`, out);
+    return;
+  }
+  const object = asObject(value);
+  if (object === null) return;
+
+  for (const [key, item] of Object.entries(object)) {
+    const kind = PATH_COMPONENTS[key];
+    const inner = asObject(item);
+    if (kind !== undefined && inner !== null && typeof inner["table"] === "string") {
+      out.push({ kind, table: inner["table"], where: `${path}/${key}/table` });
+    }
+    collectPathRefs(item, `${path}/${key}`, out);
+  }
+}
+
+/** Paketin kendi getirdiği loot/trade tablo dosyaları. */
+function packTablePaths(files: readonly PackFile[]): ReadonlySet<string> {
+  const out = new Set<string>();
+  for (const file of files) {
+    if (!file.path.endsWith(".json")) continue;
+    // Paket içi yol "BP/loot_tables/x.json" ya da "loot_tables/x.json"
+    // gelebiliyor; referans metni her zaman paket köküne göreli yazılıyor.
+    const match = /(?:^|\/)((?:loot_tables|trading)\/.+\.json)$/.exec(file.path);
+    if (match?.[1] !== undefined) out.add(match[1]);
+  }
+  return out;
+}
+
+export type ReferenceOptions = { version?: string };
+
+/**
+ * `minecraft:loot` ve `minecraft:trade_table` işaret ettiği dosya var mı.
+ *
+ * `checkAssets`'in 01-09-2026 dersinin aynısı uygulanıyor: paket kendi
+ * tablosunu getiriyorsa referans çözülmüştür, kimin yazdığından bağımsız.
+ * Aksi hâlde doğru ve kurulabilir bir paket "hatalı" raporlanırdı.
+ *
+ * NEDEN WARNING: eksik bir loot tablosunun oyunda ne yaptığı henüz
+ * ÖLÇÜLMEDİ. A–E sınıflarının ContentLog kanıtı var, bunun yok. Ölçülene
+ * kadar uyarı — bilinmeyene "geçti" denmiyor ama uydurma hata da üretilmiyor.
+ */
+export async function checkReferences(
+  files: readonly PackFile[],
+  options: ReferenceOptions = {},
+): Promise<CheckResult> {
+  const { documents, findings } = parseJsonDocuments(files);
+
+  const refs: { file: PackFile; kind: ReferenceKind; table: string; where: string }[] = [];
+  for (const { file, value } of documents) {
+    const found: { kind: ReferenceKind; table: string; where: string }[] = [];
+    collectPathRefs(value, "", found);
+    for (const ref of found) refs.push({ file, ...ref });
+  }
+
+  if (refs.length === 0) return toResult(findings);
+
+  const own = packTablePaths(files);
+  const sets = new Map<ReferenceKind, ReadonlySet<string>>();
+  for (const kind of new Set(refs.map((ref) => ref.kind))) {
+    sets.set(kind, await referenceSet(kind, options));
+  }
+
+  for (const { file, kind, table, where } of refs) {
+    if (own.has(table)) continue;
+    if (sets.get(kind)?.has(table) === true) continue;
+
+    const label = kind === "lootTables" ? "loot tablosu" : "takas tablosu";
+    findings.push({
+      check: "reference",
+      severity: "warning",
+      path: file.path,
+      message:
+        `${where} :: ${label} "${table}" ne vanilla'da var ne de pakette. ` +
+        "Var olan bir vanilla tablosuna işaret et ya da dosyayı pakete ekle",
+      evidence: `${LIMITS} · A (yol referansı) · data/<sürüm>/references.json`,
+    });
+  }
+
+  return toResult(findings);
+}
+
+/**
+ * `/playsound` ile çalınan ses olayı gerçekten tanımlı mı.
+ *
+ * Ses olayları `checkCommandIdentities`'in göremediği yerde duruyor: kimlik
+ * değiller, nokta ayraçlı adlar ("mob.cow.say") ve namespace taşımıyorlar,
+ * yani kimlik regex'i onları hiç yakalamıyor.
+ *
+ * Yalnızca `playsound` ölçülüyor. `stopsound` da ses adı alıyor ama argüman
+ * sırası farklı ve ölçülmedi — ölçülmemiş kural kodlanmıyor.
+ */
+export async function checkSounds(
+  text: string,
+  options: ReferenceOptions & { path?: string } = {},
+): Promise<CheckResult> {
+  const findings: Finding[] = [];
+  const wanted: { line: number; sound: string }[] = [];
+
+  for (const [i, raw] of text.split(/\r?\n/).entries()) {
+    const line = raw.trim().replace(/^\//, "");
+    if (!/^playsound\s/.test(line)) continue;
+    const sound = line.split(/\s+/)[1];
+    // Tırnaklı ad da kabul: /playsound "mob.cow.say" @a
+    if (sound !== undefined) wanted.push({ line: i + 1, sound: sound.replace(/^["']|["']$/g, "") });
+  }
+
+  if (wanted.length === 0) return toResult(findings);
+
+  const sounds = await referenceSet("sounds", options);
+  for (const { line, sound } of wanted) {
+    if (sounds.has(sound)) continue;
+    // Ses adları nokta ayraçlı; yakınlık da parça bazlı ölçülüyor.
+    const near = nearestKeys(sound.replace(/\./g, "_"), new Set([...sounds].map((s) => s.replace(/\./g, "_"))));
+    findings.push({
+      check: "sound",
+      severity: "warning",
+      ...(options.path === undefined ? {} : { path: options.path }),
+      message:
+        `satır ${line}: ses olayı "${sound}" bu sürümde tanımlı değil` +
+        (near.length === 0 ? "" : `. Yakın adlar: ${near.map((n) => n.replace(/_/g, ".")).join(", ")}`),
+      evidence: "data/<sürüm>/references.json (resource_pack/sounds/sound_definitions.json)",
+    });
   }
 
   return toResult(findings);

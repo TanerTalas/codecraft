@@ -61,6 +61,8 @@ export {
   checkIdentities,
   checkMolang,
   checkPatterns,
+  checkReferences,
+  checkSounds,
   patternGuide,
   patternNames,
 } from "./checks.ts";
@@ -72,6 +74,7 @@ export type {
   IdentityOptions,
   MolangCheckOptions,
   PackFile,
+  ReferenceOptions,
   PatternGuide,
   PatternOptions,
 } from "./checks.ts";
