@@ -1,0 +1,25 @@
+CodeCraft
+Copyright 2026 Taner Talas
+
+This product includes software developed by Taner Talas.
+
+Licensed under the Apache License, Version 2.0. See the LICENSE file.
+
+--------------------------------------------------------------------------
+
+This repository also contains and derives from third-party material that is
+NOT covered by the Apache License above. See THIRD-PARTY-NOTICES.md for the
+full list, the licenses that apply, and which parts are verbatim copies
+versus derived facts.
+
+In particular:
+
+  * data/blockception/            BSD-3-Clause, (c) 2020 Blockception Ltd
+  * data/<version>/script-types/  MIT, (c) Microsoft Corporation
+  * data/<version>/release-notes/ CC-BY-4.0, (c) Microsoft Corporation
+  * data/<version>/*.json         Derived from Mojang/bedrock-samples,
+                                  which is subject to the Minecraft
+                                  End User License Agreement.
+
+NOT AN OFFICIAL MINECRAFT PRODUCT.
+NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.
