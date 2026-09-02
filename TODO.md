@@ -971,8 +971,26 @@ biri ertelenmişe taşındı. Ölçümler aşağıdaki blokquote'ta.
   gerekçesi aşağıda
 - [ ] **Taze kapı koşusu** — ertelenmiş Aşama 4'e taşındı, aşağıda
 
-### Açık kalan iki şey
+### Açık kalan
 
+- [ ] **Dokuzuncu araç gerçek kullanımda hiç çağrılmadı — M5 turu borcu.**
+  M5'in asıl sorusu "model bu araçları kendiliğinden çağırıyor mu, hangi
+  sırayla, çağırmadığında neden" idi ve altı senaryo koşulduğunda **altı
+  gerçek boşluk** çıktı; biri ancak oyunda denenince görüldü. Bu turda ürün
+  değişti ama o soru tekrar sorulmadı:
+  - `validate_python` (02-09-2026) hiçbir gerçek oturumda çağrılmadı.
+    Kendiliğinden seçiliyor mu, açıklaması iyi mi, model ne zaman bunu
+    `validate_script` yerine tercih ediyor — hiçbiri bilinmiyor
+  - `validate_command`'ın **davranışı değişti** (zincirleme çözülüyor, `run`
+    sonrası boş artık reddediliyor) ve açıklamasındaki "o arity hatasını yok
+    say" uyarısı **kaldırıldı**. M5'in dördüncü dersi kötü bir aracın modele
+    "bu aracın hatalarını yok say" öğrettiğini söylüyordu; uyarı kalkınca
+    model davranışının ne olduğu ölçülmedi
+  - `docs/mcp-kullanim.md`'deki araç kullanım tablosu **sekiz satırlık** ve
+    01-09 ölçümü. Dokuzuncu satır yok
+
+  Yol M5'in aynısı: sunucuyu bir süre günlük kullan, gözlemi elle kaydet,
+  `docs/mcp-kullanim.md`'ye ikinci bir bölüm yaz. Kod yazılarak kapanmaz.
 - [ ] **Pipeline yol (2): başarısızlıkta GitHub issue açılması.** `if:
   failure()` dalı (`.github/workflows/data.yml`) hiç tetiklenmedi. Ölçmek için
   atılabilir bir dalda bir adımı bilerek kırıp `workflow_dispatch` ile koşmak
