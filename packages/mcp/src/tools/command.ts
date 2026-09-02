@@ -1,6 +1,6 @@
 /**
  * validate_command — komut satırını resmi komut indeksine karşı doğrular
- * (Aşama M3).
+ *.
  *
  * NEDEN VAR: bu doğrulayıcı bir kez "v1'de yapılmayacak" listesindeydi ve
  * gerekçesi "makine okunur resmi kaynak yok" idi. Yanlıştı —

@@ -1,5 +1,5 @@
 /**
- * check_feasibility — istek Bedrock'ta yapılabilir mi (Aşama M3).
+ * check_feasibility — istek Bedrock'ta yapılabilir mi.
  *
  * NEDEN İLK ÇAĞRILMASI GEREKEN ARAÇ BU: kullanıcı isteğini oyuncu diliyle
  * söylüyor, platform bambaşka bir şey sunuyor. "Fareyi otomatik tıklat",

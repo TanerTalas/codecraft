@@ -128,7 +128,7 @@ test("permutations altındaki doku da taranır", async () => {
 /**
  * Paketin KENDİ atlas tanımı.
  *
- * Ölçüldü 01-09-2026, Aşama M5 senaryo 5: model kaynak paketi de üreten
+ * Ölçüldü 01-09-2026, docs/mcp-kullanim.md senaryo 5: model kaynak paketi de üreten
  * eksiksiz bir eklenti verdi, doku anahtarlarını RP içinde tanımladı, ve
  * review_pack iki ERROR ile ok:false döndü. Doğru ve kurulabilir bir paket
  * "hatalı" raporlandı — yanlış pozitif.

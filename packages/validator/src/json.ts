@@ -44,7 +44,7 @@ export type JsonResult = {
  *
  * strict: false        Blockception "defaultSnippets", Mojang "x-ordinal-index"
  *                      gibi standart dışı anahtarlar kullanıyor; katı kip patlar.
- * allErrors: true      Aşama 3'ün retry döngüsü modele tek hatayı değil hepsini
+ * allErrors: true      Çağıran modele tek hatayı değil hepsini
  *                      verecek. Tek hatayla dönmek bir sonraki denemede ikinci
  *                      hatanın çıkmasına yol açar.
  * unicodeRegExp: false docs/SOURCES.md'nin ölçtüğü madde: varsayılan ayarda

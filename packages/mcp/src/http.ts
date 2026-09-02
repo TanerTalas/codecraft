@@ -1,5 +1,5 @@
 /**
- * MCP sunucusunun HTTP yüzeyi — durumsuz Streamable HTTP (Aşama M4).
+ * MCP sunucusunun HTTP yüzeyi — durumsuz Streamable HTTP.
  *
  * NEDEN BURADA, `app/src/app/mcp/route.ts` İÇİNDE DEĞİL: TODO'nun M4 maddesi
  * transport'u route dosyasına yazıyordu, sapıldı ve gerekçesi ölçülmüş bir

@@ -13,8 +13,8 @@
  * C sınıfı (asset referansı) burada yok: kaynak paketi üretmek bir kapsam
  * kararı, doğrulama sorunu değil (docs/VALIDATION-LIMITS.md C).
  *
- * Bu fonksiyonlar hem evals runner'ı hem Aşama 3'ün üretim döngüsü tarafından
- * çağrılır — mantık tek yerde durur.
+ * Hepsi `review_pack` tarafından çağrılır ve tek tek de kullanılabilir —
+ * mantık tek yerde durur.
  */
 import { basename } from "node:path";
 
@@ -367,8 +367,8 @@ export async function checkIdentities(
  * `javascript` 1.16 öncesinden kalma bir tip. Blockception geriye dönük
  * uyumluluk için listede tutuyor; `@minecraft/server` 2.x ile çalışmıyor.
  *
- * Bu kontrol ÖLÇÜYOR. Üretim tarafı aynı kuralı `normalize()` ile
- * DÜZELTİYOR — checkFileNames / normalize ikilisiyle aynı düzen.
+ * Bu kontrol ÖLÇÜYOR, düzeltmiyor: doğru tipi bulguda söylüyor ve düzeltmeyi
+ * çağırana bırakıyor — checkFileNames ile aynı düzen.
  */
 export function checkManifest(files: readonly PackFile[]): CheckResult {
   const findings: Finding[] = [];
@@ -554,7 +554,7 @@ export type AssetOptions = { version?: string };
 /**
  * Paketin KENDİ tanımladığı doku anahtarları.
  *
- * Ölçülerek eklendi (01-09-2026, Aşama M5 senaryo 5). Kontrol yalnızca vanilla
+ * Ölçülerek eklendi (01-09-2026, docs/mcp-kullanim.md senaryo 5). Kontrol yalnızca vanilla
  * atlasına bakıyordu ve bu bir YANLIŞ POZİTİF üretiyordu: model bir kaynak
  * paketi de üreten eksiksiz bir eklenti verdi, anahtarları
  * RP/textures/terrain_texture.json ve item_texture.json içinde tanımladı, ve
@@ -640,7 +640,7 @@ function nearestKeys(key: string, atlas: ReadonlySet<string>, limit = 3): string
  *
  * KAYNAK PAKETİ: 30-08-2026'da "üretilmiyor, model yalnızca var olan bir
  * vanilla anahtarına işaret edebilir" deniyordu. ~~O kural~~ 01-09-2026'da
- * genişletildi (Aşama M5 senaryo 5): kaynak paketi üretilebilir ve bu kontrol
+ * genişletildi (docs/mcp-kullanim.md senaryo 5): kaynak paketi üretilebilir ve bu kontrol
  * artık paketin KENDİ atlas tanımını da çözüyor. Vanilla anahtarına işaret
  * etmek hâlâ geçerli ve en ucuz yol; tek yol değil.
  *
@@ -788,8 +788,8 @@ type Pattern = {
   evidence: string;
   /**
    * Doğrusunun nasıl yazılacağı. Kalıp burada hem SONRADAN ölçülüyor hem
-   * ÖNCEDEN anlatılıyor: Aşama 3'ün prompt'u bu alandan besleniyor
-   * (TODO.md, "kalıp hem önceden anlatılsın hem sonradan ölçülsün").
+   * ÖNCEDEN anlatılıyor: `get_version_info` bağlamı bu alandan besleniyor,
+   * yani kalıp hem önceden anlatılıyor hem sonradan ölçülüyor.
    * Böylece liste tek yerde durur, ikinci bir kopya tutulmaz.
    */
   guidance: string;
@@ -819,7 +819,7 @@ const WORLD_LOAD = /\bworldLoad\s*\.\s*subscribe\s*\(/g;
 
 /**
  * Kalıp tablosu. Her kalıbın kanıtı var — "böyle olsa iyi olur" maddesi yok.
- * Aşama 3 buraya kalıp ekledikçe prompt da aynı listeden beslenir.
+ * Buraya kalıp eklendikçe `get_version_info` bağlamı da aynı listeden beslenir.
  */
 const PATTERNS: Pattern[] = [
   {

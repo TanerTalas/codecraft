@@ -1,5 +1,5 @@
 /**
- * Araçların ortak iskeleti (Aşama M3).
+ * Araçların ortak iskeleti.
  *
  * NEDEN `register` METODU, DÜZ BİR NESNE DEĞİL: SDK'nın `registerTool`'u girdi
  * şemasından dönüş tipini çıkarıyor (generic). Sekiz aracı tek bir dizide

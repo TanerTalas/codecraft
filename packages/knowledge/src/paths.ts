@@ -6,7 +6,7 @@
  * nerede" sorusunun paketlenmiş kodda da doğru cevaplanması.
  *
  * ÖNCEKİ HÂLİ `new URL("../../../", import.meta.url)` idi ve iki ayrı sebeple
- * Aşama 4'te kırıldı (ölçüldü, Next 16.3.3 / Turbopack):
+ * paketleyici altında kırıldı (ölçüldü, Next 16.3.3 / Turbopack):
  *
  *   1. Paketleyici o ifadeyi bir modül referansı sanıyor ve derleme anında
  *      düşüyor: `Module not found: Can't resolve '../../../'`.

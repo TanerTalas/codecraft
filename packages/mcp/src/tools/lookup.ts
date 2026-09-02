@@ -1,5 +1,5 @@
 /**
- * lookup_id — bir kimlik bu sürümde var mı (Aşama M3).
+ * lookup_id — bir kimlik bu sürümde var mı.
  *
  * ADI NEDEN `lookup_block` DEĞİL: karar dokümanı aracı öyle yazmıştı, ama
  * lookup katmanı on iki türü birden tanıyor (block, item, entity, biome,

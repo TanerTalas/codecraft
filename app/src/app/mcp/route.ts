@@ -1,5 +1,5 @@
 /**
- * POST /mcp — MCP sunucusunun HTTP ucu (Aşama M4).
+ * POST /mcp — MCP sunucusunun HTTP ucu.
  *
  * İnce kabuk (mimari kural 1). Bütün bağlantı mantığı
  * `packages/mcp/src/http.ts` içinde; gerekçesi orada yazılı, özeti: kök
@@ -10,15 +10,15 @@
  * GET ve DELETE bilerek bağlı: `handleMcpRequest` ikisine de 405 döndürüyor.
  * Bağlanmasalardı Next'in kendi 405'i HTML dönerdi; MCP istemcisi JSON bekler.
  *
- * DOSYA İZLEME: bu rota kendi fonksiyon paketini alıyor, `/api/review`'unkini
- * DEĞİL. data/, codecraft.config.json ve tsc'nin buraya da dahil edilmesi
- * gerekiyor — `next.config.ts` içindeki `/mcp` girdisi.
+ * DOSYA İZLEME: Next izlemeyi rota başına yapıyor, yani bu rota kendi
+ * fonksiyon paketini alıyor. data/, repo kökü işaretçileri ve tsc'nin ona
+ * elle dahil edilmesi gerekiyor — `next.config.ts` içindeki `/mcp` girdisi.
  */
 import { handleMcpRequest } from "@codecraft/mcp";
 
 export const runtime = "nodejs";
 
-// validate_script tsc'yi alt süreç olarak açıyor; /api/review ile aynı sebep.
+// validate_script tsc'yi alt süreç olarak açıyor, derleme 60 sn'yi bulabilir.
 export const maxDuration = 60;
 
 export const POST = handleMcpRequest;

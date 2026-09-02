@@ -98,7 +98,7 @@ const require_ = createRequire(import.meta.url);
  * typescript paketinin bin/tsc dosyası.
  *
  * ÖNCE repo kökündeki node_modules'a bakılıyor, SONRA `require.resolve`'a.
- * Sıra bu şekilde çünkü ikincisi paketleyicide kırılıyor: Aşama 4'te ölçüldü,
+ * Sıra bu şekilde çünkü ikincisi paketleyicide kırılıyor: Next altında ölçüldü,
  * Turbopack `require.resolve`'u kendi çalışma zamanına çeviriyor ve dosya yolu
  * yerine sayısal bir modül kimliği döndürüyor. Belirtisi şuydu:
  *
@@ -287,7 +287,7 @@ export async function validateScript(
 
 
 /* ------------------------------------------------------------------------ *
- * Çalışma zamanı raporu — Aşama M1 (bkz. TODO.md)
+ * Çalışma zamanı raporu — barındırma ön koşulları
  * ------------------------------------------------------------------------ */
 
 /**
@@ -303,7 +303,7 @@ export type RuntimeReport = Record<string, RuntimeCheck>;
  * Her kontrolü kendi try/catch'inde koşturur.
  *
  * Ayrı ayrı olması şart: tek bir "çalıştı/çalışmadı" cümlesi hangi ön koşulun
- * düştüğünü söylemiyor ve ilk hata sonrakileri ölçüsüz bırakıyor. Aşama M1'in
+ * düştüğünü söylemiyor ve ilk hata sonrakileri ölçüsüz bırakıyor. Barındırma
  * bitiş kriteri üç şeyi ayrı ayrı istiyor (süreç açma, geçici dizin, paketlenen
  * dosyalar); burada altıya ayrılmış hâli var.
  */
@@ -349,7 +349,7 @@ function tscExePath(): string {
 /**
  * validateScript()'in ihtiyaç duyduğu her ön koşulu ayrı ayrı ölçer.
  *
- * Aşama M1 bunun için var: `validateScript` bir alt süreç açıyor, yazılabilir
+ * ölçümü bunun için var: `validateScript` bir alt süreç açıyor, yazılabilir
  * bir geçici dizin istiyor ve data/ altındaki .d.ts dosyalarını okuyor.
  * Serverless bir ücretsiz kademede üçü de garanti değil ve hangisinin
  * düştüğünü tek bir 500 yanıtından anlamak mümkün değil.

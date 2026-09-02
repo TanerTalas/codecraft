@@ -2,9 +2,9 @@
  * Kurulu oyunun klasörleri.
  *
  * paths.ts repo içindeki yerleri çözüyor, burası oyunun makinedeki yerini.
- * knowledge içinde duruyor çünkü hem @codecraft/core'un CLI'ı hem
- * validator'ın ölçüm script'i kullanıyor; iki yönlü bir bağımlılık
- * doğmasın diye ikisinin de bağımlı olduğu pakete konuldu.
+ * knowledge içinde duruyor çünkü validator'ın ölçüm script'i kullanıyor ve
+ * iki yönlü bir bağımlılık doğmasın diye ikisinin de bağımlı olduğu pakete
+ * konuldu.
  */
 import { access } from "node:fs/promises";
 import { join } from "node:path";

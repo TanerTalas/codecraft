@@ -1,5 +1,5 @@
 /**
- * WebSocket sağlık kontrolü — Aşama 1'den Aşama 3'e taşındı (TODO.md).
+ * WebSocket sağlık kontrolü.
  *
  * `/connect` ve `/wsserver` Mojang tarafından **hiç belgelenmedi**: izlenecek
  * resmi bir changelog yok ve her sürümde sessizce kırılabilir. Üretilen
@@ -145,7 +145,7 @@ function report(): void {
     console.log(
       "\nBağlantı kuruldu ama ne komut cevabı ne olay geldi. Protokol şekli\n" +
         "değişmiş olabilir. Bu, üretilen otomasyon script'lerini etkiler —\n" +
-        "docs/ ve TODO.md güncellenmeli.",
+        "docs/WEBSOCKET.md güncellenmeli.",
     );
     process.exitCode = 1;
   }

@@ -191,7 +191,7 @@ koşuldu — koordinat bileşeni silinince vaka kırmızıya döndü.
 
 ## Kapatılan boşluk: `execute ... run <komut>` zincirlemesi
 
-**Bulundu 01-09-2026** (Aşama M3'te `validate_command` MCP'ye açılırken),
+**Bulundu 01-09-2026** (`validate_command` MCP'ye açılırken),
 **kapatıldı 02-09-2026.**
 
 Doğrulayıcı `execute`'un zincirleme biçimini çözmüyordu. `run` sonrasındaki
@@ -328,7 +328,7 @@ veri biçiminde ama oyunda denenmedi. Aynı davranışı gösterdikleri
 
 ## Kapatılan boşluk: boş enum her değeri reddediyordu
 
-**Bulundu ve kapatıldı 01-09-2026, Aşama M5 senaryo 3'te** — gerçek bir Claude
+**Bulundu ve kapatıldı 01-09-2026, docs/mcp-kullanim.md senaryo 3'te** — gerçek bir Claude
 oturumunda, planlanmamış bir yerden. Model `/tag @s add kutucu` önerdi,
 doğrulayıcı reddetti:
 
@@ -391,7 +391,7 @@ uyarı okuduğu için değil kendi muhakemesiyle. O yüzden bu boşluk belgelenm
 
 ## Kanal farkı: `ws:probe` sohbetten daha gevşek
 
-**Ölçüldü 01-09-2026, Aşama M5 senaryo 3.** Bu bölüm yalnızca bir komut
+**Ölçüldü 01-09-2026, docs/mcp-kullanim.md senaryo 3.** Bu bölüm yalnızca bir komut
 kuralını değil, **ölçüm yönteminin kendisini** düzeltiyor.
 
 ### Nasıl bulundu

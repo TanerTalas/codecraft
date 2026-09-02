@@ -1,13 +1,12 @@
 # Doğrulamanın yakalayamadıkları
 
-Aşama 2 biterken şu soru açıktı: şemadan ve `tsc`'den geçen içerik oyunda
+Doğrulama oturduğunda şu soru açıktı: şemadan ve `tsc`'den geçen içerik oyunda
 gerçekten çalışıyor mu? 30-08-2026'da ölçüldü. Cevap: **çoğu çalışıyor, ama
 dört ayrı sınıf hata doğrulamadan geçip oyunda patlıyor.**
 
 Bu doküman o sınıfları kaydeder. `docs/SOURCES.md` verinin nereden geldiğini
-anlatır; burası doğrulamanın nerede bittiğini anlatır. Aşama 3'ün
-niyet/yapılabilirlik katmanı ve Aşama 2.5'in eval seti buradaki maddeleri
-hedef alacak.
+anlatır; burası doğrulamanın nerede bittiğini anlatır. Araçların hangi
+sınırın neresinde durduğu buradan okunur.
 
 ## Nasıl ölçüldü
 
@@ -48,7 +47,8 @@ Paket içinde tanımlanan kimlikler (`codecraft:ruby_block` gibi) için de aynı
 mantık kurulabilir — üretilen dosyaların kendi kimlik kümesi çıkarılıp
 referanslar ona karşı kontrol edilir.
 
-→ Aşama 3: doğrulamadan sonra ikinci bir kimlik kontrolü.
+→ Kapatıldı: `checkIdentities` doğrulamadan sonra ikinci bir kimlik kontrolü
+koşuyor, `review_pack` onu çağırıyor.
 
 ## B. Dosya adı ile içerik arasındaki kurallar — hiçbir şema yakalayamaz
 
@@ -67,8 +67,8 @@ edebilir.
 Dosya adı düzeltilip yeniden yüklendiğinde hata kayboldu — kural doğrulandı,
 tahmin değil.
 
-→ Aşama 3: üretim tarafı dosya adını içerikten türetmeli. Doğrulama katmanının
-işi değil, üretim katmanının işi.
+→ Bugün yalnızca **bulunuyor**, düzeltilmiyor: `checkFileNames` uyumsuzluğu
+rapor ediyor ve doğru adı söylüyor. Düzeltmek çağıranın işi — araç yazmıyor.
 
 ## C. Varlık (asset) referansları — davranış paketi tek başına yetmiyor
 
@@ -134,7 +134,7 @@ görsel elde edilmiyor. "Yakut" item'ı zümrüt dokusuyla görünüyor. Özel d
 kullanıcının kendi kaynak paketini yazmasını gerektirir ve arayüz bunu
 çıktının yanında söyleyecek.
 
-### Güncelleme (01-09-2026, Aşama M5 senaryo 5): paket kendi atlasını getirirse
+### Güncelleme (01-09-2026, docs/mcp-kullanim.md senaryo 5): paket kendi atlasını getirirse
 
 Yukarıdaki karar "kaynak paketi ÜRETİLMİYOR" varsayımına dayanıyordu ve
 `checkAssets` yalnızca vanilla atlasına bakıyordu. Gerçek kullanımda o varsayım
@@ -204,14 +204,13 @@ world.afterEvents.playerSpawn.subscribe((event) => {
 yanlış olan tek şey niyetle sonuç arasındaki fark. Yakalanabilmesi için
 çıktının çalıştırılması veya kalıbın bilinmesi gerekiyor.
 
-→ Aşama 2.5: eval setinde bu sınıftan vakalar olmalı, yoksa "validator geçti"
-ölçütü yanıltıcı olur.
-→ Aşama 3: bilinen kalıplar (karşılama mesajı, başlangıç kurulumu) prompt'ta
-adıyla verilmeli.
+→ Kapatılan yarısı: bilinen kalıplar `checkPatterns` ile ölçülüyor ve aynı
+tablo `get_version_info` bağlamı üzerinden ÖNCEDEN de anlatılıyor. Kapatılmayan
+yarısı: tabloda olmayan bir kalıp hâlâ sessizce geçer.
 
 ## E. Şemadan geçen ama oyunun hiç yüklemediği manifest
 
-**30-08-2026, Aşama 3'ün uçtan uca testinde ölçüldü.** Model şu modülü üretti:
+**30-08-2026, uçtan uca bir testte ölçüldü.** Model şu modülü üretti:
 
 ```json
 { "type": "javascript", "entry": "scripts/main.js" }
@@ -244,8 +243,8 @@ haklı.
 ve içerik günlüğünde görünüyordu. Burada hiçbir belirti yok. Kullanıcı paketi
 arıyor, bulamıyor, sebebini bilmiyor.
 
-→ `checkManifest` ölçüyor, `normalize()` düzeltiyor, prompt önceden anlatıyor.
-Üçü de aynı ölçümden geliyor.
+→ `checkManifest` ölçüyor ve doğru tipi söylüyor; aynı ölçüm
+`get_version_info` bağlamı üzerinden önceden de anlatılıyor.
 
 ---
 
@@ -253,16 +252,21 @@ arıyor, bulamıyor, sebebini bilmiyor.
 
 | Sınıf | Şema yakalar mı | Ne ölçüyor | Durum |
 |---|---|---|---|
-| A · kimlik referansı | Hayır, ama çözülebilir | `checkIdentities`, `checkCommandIdentities` | **Aşama 3'te bağlandı** — `review()` koşuyor, bulgular retry'ın hata metnine giriyor |
-| B · dosya adı kuralı | **Yapısal olarak hayır** | `checkFileNames` | **Aşama 3'te düzeltiliyor** — `normalize()` dosya adını identifier'dan türetiyor |
-| C · asset referansı | Hayır | `checkAssets` | **Aşama 4'te kapatıldı** — vanilla doku indeksi; `review()` koşuyor, prompt anlatıyor |
-| D · geçerli ama yanlış | **Yapısal olarak hayır** | `checkPatterns` | **Aşama 3'te prompt'a girdi** — `patternGuide()` aynı tablodan besliyor |
-| E · yüklenmeyen manifest | Hayır — eski tip listede | `checkManifest` | **Aşama 3'te kapatıldı** — `normalize()` düzeltiyor, prompt anlatıyor |
+| A · kimlik referansı | Hayır, ama çözülebilir | `checkIdentities`, `checkCommandIdentities` | **Bulunuyor** — `review_pack` koşuyor, bulgu eyleme dönüştürülebilir metne giriyor |
+| B · dosya adı kuralı | **Yapısal olarak hayır** | `checkFileNames` | **Bulunuyor** — doğru ad raporda söyleniyor |
+| C · asset referansı | Hayır | `checkAssets` | **Bulunuyor** — vanilla doku indeksine karşı |
+| D · geçerli ama yanlış | **Yapısal olarak hayır** | `checkPatterns` | **Bulunuyor + önceden anlatılıyor** — `patternGuide()` aynı tablodan besliyor |
+| E · yüklenmeyen manifest | Hayır — eski tip listede | `checkManifest` | **Bulunuyor** — yanlış modül tipi rapor ediliyor |
+
+> **Dördüncü sütun 02-09-2026'da düzeltildi.** Önce B ve E için "düzeltiliyor"
+> yazıyordu ve doğruydu: bir `normalize()` fonksiyonu dosya adını ve manifest
+> modül tipini kendisi onarıyordu. O fonksiyon asistan katmanıyla birlikte
+> silindi. Bugün araçlar **buluyor ve söylüyor**, yazmıyor — uç salt okunur.
+> Düzeltme çağıranın işi.
 
 Üç kontrol de `packages/validator/src/checks.ts` içinde, saf fonksiyon, model
-çağrısı yok. Aşama 2.5'te yazıldılar ve eval seti onları koşuyor: `expect.checks`
-alanı hangi kontrolün hangi vakada isteneceğini söylüyor
-(`evals/cases/cases.json`).
+çağrısı yok. `review_pack` hepsini birden koşuyor; `packages/validator/test/`
+altındaki fixture'lar tek tek ölçüyor.
 
 İki sınır kayda geçmeli:
 
@@ -274,13 +278,12 @@ alanı hangi kontrolün hangi vakada isteneceğini söylüyor
   bedrock-samples `features/` klasöründen indeks çıkarması gerekir.
 - **`checkFileNames` yalnızca feature rule kuralını biliyor.** Başka dosya
   tipleri için benzer kurallar olabilir ama ölçülmedi. Ölçülmemiş kural
-  kodlanmıyor. `normalize()` de yalnızca bu kuralı düzeltiyor, aynı sebeple.
-- **Komut sözdizimi hâlâ doğrulanmıyor.** `checkCommandIdentities` yalnızca
-  kimliklere bakıyor; gramer v1 kapsamı dışında (`CLAUDE.md`). Özel
-  namespace'li bir kimlik komut metninden doğrulanamaz — aynı üretimde
-  tanımlanmışsa geçer, değilse uyarı üretir, hata değil.
+  kodlanmıyor.
+- **Özel namespace'li kimlikler komut metninden doğrulanamıyor.** Aynı pakette
+  tanımlanmışsa geçer, değilse uyarı üretir, hata değil. Komut GRAMERİ ayrı bir
+  eksen ve doğrulanıyor — `docs/COMMANDS.md`.
 
-Aşama 2'nin sonucu bu tabloyla birlikte okunmalı: 20 fixture'ın hepsi doğru
+Doğrulamanın sonucu bu tabloyla birlikte okunmalı: 20 fixture'ın hepsi doğru
 sonuç veriyor, ama "doğrulamadan geçti" ile "oyunda çalışıyor" aynı şey değil.
 CodeCraft'ın genel modellere üstünlüğü birinci sütunda değil, dördüncü
 sütunda ne kadar yol aldığında.

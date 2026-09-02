@@ -1,7 +1,7 @@
 /**
  * Veri bayatlama kontrolü.
  *
- * Aşama 1'in bitiş kriterinin ölçülebilir yarısı: "veri bayatladığında bildirim
+ * Boru hattının ölçülebilir yarısı: "veri bayatladığında bildirim
  * geliyor". Cron'un yeşil koşup veriyi geride bırakması mümkün — pipeline
  * patlamadan da bir adım sessizce atlanabilir. Bu script onu yakalar.
  *

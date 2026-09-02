@@ -1,5 +1,5 @@
 /**
- * Dağıtılmış /mcp ucunu ölçen script (Aşama M4'ün bitiş kriteri).
+ * Dağıtılmış /mcp ucunu ölçen script.
  *
  *   npm run mcp:probe -- https://<host>/mcp
  *
@@ -10,12 +10,12 @@
  * NEDEN AYRI BİR SCRIPT: `test/http.test.ts` protokolü ölçüyor ama süreç
  * içinde. Serverless'ta cevaplanmamış soru protokol değil BARINDIRMA: /mcp
  * kendi fonksiyon paketini alıyor (Next izlemeyi rota başına yapıyor), yani
- * M1'de /api/review için ölçülen yeşil buraya taşınmıyor. `validate_script`
+ * başka bir rotada ölçülen yeşil buraya taşınmaz. `validate_script`
  * alt süreç açıyor, geçici dizin yazıyor ve data/ okuyor; üçünün de o pakette
  * çalıştığı yalnızca uçta ölçülebilir.
  *
  * BOZUK PAYLOAD BİLEREK: yalnızca `ok:true` görmek, sessizce hiçbir şey
- * derlemeyen bir yoldan da gelebilirdi. M1'in kendi dersi bu.
+ * derlemeyen bir yoldan da gelebilirdi. Barındırma ölçümünün kendi dersi bu.
  */
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";

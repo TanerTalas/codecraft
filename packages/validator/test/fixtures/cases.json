@@ -1,7 +1,7 @@
 {
   "$aciklama": [
-    "Aşama 2'nin bitiş kriteri 'core' listesidir: bilerek doğru 10 dosya,",
-    "bilerek bozuk 10 dosya (docs/ROADMAP.md). Hepsi doğru sonuç vermeli.",
+    "Ölçüt 'core' listesidir: bilerek doğru 10 dosya, bilerek bozuk 10",
+    "dosya. Hepsi doğru sonuç vermeli.",
     "",
     "'extra' listesi ölçüt değil, ölçüm: fazladan yakalanan vakalar ve",
     "şemanın bugün yakalamadığı boşluklar. expect='gap' olanlar bilerek",

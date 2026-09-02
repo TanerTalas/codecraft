@@ -1,12 +1,12 @@
 /**
- * validate_script — @minecraft/server kodunu gerçek tsc ile derler (Aşama M3).
+ * validate_script — @minecraft/server kodunu gerçek tsc ile derler.
  *
  * SEKİZ ARAÇTAN ALT SÜREÇ AÇAN TEK ARAÇ BU. `validateScript` tsc'yi ayrı bir
  * süreç olarak çalıştırıyor, `mkdtemp` ile geçici dizin açıyor ve
  * data/<sürüm>/script-types/ altındaki .d.ts dosyalarını okuyor. Serverless
- * bir ortamda üçünün hiçbiri garanti değildi — Aşama M1 tam olarak bunu
- * ölçtü ve dağıtılmış Vercel Node runtime'ında altı ön koşulun altısı da
- * yeşil çıktı. M4'te rotanın `maxDuration`'ı bu araca göre ayarlanacak.
+ * bir ortamda üçünün hiçbiri garanti değildi — barındırma ölçümü tam olarak
+ * bunu ölçtü ve dağıtılmış Vercel Node runtime'ında altı ön koşulun altısı da
+ * yeşil çıktı. Rotanın `maxDuration`'ı bu araca göre ayarlı.
  *
  * Değeri şurada: model 2.x'te kaldırılmış bir API'yi (`runCommandAsync`) ya
  * da hiç var olmamış bir modülü ezberden yazdığında, buradan gerçek bir tsc

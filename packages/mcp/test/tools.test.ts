@@ -1,5 +1,5 @@
 /**
- * Sekiz aracın uçtan uca testi (Aşama M3).
+ * Sekiz aracın uçtan uca testi.
  *
  * M2'nin server.test.ts kalıbı: gerçek InMemoryTransport, gerçek tools/list ve
  * tools/call, gerçek data/. Mock yok — araç ne döndürüyorsa o ölçülüyor.

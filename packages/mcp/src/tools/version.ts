@@ -1,5 +1,5 @@
 /**
- * get_version_info — sürüm ve şema bağlamı (Aşama M2).
+ * get_version_info — sürüm ve şema bağlamı.
  *
  * Sekiz aracın ilki ve en ucuzu: alt süreç açmıyor, büyük bir indeks
  * döndürmüyor. M2'de tek başına duruyordu çünkü oradaki iş araç yazmak değil,

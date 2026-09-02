@@ -1,11 +1,11 @@
 /**
- * MCP sunucusunun kurulumu (Aşama M2, araçlar M3).
+ * MCP sunucusunun kurulumu.
  *
  * TRANSPORT BU DOSYADA YOK ve olmayacak. createServer() bir McpServer
  * döndürüyor, ona neyin bağlanacağına çağıran karar veriyor: uçta HTTP
  * transport'u, testte SDK'nın in-memory transport'u.
  *
- * Bağlantı Aşama M4'te `src/http.ts` içine yazıldı (`handleMcpRequest`),
+ * Bağlantı `src/http.ts` içinde kuruluyor (`handleMcpRequest`),
  * `app/src/app/mcp/route.ts` yalnızca onu dışa veren ince kabuk. TODO'nun M4
  * maddesi transport'u route dosyasına koyuyordu; sapmanın gerekçesi
  * `src/http.ts`'in başında — kök tsconfig `app/` dizinini kapsamıyor ve orada
@@ -36,7 +36,7 @@ import type { ToolModule } from "./tool.ts";
  * DEPO KURALINDAN SAPMA: diğer yedi workspace paketi `0.0.0` duruyor, çünkü
  * hiçbiri yayınlanmıyor (`private: true`) ve sürümleri kimse görmüyor. Bu paket
  * farklı — burada yazan dize bağlayıcıyı ekleyen kullanıcının ekranında
- * görünüyor. `0.0.0` orada "yarım" diye okunuyordu (Aşama M6).
+ * görünüyor. `0.0.0` orada "yarım" diye okunuyordu.
  */
 export const SERVER_VERSION = "0.1.0";
 

@@ -1,5 +1,5 @@
 /**
- * review_pack — bir paketin tamamını tek çağrıda doğrular (Aşama M3).
+ * review_pack — bir paketin tamamını tek çağrıda doğrular.
  *
  * TEK ÇAĞRIDA EN ÇOK DEĞER ÜRETEN ARAÇ BU. Diğerleri tek bir dosyaya ya da tek
  * bir satıra bakıyor; `review()` dosya başına doğru doğrulayıcıyı kendi seçiyor
@@ -8,9 +8,8 @@
  * tutarlılığı, dosya adı türetme, manifest, doku anahtarları, kalıp uyumu
  * (docs/VALIDATION-LIMITS.md).
  *
- * Aynı fonksiyonu üretim döngüsü, eval ve `POST /api/review` de çağırıyor —
- * ikinci bir doğrulama yolu yok (mimari kural 1). M1'de dağıtılmış uçta
- * ölçüldü.
+ * Doğrulamanın tek yolu bu: dosya başına doğrulayıcı seçimi başka hiçbir
+ * yerde tekrarlanmıyor. Dağıtılmış uçta ölçüldü.
  *
  * SÜRÜM BURADA ZORUNLU: `review(files, version: string)` imzası sürümü
  * opsiyonel almıyor. Araç yüzeyinde opsiyonel tutuluyor (diğer yedi araçla

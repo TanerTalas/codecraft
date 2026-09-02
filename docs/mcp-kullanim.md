@@ -1,16 +1,15 @@
 # MCP sunucusunun gerçek kullanımı
 
-Aşama M5'in ölçüm dosyası. `docs/SOURCES.md` verinin nereden geldiğini,
+docs/mcp-kullanim.md'nin ölçüm dosyası. `docs/SOURCES.md` verinin nereden geldiğini,
 `docs/VALIDATION-LIMITS.md` doğrulamanın nerede bittiğini anlatır; burası
 **araçların gerçek bir Claude oturumunda çağrılıp çağrılmadığını** kaydeder.
 
 Şimdiye kadar ölçülen her şey sunucunun kendi ölçümüydü: probe script'i, birim
 testleri, kendi yazdığımız istemci. Hiçbiri şunu ölçmedi — model bu araçları
 kendiliğinden çağırıyor mu, hangi sırayla, ve çağırmadığında neden. Karar
-dokümanının dördüncü gerekçesi (`docs/anlik_karar_degisikligi.md`) tam olarak
-bu.
+sorusu tam olarak bu.
 
-Ölçütün cümlesi TODO.md M5'ten: **çağrılmayan araç ya gereksiz ya da açıklaması
+Ölçütün cümlesi: **çağrılmayan araç ya gereksiz ya da açıklaması
 kötü.** İkisi farklı sonuç doğurur, o yüzden ayrıştırılmadan yazılmaz.
 
 ## Durum
@@ -39,7 +38,7 @@ değil.
 | Bölge | `iad1` (`x-vercel-id: fra1::iad1::…`) |
 | Veri | `data/1.26.40.5` |
 | Sunucu | `codecraft`, sürüm `0.0.0`, sekiz araç, hepsi salt okunur |
-| Senaryolar | `evals/cases/cases.json` içindeki gerçek isteklerden altı vaka |
+| Senaryolar | Gerçek Bedrock isteklerinden altı vaka |
 | Kayıt | Elle. Sunucuda loglama YOK, gerekçesi aşağıda |
 
 **Neden elle.** Sunucu durumsuz ve her istekte yok ediliyor
@@ -523,7 +522,7 @@ Reddedilen komutun mesajı eyleme dönüştürülebilir:
 eski veri değeri "0" sohbette kabul edilmiyor; blok durumu kullan: ["ad":değer]
 ```
 
-Çürüyen test silinmedi, üstü çizilip nereye gittiği yazıldı — TODO.md'nin
+Çürüyen test silinmedi, üstü çizilip nereye gittiği yazıldı — bu deponun
 "yanlış çıkan ölçüm silinmez" kuralı.
 
 **Açık kalan:** script içinden çalışan komutlar (`dimension.runCommand`) hangi
@@ -561,7 +560,7 @@ check_feasibility("Ben klavyeye dokunmadan otomatik balık tutsun")
 ```
 
 Oysa istek bu deponun **kendi eval korpusunda** duruyor
-(`evals/cases/cases.json`, `python-afk-fish-01`) ve vakanın notu açık:
+("Ben klavyeye dokunmadan otomatik balık tutsun") ve doğru cevap açık:
 
 > "Yapılabilirlik vakası: @minecraft/server oyuncu girdisini simüle edemez,
 > doğru cevap dışarıdan çalışan script"
@@ -956,7 +955,7 @@ sunucunun 405 dönmesine izin veriyor); OAuth keşif uçları yok, uç kimlik
 doğrulamasız (M4 kararı, Vercel Authentication kapalı kalmak zorunda); sunucu
 sürümü istemci arayüzünde **hiç görünmüyor** (aşağıdaki şerh).
 
-> **Üç düzeltme, 01-09-2026, Aşama M6.** (1) Sunucu sürümü `0.0.0` idi ve
+> **Üç düzeltme, 01-09-2026.** (1) Sunucu sürümü `0.0.0` idi ve
 > "M6'da bakılacak açık madde" diye buraya yazılmıştı; `0.1.0` oldu ve
 > `package.json` ile eşleştiği artık test ediliyor. **Ama "görünür" kelimesi
 > yanlıştı ve ölçülerek düzeltildi:** masaüstü uygulamasında sunucu sürümünü

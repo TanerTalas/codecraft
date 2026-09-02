@@ -1,6 +1,6 @@
 /**
  * validate_json — üretilen JSON'u Blockception şemasına karşı doğrular
- * (Aşama M3).
+ *.
  *
  * CodeCraft'ın var olma sebebi tam olarak bu araç: genel bir model Bedrock
  * JSON'unu ezberden yazıyor ve yanlış alan adı sessizce çalışmayan çıktı

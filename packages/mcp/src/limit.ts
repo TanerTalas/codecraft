@@ -1,5 +1,5 @@
 /**
- * Araç çıktısının bayt tavanı (Aşama M3).
+ * Araç çıktısının bayt tavanı.
  *
  * Karar dokümanı bunu optimizasyon değil zorunluluk sayıyor. Ölçüldü
  * (01-09-2026) ve tablo beklenenden keskin çıktı — sınır tek bir araçta baskı

@@ -1,5 +1,5 @@
 /**
- * Aşama 2: lookup ve sürüm çözümleme testleri.
+ * Lookup ve sürüm çözümleme testleri.
  *
  * Gerçek data/ klasörüne karşı koşar — sahte veri kullanılmıyor. Pipeline
  * koşmamışsa testler patlar, ki doğrusu da bu: bu paketin tek işi o veriyi

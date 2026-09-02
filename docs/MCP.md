@@ -147,7 +147,7 @@ Kapanışın ölçümü ve düzeltmenin şekli `docs/COMMANDS.md`, "Kapatılan b
 Token sınırı bu sunucuda bir tasarım kısıtı, optimizasyon değil: `data/`
 içindeki indeksler bütçeyi kat kat aşıyor (`commands.json` tek başına 650.454
 bayt). Yani araçlar registry döndüremez, **hedefe yönelik sonuç** döndürür.
-Gerekçenin uzunu `docs/ROADMAP.md` ve `docs/anlik_karar_degisikligi.md`.
+Gerekçenin uzunu `CLAUDE.md`, "Değişmezler".
 
 Her araç çıktısına sert bir tavan uygulanıyor: `BYTE_LIMIT = 24.000`
 (`packages/mcp/src/limit.ts`). Çıktı girintisiz yazılıyor — girintili yazılsa
@@ -202,11 +202,11 @@ istiyor ve `data/` altındaki `.d.ts` dosyalarını okuyor. Serverless bir ortam
 
 Dağıtılmış uçta altı ön koşulun altısı da yeşil ölçüldü — `root`, `data`,
 `tmpdir`, `tscShim`, `tscExe`, `spawn` (`scriptRuntimeReport()`,
-`packages/validator/src/script.ts`; `GET /api/review` dışarı veriyor).
+`packages/validator/src/script.ts`).
 
 Sonuç: container tabanlı barındırmaya inilmedi, hiçbir ücretli plana geçilmedi,
-hiçbir araç üründen çıkarılmadı. Ücretsiz kalma merdiveninin (`TODO.md` Aşama
-M0) hiçbir basamağı kullanılmadı.
+hiçbir araç üründen çıkarılmadı. Ücretsiz kalmak için hazırlanan alternatif
+basamakların hiçbiri kullanılmadı.
 
 **Ölçülmeyen:** dağıtılmış fonksiyon paketinin gerçek boyutu. Ölçülen şey
 dosyaların orada olduğu — uç koşuyor — kaç MB tuttuğu değil.
@@ -238,20 +238,26 @@ doğrudan kota yakardı.
 ### Dosya izleme yolları
 
 `/mcp` **kendi** fonksiyon paketini alıyor; Next izlemeyi rota başına yapıyor,
-yani `/api/review` için ölçülen yeşil buraya taşınmıyor. `app/next.config.ts`
+yani başka bir rotada ölçülen yeşil buraya taşınmaz. `app/next.config.ts`
 dört yol bildiriyor ve dördü de gerekli:
 
 | Yol | Neden | Paketlenen |
 |---|---|---|
-| `../data/**` | şemalar ve `.d.ts` tipleri | 3.372 dosya |
-| `../codecraft.config.json` | `isRoot()` iki işaretçiyi birden arıyor | 1 |
+| `../data/*/*.json`, `script-types/**`, `blockception/compiled/**` | doğrulamanın okuduğu indeksler ve `.d.ts` tipleri | 88 dosya |
+| `../package.json` | `isRoot()` iki işaretçiyi birden arıyor | 1 |
 | `../node_modules/typescript/**` | `tsc` kabuğu | 417 |
 | `../node_modules/@typescript/**` | tsgo ikilisi **ve yanındaki** `lib.*.d.ts` | 114 |
 
-Son iki satır M1'de ölçülen iki kırığın birebir sebebi.
-`codecraft.config.json` olmadan uç ilk istekte "Repo kökü bulunamadı" ile
-düşüyor; `lib.*.d.ts` olmadan tsgo `panic: bundled: .../lib/lib.d.ts does not
-exist` veriyor. İkili ile standart kütüphanesi ayrılamaz.
+Son üç satır ölçülmüş kırıkların birebir sebebi. Kök işaretçisi olmadan uç ilk
+istekte "Repo kökü bulunamadı" ile düşüyor; `lib.*.d.ts` olmadan tsgo
+`panic: bundled: .../lib/lib.d.ts does not exist` veriyor — ikili ile standart
+kütüphanesi ayrılamaz.
+
+> **İki satır 02-09-2026'da değişti.** `../data/**` klasörün tamamıydı ve
+> okunmayan 11 MB ham Mojang şemasını herkese açık pakete koyuyordu; daraltıldı
+> (`docs/SOURCES.md`, "Ne dışarı çıkıyor"). İkinci işaretçi
+> `codecraft.config.json` idi — asistan katmanıyla birlikte silindi, yerine
+> `package.json` geçti. Kırığın mekanizması ikisinde de aynı.
 
 ## Sağlık kontrolü: `mcp:probe`
 
@@ -321,7 +327,7 @@ Yerelde: `npm run typecheck` exit 0, `npm test` 227/227.
 | Komut doğrulamasının kapsamı ve boşlukları | `docs/COMMANDS.md` |
 | Doğrulamanın yakalayamadıkları | `docs/VALIDATION-LIMITS.md` |
 | Verinin kaynağı ve lisansı | `docs/SOURCES.md` |
-| Neden MCP, hangi kısıtlarla | `docs/ROADMAP.md`, `docs/anlik_karar_degisikligi.md` |
+| Neden MCP, hangi kısıtlarla | `CLAUDE.md` |
 | Oyunla konuşan WebSocket köprüsü | `docs/WEBSOCKET.md` |
 
 ## Açık kalan
@@ -335,7 +341,7 @@ sınır değil — ölçülmemiş bir güvenlik hissi verirdi.
 Challenge Mode ve kullanım uyarısı.
 
 **Dağıtılmış fonksiyon paketinin boyutu ölçülmedi.** Yerel Windows koşusunda
-`/mcp` 70,8 MB; M1'de Linux'ta `/api/review` 47,3 MB ölçülmüştü. Fark
+`/mcp` 70,8 MB; aynı ölçüm Linux'ta bir başka rotada 47,3 MB vermişti. Fark
 Windows'un iki `tsc` ikilisini birden paketlemesinden geliyor. "Linux'ta yakın
 kalır" hâlâ tahmin.
 

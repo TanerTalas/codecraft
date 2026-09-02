@@ -1,7 +1,7 @@
 /**
  * Ölçüm script'i — ürün kodu değil.
  *
- * docs/SOURCES.md'nin "Şema kaynağı: Blockception mı, Mojang mı" kararı Aşama
+ * docs/SOURCES.md'nin "Şema kaynağı" kararı bu ölçümle
  * 2'ye bırakılmıştı. Bu script kararı tahminle değil ölçümle kapatmak için var:
  * aynı fixture'ları iki kaynağa da koşturur ve hangisinin neyi yakaladığını
  * tablo hâlinde basar.

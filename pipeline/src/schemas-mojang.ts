@@ -8,7 +8,8 @@
  * Klasör yapısı <kapsam>/<tip>/<format_version>/ biçiminde ve aynen korunuyor:
  * şemalar birbirine göreli $ref veriyor, ağaç bozulursa ajv referansları çözemez.
  *
- * Hangi kaynağın kullanılacağı (Mojang mı Blockception mı) Aşama 2'ye bırakıldı,
+ * Hangi kaynağın kullanılacağı (Mojang mı Blockception mı) ölçülerek karara
+ * bağlandı,
  * pipeline ikisini de çeker.
  */
 import { join } from "node:path";
@@ -68,7 +69,7 @@ export type MojangSchemaResult = {
   files: number;
   written: string[];
   deleted: string[];
-  /** { "server/block": ["1.20.60", "1.26.20"] } — Aşama 2 doğru şemayı bununla seçecek. */
+  /** { "server/block": ["1.20.60", "1.26.20"] } — doğru şema bununla seçilir. */
   formatVersions: Record<string, string[]>;
 };
 

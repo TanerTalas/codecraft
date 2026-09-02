@@ -137,7 +137,7 @@ const PROBES: Probe[] = [
 
   // --- AÇIK SORU: eski veri değeri (int) HANGİ komutlarda kabul ediliyor ---
   //
-  // 01-09-2026, Aşama M5 senaryo 3: kullanıcı oyunda ölçtü ve doğrulayıcının
+  // 01-09-2026, docs/mcp-kullanim.md senaryo 3: kullanıcı oyunda ölçtü ve doğrulayıcının
   // GEÇİRDİĞİ bir komut düştü — yanlış negatif:
   //
   //   /fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass 0 outline

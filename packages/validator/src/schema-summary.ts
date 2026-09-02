@@ -25,7 +25,7 @@
  *   · Alanlar her zaman `properties` altında DEĞİL. Dizi düğümlerinde
  *     `items` içindeler ve bu yaygın: 60 derlenmiş şemada 618 düğüm `items`
  *     taşıyor, 91'inin arkasında gerçek alanlar var (spawn_rules/conditions
- *     22, blocks/permutations, dialogue/scenes …). Ölçüm 01-09-2026, Aşama M5.
+ *     22, blocks/permutations, dialogue/scenes …). Ölçüm 01-09-2026, gerçek oturum ölçümünde (docs/mcp-kullanim.md).
  *
  * O yüzden özet KADEMELİ daralıyor (bkz. Detail). Sessiz kesme yok: hangi
  * basamağa inildiği `truncated` alanında yazıyor, çünkü modelin neyi
@@ -227,7 +227,7 @@ function mergeAll(found: Fields[]): Fields {
  * (map düğümleri), `items` (dizi düğümleri), `oneOf`/`anyOf` (alternatif
  * biçimler).
  *
- * SON İKİSİ Aşama M5'te ÖLÇÜLEREK eklendi. Gerçek bir oturumda model
+ * SON İKİSİ docs/mcp-kullanim.md ölçümlerinde ÖLÇÜLEREK eklendi. Gerçek bir oturumda model
  * `minecraft:spawn_rules/conditions` yolunu DOĞRU istedi ve eli boş döndü:
  * o düğüm `type: "array"`, kendi `properties`'i yok, 22 spawn koşulu
  * bileşeninin hepsi `items.properties` içinde. Bir alt basamakta aynı şey

@@ -1,5 +1,5 @@
 /**
- * @codecraft/pipeline — Aşama 1 orkestratörü.
+ * @codecraft/pipeline — veri toplayıcıların orkestratörü.
  *
  * Sürümü bir kez çözer, toplayıcıları sırayla koşturur ve sonunda kaynak
  * künyesini data/<sürüm>/index.json içine yazar.
@@ -70,7 +70,7 @@ export async function runPipeline(): Promise<void> {
   const releaseNotes = await collectReleaseNotes(version);
   console.log(`  sürüm notları    ${releaseNotes.path === null ? "yok" : releaseNotes.path}`);
 
-  // Aşama 2'nin sürüm çözümlemesi tek dosyadan okuyacak: neyin nerede olduğu,
+  // Sürüm çözümlemesi tek dosyadan okuyor: neyin nerede olduğu,
   // hangi modül sürümüne kilitlendiği ve kaç dosya beklendiği burada.
   const index = {
     version,

@@ -424,7 +424,7 @@ async function checkBlockStates(
   // Eski veri değeri biçimi (blok adından sonra çıplak tam sayı).
   //
   // ~~30-08-2026: ws:probe ile ölçüldü, oyun kabul ediyor, serbest bırakıldı.~~
-  // **ÇÜRÜTÜLDÜ 01-09-2026, Aşama M5 senaryo 3.** O ölçüm WebSocket kanalında
+  // **ÇÜRÜTÜLDÜ 01-09-2026, docs/mcp-kullanim.md senaryo 3.** O ölçüm WebSocket kanalında
   // alınmıştı ve o kanal SOHBETTEN DAHA GEVŞEK. Aynı komutlar iki kanalda
   // farklı davranıyor, aynı oyunda (Bedrock 1.26.45), aynı dünyada:
   //
@@ -719,7 +719,7 @@ async function tryOverload(
     const values = index.enums[param.type.toLowerCase()];
     // BOŞ ENUM "hiçbir değer geçerli değil" DEĞİL, "serbest metin" demek.
     //
-    // Ölçüldü (01-09-2026, Aşama M5 senaryo 3): 225 enum'un DÖRDÜ kaynak
+    // Ölçüldü (01-09-2026, docs/mcp-kullanim.md senaryo 3): 225 enum'un DÖRDÜ kaynak
     // veride tamamen boş — tagvalues, scoreboardobjectives, gametestname,
     // gametesttag. Bunlar oyunun ÇALIŞMA ANINDA dünyadan doldurduğu listeler
     // (dünyadaki etiketler, tanımlı skorbord hedefleri). Mojang'ın metadata'sı

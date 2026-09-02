@@ -1,5 +1,5 @@
 /**
- * Sunucunun uçtan uca testi (Aşama M2).
+ * Sunucunun uçtan uca testi.
  *
  * NEDEN GERÇEK BİR İSTEMCİ: M2'nin yazılı bitiş kriteri "typecheck exit 0,
  * testler yeşil" idi ve o kriter hiçbir şey KOŞMADAN da karşılanır. Boş bir
@@ -114,8 +114,8 @@ test("geçersiz sürüm sessizce en yeniye düşmüyor", async () => {
 });
 
 test("sunucu sürümü package.json ile aynı ve istemciye ulaşıyor", async () => {
-  // Aşama M6. İki dize iki ayrı dosyada elle tutuluyor; M2 bunu "gereksiz"
-  // diye test etmemişti ve ayrışmaları sessizdi. Ayrışma kullanıcıya kadar
+  // İki dize iki ayrı dosyada elle tutuluyor; ilk hâlinde bu "gereksiz"
+  // diye test edilmemişti ve ayrışmaları sessizdi. Ayrışma kullanıcıya kadar
   // gider: bağlayıcıyı ekleyen kişi bu sürümü ekranında görüyor.
   const manifest = JSON.parse(
     readFileSync(new URL("../package.json", import.meta.url), "utf8"),

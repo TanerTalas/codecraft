@@ -1,4 +1,4 @@
-// @codecraft/validator — Aşama 2 (bkz. TODO.md)
+// @codecraft/validator — doğrulama katmanı. LLM çağrısı yok.
 //
 // Saf fonksiyonlar, hiçbir model çağrısı yok (CLAUDE.md, mimari kural 3).
 //

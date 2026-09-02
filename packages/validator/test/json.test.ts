@@ -1,8 +1,8 @@
 /**
- * Aşama 2'nin bitiş kriteri.
+ * Şema doğrulamasının ölçütü.
  *
  * fixtures/cases.json içindeki "core" listesi 20 vaka: bilerek doğru 10 dosya,
- * bilerek bozuk 10 dosya (docs/ROADMAP.md). Hepsi doğru sonuç vermeli.
+ * bilerek bozuk 10 dosya. Hepsi doğru sonuç vermeli.
  *
  * Bozuk vakalarda "bir hata çıktı" yetmez — beklenen JSON pointer'da çıktığı
  * doğrulanır. Yoksa şema tamamen ilgisiz bir sebeple de patlayabilir ve test

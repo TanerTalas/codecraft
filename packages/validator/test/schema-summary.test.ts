@@ -126,7 +126,7 @@ test("tavan verilmezse tam özet dönüyor", async () => {
 });
 
 /**
- * Aşağıdaki üç test Aşama M5'te eklendi ve hepsinin sebebi ÖLÇÜLMÜŞ bir
+ * Aşağıdaki üç test docs/mcp-kullanim.md ölçümlerinde eklendi ve hepsinin sebebi ÖLÇÜLMÜŞ bir
  * kayıp: gerçek bir Claude oturumunda model `.../conditions` yolunu doğru
  * istedi, araç 307 bayt ve SIFIR alan döndürdü, model altı spawn koşulunu
  * şemadan değil belleğinden yazdı. docs/mcp-kullanim.md senaryo 1.
@@ -176,7 +176,7 @@ test("oneOf dallarındaki alanlar birleştiriliyor ve kaç dal olduğu yazılıy
 /**
  * Koşullu ve birleşik şemalar — allOf, if/then/else.
  *
- * Ölçüldü 01-09-2026, Aşama M5 senaryo 6: 60 derlenmiş şemadan YEDİSİNİN kökü
+ * Ölçüldü 01-09-2026, docs/mcp-kullanim.md senaryo 6: 60 derlenmiş şemadan YEDİSİNİN kökü
  * tamamen boş dönüyordu ve aralarında en çok kullanılan tip vardı,
  * general/manifest. Sebep alanların `allOf` (manifest, attachables, items) ya
  * da `if/then/else` (resource/entity, model_entity) içinde durması.

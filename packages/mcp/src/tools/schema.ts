@@ -1,5 +1,5 @@
 /**
- * get_schema — bir belge tipinin hedefe yönelik şema özeti (Aşama M3).
+ * get_schema — bir belge tipinin hedefe yönelik şema özeti.
  *
  * SEKİZ ARAÇTAN TEK "SARMALAMA OLMAYAN" ARAÇ BU, ve M3'ün asıl işi buydu.
  * Sebep ölçüm: ham şema döndürülemiyor. `entities.json` 585.237 bayt,

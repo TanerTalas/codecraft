@@ -2,7 +2,7 @@
  * Ölçüm aracı — ürün kodu değil.
  *
  * Fixture'lardan Bedrock'ta yüklenebilir bir davranış paketi üretir. Amaç
- * TODO.md'de "henüz koşmamış yol" diye duran tek şeyi koşturmak: şemanın kabul
+ * doğrulamanın kendi kendine ölçemediği tek şeyi koşturmak: şemanın kabul
  * ettiği içeriği oyunun da kabul edip etmediğini görmek.
  *
  *   npm run fixtures:pack              test-worlds/ altına üretir
@@ -32,8 +32,8 @@ const OUT_DIR = join(ROOT, "test-worlds", PACK_DIR);
 
 /**
  * Oyunun com.mojang klasörü ve development_behavior_packs yolu
- * @codecraft/knowledge içinde çözülüyor (game-paths.ts). Aşama 3'te CLI de
- * aynı yolu kullanıyor; mantık tek yerde durur (CLAUDE.md, mimari kural 1).
+ * @codecraft/knowledge içinde çözülüyor (game-paths.ts); mantık tek yerde
+ * durur.
  */
 
 /** Fixture -> paket içindeki yol + doğrulanacağı doküman tipi. */

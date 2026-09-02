@@ -1,5 +1,5 @@
-# Aşama 1'in bitiş kriteri: repo her sabah otomatik güncelleniyor ve veri
-# bayatladığında bildirim geliyor (docs/ROADMAP.md).
+# Repo her sabah otomatik güncelleniyor ve veri bayatladığında bildirim
+# geliyor.
 #
 # Pipeline deterministik yazar — içerik değişmediyse dosyaya dokunmaz. Bu yüzden
 # "değişiklik varsa commit et" adımı boş commit atmaz.

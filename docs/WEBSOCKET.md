@@ -129,6 +129,6 @@ aynısı gerekir.
 - **bağlantı hiç kurulmadı** → protokol hakkında sonuç **çıkarılamaz**. Önce
   yukarıdaki üç ön koşul kontrol edilir; script bunu açıkça söyler.
 
-Kırılma doğrulanırsa: bu doküman güncellenir, `TODO.md`'ye kayıt düşülür ve
+Kırılma doğrulanırsa: bu doküman güncellenir ve
 üretilen Python otomasyon script'lerinin bu yola bağlı olanları gözden geçirilir
 (`docs/VALIDATION-LIMITS.md` mantığı: ölçülmemiş şey kural olmaz).

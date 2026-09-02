@@ -46,7 +46,7 @@ const MODULE_PREFIX = "metadata/script_modules/@minecraft/";
  */
 const PACKAGES = [
   // @minecraft/common olmadan diğer ikisi derlenmiyor: index.d.ts dosyaları
-  // doğrudan ondan import ediyor. Aşama 2'nin tsc sarmalayıcısı için zorunlu.
+  // doğrudan ondan import ediyor. tsc sarmalayıcısı için zorunlu.
   { npm: "@minecraft/common", metadata: "common" },
   { npm: "@minecraft/server", metadata: "server-bindings" },
   { npm: "@minecraft/server-ui", metadata: "server-ui-bindings" },

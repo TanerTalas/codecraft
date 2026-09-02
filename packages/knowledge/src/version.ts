@@ -1,11 +1,11 @@
 /**
  * Sürüm çözümleme.
  *
- * Bedrock'ta dört ayrı sürüm biçimi dolaşıyor (CLAUDE.md). Burada konuşulan
+ * Bedrock'ta beş ayrı sürüm biçimi dolaşıyor (CLAUDE.md). Burada konuşulan
  * her zaman oyun/veri sürümü: data/ altındaki klasör adı, 1.26.40.5 gibi.
  *
- * İstek üç parçalı da gelebilir. docs/ROADMAP.md'deki eval şeması
- * "sürüm": "1.26.40" yazıyor, klasör adı ise 1.26.40.5 — arada dördüncü hane
+ * İstek üç parçalı da gelebilir: çağıran "1.26.40" der, klasör adı ise
+ * 1.26.40.5 — arada dördüncü hane
  * var. Önek eşleşmesiyle çözülür, tahminle değil: 1.26.4 hiçbir şeye eşleşmez,
  * 1.26.40 sadece 1.26.40.x klasörlerine eşleşir.
  */

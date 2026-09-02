@@ -1,5 +1,5 @@
 /**
- * HTTP yüzeyinin testi (Aşama M4).
+ * HTTP yüzeyinin testi.
  *
  * NEDEN NEXT AYAĞA KALKMADAN: `handleMcpRequest` düz bir `Request` alıp düz
  * bir `Response` döndürüyor, yani gerçek JSON-RPC round-trip'i burada
@@ -12,7 +12,7 @@
  * yöntemlerin akış açmadan kapatılması.
  *
  * Dördü de bilerek kırılarak doğrulandı (M2/M3'teki enjekte-et-ve-kırmızıya-dön
- * yöntemi), ölçüm TODO.md Aşama M4'te.
+ * yöntemi), ölçüm docs/MCP.md içinde.
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";

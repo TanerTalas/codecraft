@@ -293,7 +293,7 @@ test("uydurulmuş vanilla kimliği hâlâ reddedilir", async () => {
  * vardı (`BOGUS` ayrışmadı). Yayımlanan tanımda bu biçim yok, o yüzden ölçüm
  * tanımın üstüne konmuştu. Yöntem doğruydu, sonuç yanlıştı.
  *
- * **ÇÜRÜTÜLDÜ 01-09-2026, Aşama M5 senaryo 3.** Eksik olan şey kanaldı:
+ * **ÇÜRÜTÜLDÜ 01-09-2026, docs/mcp-kullanim.md senaryo 3.** Eksik olan şey kanaldı:
  * ws:probe komutu WebSocket üzerinden gönderiyor, oyuncu ise sohbete yazıyor
  * ve İKİ AYRIŞTIRICI AYNI DEĞİL. Aynı oyun (1.26.45), aynı dünya, aynı komut:
  *
@@ -331,7 +331,7 @@ test("eklenti kimliği kalıbı dar — köşeli parantez enum sanılmaz", async
 });
 
 /**
- * Aşağıdaki iki test Aşama M5 senaryo 3'te ölçülen bir yanlış pozitifi
+ * Aşağıdaki iki test docs/mcp-kullanim.md senaryo 3'te ölçülen bir yanlış pozitifi
  * kapatıyor. Kaynak veride 225 enum'un dördü BOŞ geliyor — tagvalues,
  * scoreboardobjectives, gametestname, gametesttag — çünkü değerlerini oyun
  * çalışma anında dünyadan dolduruyor. Doğrulayıcı boşu "geçerli değer yok"
@@ -368,7 +368,7 @@ test("dolu enum hâlâ uydurma değeri reddediyor", async () => {
  * Eski veri değeri (blok adından sonra çıplak tam sayı).
  *
  * Bu testler bir YANLIŞ NEGATİFİ kapatıyor — doğrulayıcı "geçerli" demişti,
- * kullanıcı oyunda yazmıştı, oyun reddetmişti (Aşama M5 senaryo 3):
+ * kullanıcı oyunda yazmıştı, oyun reddetmişti (docs/mcp-kullanim.md senaryo 3):
  *
  *   /fill ~-5 ~-1 ~-5 ~4 ~8 ~4 glass 0 outline
  *   Syntax error: Unexpected "0": at " ~4 glass >>0<< outline"
