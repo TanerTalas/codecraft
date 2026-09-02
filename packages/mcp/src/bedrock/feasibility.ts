@@ -1,12 +1,10 @@
 /**
  * Niyet ve yapılabilirlik eşlemesi — LLM'siz, kalıp eşlemesiyle.
+ * `check_feasibility` aracının gövdesi.
  *
- * Doğrulamadan da model çağrısından da ÖNCE koşar (docs/ROADMAP.md):
- * kullanıcı isteğini oyuncu diliyle söylüyor, platform bambaşka bir şey
- * sunuyor. Aradaki çeviriyi yapmayan bir araç uydurulmuş API üretir.
- *
- * Yakalandığında model hiç çağrılmaz. Hem token tasarrufu hem en sık hatanın
- * baştan kesilmesi.
+ * Doğrulamadan ÖNCE koşar: kullanıcı isteğini oyuncu diliyle söylüyor,
+ * platform bambaşka bir şey sunuyor. Aradaki çeviriyi yapmayan bir araç
+ * uydurulmuş API üretir.
  *
  * KANIT KURALI — checks.ts'deki ilkenin aynısı: buradaki her satırın ölçülmüş
  * bir dayanağı var ve o dayanak testle sabitlenmiş. Dayanak,
@@ -60,16 +58,16 @@ const RULES: FeasibilityRule[] = [
       /girdi(yi)?\s*simüle/i,
       // "klavyeye dokunmadan", "tuşa basmadan", "fareye değmeden" — girdinin
       // YOKLUĞU üzerinden kurulan istek. Ölçülerek eklendi (01-09-2026,
-      // Aşama M5 senaryo 4): kendi eval korpusumuzdaki python-afk-fish-01
-      // ("Ben klavyeye dokunmadan otomatik balık tutsun") bu listeden
-      // geçiyordu, check_feasibility "blocked: false" dönüyordu ve model
-      // yapılabilirlik sınırını aracın DEĞİL kendi bilgisinin sayesinde
-      // gördü. O vakanın kendi notu "doğru cevap dışarıdan çalışan script".
+      // docs/mcp-kullanim.md senaryo 4): "Ben klavyeye dokunmadan otomatik
+      // balık tutsun" isteği bu listeden geçiyordu, check_feasibility
+      // "blocked: false" dönüyordu ve modeli durduran şey aracın kendisi
+      // DEĞİL modelin kendi bilgisi oldu. Doğru cevap: oyunun dışından
+      // çalışan bir otomasyon script'i.
       //
       // "otomatik <şey>" kalıbı BİLEREK eklenmedi: "otomatik olarak oluşsun"
-      // (ore-gen-01) ve "her otuz saniyede bir zombi belirsin" (mob-timer-01)
-      // tamamen yapılabilir istekler, yanlış engellenirlerdi. 24 eval isteği
-      // üzerinde ölçüldü: yanlış engelleme sıfır.
+      // ve "her otuz saniyede bir zombi belirsin" gibi istekler tamamen
+      // yapılabilir, yanlış engellenirlerdi. 24 istek üzerinde ölçüldü:
+      // yanlış engelleme sıfır.
       //
       // Ek olarak m[ae]: Türkçe ünlü uyumu. "dokunmadan" ve "basmadan"
       // "ma" alıyor ama "değmeden" "me" alıyor; yalnızca "ma" yazınca

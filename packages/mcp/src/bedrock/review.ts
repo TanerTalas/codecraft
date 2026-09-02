@@ -1,13 +1,10 @@
 /**
- * Doğrulama toplayıcı: üretilen dosya kümesi -> tek sonuç + retry metni.
+ * Doğrulama toplayıcı: bir dosya kümesi -> tek sonuç + eyleme dönüştürülebilir
+ * özet. `review_pack` aracının gövdesi.
  *
- * Node'a bağlı (tsc, ajv, fs). Aşama 4'te sunucu uç noktasının arkasına
- * geçecek; generate.ts bunu parametre olarak aldığı için o geçiş üretim
- * döngüsünü değiştirmeyecek (CLAUDE.md, mimari kural 2).
- *
- * Dosya başına doğrulayıcı seçimi ÖNCE evals/src/evaluate.ts içindeydi.
- * Buraya taşındı ve eval oradan import ediyor — mantık tek yerde durur
- * (CLAUDE.md, mimari kural 1).
+ * Node'a bağlı (tsc, ajv, fs) ve öyle kalması serbest — doğrulama sunucuda
+ * koşar. Dosya başına doğru doğrulayıcıyı kendi seçer; ikinci bir doğrulama
+ * yolu yok.
  */
 import {
   checkCommandIdentities,
@@ -194,7 +191,7 @@ export async function review(files: readonly PackFile[], version: string): Promi
       findings.push(...checkPatterns(file.content, { path: file.path }).findings);
       continue;
     }
-    // Komut çıktısı answer.txt'ye yazılıyor (output.ts LAYOUT). İki kontrol
+    // Komut çıktısı düz metin dosyasına geliyor. İki kontrol
     // koşuyor: sözdizimi (Mojang'ın komut tanımına karşı) ve kimlikler.
     if (file.path.endsWith(".txt")) {
       findings.push(...(await commandSyntaxFindings(file, version)));
@@ -252,5 +249,5 @@ export function buildReport(
   return lines.join("\n");
 }
 
-/** generate.ts'nin beklediği imza. Aşama 4'te sunucu çağrısı buraya geçecek. */
+/** Doğrulayıcıyı parametre olarak alan çağıranların beklediği imza. */
 export type ReviewFn = (files: readonly PackFile[], version: string) => Promise<Review>;

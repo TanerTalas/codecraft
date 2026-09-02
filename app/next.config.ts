@@ -7,9 +7,9 @@ import type { NextConfig } from "next";
  *
  * Önce `../data/**` yazıyordu, yani KLASÖRÜN TAMAMI. Ölçüldü (02-09-2026):
  * çalışma zamanında okunmayan 11 MB ham Mojang şeması ve 4,3 MB Blockception
- * kaynağı da paketleniyordu. `packages/*` ve `app/src` içinde `schemas/`,
- * `schemas-index` ve `release-notes` için SIFIR referans var; doğrulama
- * Blockception'ın DERLENMİŞ çıktısını kullanıyor (`schema-map.json` →
+ * kaynağı da paketleniyordu. `packages/*` içinde `schemas/`, `schemas-index`
+ * ve `release-notes` için SIFIR referans var; doğrulama Blockception'ın
+ * DERLENMİŞ çıktısını kullanıyor (`schema-map.json` →
  * `index.sources.blockception.compiled`).
  *
  * Bu yalnızca boyut meselesi değil: uç herkese açık ve ham Mojang şemaları
@@ -37,27 +37,23 @@ const config: NextConfig = {
   // sembolik bağlarını proje kaynağı sayıp yine de paketliyor. Bu yüzden
   // paketlenmeye dayanıklı olmak paketlerin kendi işi — bkz.
   // packages/knowledge/src/paths.ts.
-  transpilePackages: [
-    "@codecraft/core",
-    "@codecraft/validator",
-    "@codecraft/knowledge",
-    "@codecraft/mcp",
-  ],
+  transpilePackages: ["@codecraft/mcp", "@codecraft/validator", "@codecraft/knowledge"],
 
   // Doğrulama üç şeyi ÇALIŞMA ZAMANINDA dinamik yolla okuyor: data/ altındaki
-  // şemalar ve tip tanımları, repo kökünü belli eden işaretçi dosya, ve
+  // şemalar ve tip tanımları, repo kökünü belli eden işaretçi dosyalar, ve
   // typescript derleyicisi. Next bunları statik olarak izleyemiyor —
   // `next build` zaten uyarıyor — o yüzden fonksiyon paketine elle dahil
   // ediliyorlar. Aksi hâlde yerelde çalışıp dağıtımda ENOENT veren bir uç
   // nokta çıkardı.
   //
-  // İki girdi "gereksiz" görünüyor ama değil, ikisi de 31-08-2026'da ölçüldü
-  // (Aşama M1):
+  // İki girdi "gereksiz" görünüyor ama değil, ikisi de 31-08-2026'da ölçüldü:
   //
-  //   codecraft.config.json — knowledge/src/paths.ts'teki isRoot() İKİ
-  //     işaretçiyi birden arıyor (`data` VE `codecraft.config.json`). Yalnızca
-  //     data/ paketlenirse ROOT modül yüklenirken çözülemiyor ve uç nokta daha
-  //     ilk istekte "Repo kökü bulunamadı" ile düşüyor.
+  //   ../package.json — knowledge/src/paths.ts'teki isRoot() İKİ işaretçiyi
+  //     birden arıyor (`data` VE `package.json`). Yalnızca data/ paketlenirse
+  //     ROOT modül yüklenirken çözülemiyor ve uç nokta daha ilk istekte
+  //     "Repo kökü bulunamadı" ile düşüyor. (Ölçüm `codecraft.config.json`
+  //     işaretçisiyle yapıldı; o dosya asistan katmanıyla birlikte silindi,
+  //     kırığın mekanizması aynı.)
   //
   //   @typescript/** — typescript@7 bir kabuk paketi (3,2 MB), derleyici değil.
   //     bin/tsc 44 bayt; asıl derleyici platforma özel bir Go ikilisi
@@ -79,21 +75,11 @@ const config: NextConfig = {
   //     build'inde tek paket dahil oluyor, 20 tanesi değil.
   outputFileTracingRoot: join(import.meta.dirname, ".."),
   outputFileTracingIncludes: {
-    "/api/context": [...DATA_FILES, "../codecraft.config.json"],
-    "/api/review": [
-      ...DATA_FILES,
-      "../codecraft.config.json",
-      "../node_modules/typescript/**",
-      "../node_modules/@typescript/**",
-    ],
-    // /mcp AYRI bir fonksiyon paketi. Next izlemeyi rota başına yapıyor, yani
-    // /api/review'un yeşili buraya taşınmıyor: validate_script aracı tsc'yi
-    // burada da açıyor ve dört yolun dördü de tekrar gerekiyor. TODO'nun M4
-    // maddesi yalnızca ikisini yazıyordu; eksik olan ikisi tam olarak M1'de
-    // ölçülen iki kırığın sebebiydi (yukarıdaki blokta anlatılıyor).
+    // Tek fonksiyon paketi kaldı: MCP ucu. validate_script tsc'yi alt süreç
+    // olarak açıyor, o yüzden dört yolun dördü de gerekiyor.
     "/mcp": [
       ...DATA_FILES,
-      "../codecraft.config.json",
+      "../package.json",
       "../node_modules/typescript/**",
       "../node_modules/@typescript/**",
     ],

@@ -8,7 +8,6 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@codecraft/core": "*",
     "@codecraft/knowledge": "*",
     "@codecraft/validator": "*",
     "@modelcontextprotocol/sdk": "^1.30.0",

@@ -17,7 +17,7 @@
  * bulamayıp [] döndürüyor (packages/core/src/context.ts). Kimlik doğrulaması
  * lookup_id'nin işi, bu aracın değil.
  */
-import { buildContext } from "@codecraft/core/server";
+import { buildContext } from "../bedrock/context.ts";
 
 import { jsonResult } from "../limit.ts";
 import { READ_ONLY, versionField, type ToolModule } from "../tool.ts";

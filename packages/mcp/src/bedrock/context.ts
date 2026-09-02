@@ -1,14 +1,13 @@
 /**
- * Sürüme kilitli bağlam toplama.
+ * Sürüme kilitli bağlam toplama. `get_version_info` aracının gövdesi.
  *
  * Var olan lookup katmanından beslenir; yeni bir veri erişim yolu açılmaz
  * (@codecraft/knowledge ve @codecraft/validator zaten data/ üzerinde duruyor).
  * Vektör DB veya embedding yok — sürüm ve niyet belliyse hangi JSON'a
- * bakılacağı da belli (CLAUDE.md, "Yapılmayacaklar").
+ * bakılacağı da belli.
  *
- * Node'a bağlı olan tek üretim modülü burası ve review.ts. Döndürdüğü şey düz
- * veri: Aşama 4'te aynı nesne sunucudan gelecek, prompt.ts değişmeyecek
- * (CLAUDE.md, mimari kural 2).
+ * Döndürdüğü şey düz veri: hangi alanın zorunlu olduğu ve `format_version`
+ * değerinin ne olması gerektiği buradan okunur, hatırlanandan değil.
  */
 import { lookup, resolveVersion, textureKeys } from "@codecraft/knowledge";
 import {

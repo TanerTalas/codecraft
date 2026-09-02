@@ -10,7 +10,7 @@
  * dayandığı ölçümü ve alternatifi birden döndürüyor — üçü de
  * packages/core/src/feasibility.ts içinde testle sabitlenmiş.
  */
-import { checkFeasibility } from "@codecraft/core/server";
+import { checkFeasibility } from "../bedrock/feasibility.ts";
 import { z } from "zod";
 
 import { jsonResult } from "../limit.ts";

@@ -20,7 +20,7 @@
  * `report` alanı boş değilse retry metnidir: doğrudan modele geri verilebilecek,
  * eyleme dönüştürülebilir bir özet.
  */
-import { review } from "@codecraft/core/server";
+import { review } from "../bedrock/review.ts";
 import { resolveVersion } from "@codecraft/knowledge";
 import { z } from "zod";
 

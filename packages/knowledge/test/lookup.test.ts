@@ -12,6 +12,7 @@ import test from "node:test";
 
 import {
   DATA_DIR,
+  MARKERS,
   ROOT,
   blockStates,
   listDataVersions,
@@ -103,16 +104,14 @@ test("blockStates: durumsuz blok boş nesne, olmayan blok null", async () => {
 });
 
 /**
- * Kök çözümü Aşama 4'te paketleyici yüzünden değişti (paths.ts'teki gerekçe).
- * Yeni hâli yukarı doğru arama yaptığı için sessizce yanlış bir dizine
- * yerleşebilir; bu test onu bağlıyor.
+ * Kök çözümü paketleyici yüzünden yukarı doğru aramaya döndü (paths.ts'teki
+ * gerekçe). Arama sessizce yanlış bir dizine yerleşebilir; bu test onu
+ * bağlıyor — işaretçilerin kendisini, MARKERS listesi üzerinden.
  */
-test("ROOT gerçekten repo kökü: data/ ve codecraft.config.json orada", () => {
-  assert.ok(existsSync(join(ROOT, "data")), `${ROOT} altında data/ yok`);
-  assert.ok(
-    existsSync(join(ROOT, "codecraft.config.json")),
-    `${ROOT} altında codecraft.config.json yok`,
-  );
+test("ROOT gerçekten repo kökü: bütün işaretçiler orada", () => {
+  for (const marker of MARKERS) {
+    assert.ok(existsSync(join(ROOT, marker)), `${ROOT} altında ${marker} yok`);
+  }
   assert.equal(DATA_DIR, join(ROOT, "data"));
 });
 

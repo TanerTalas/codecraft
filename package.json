@@ -3,22 +3,18 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Minecraft Bedrock icin dogrulanmis komut, behavior pack ve otomasyon script'i ureten asistan",
+  "description": "Minecraft Bedrock icin dogrulama ve veri sorgulama araclari sunan MCP sunucusu",
   "engines": {
     "node": ">=22"
   },
   "workspaces": [
     "packages/*",
     "pipeline",
-    "evals",
     "app"
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --test \"packages/*/test/**/*.test.ts\" \"evals/test/**/*.test.ts\"",
-    "eval": "node evals/src/run.ts",
-    "examples:build": "node evals/src/build-examples.ts",
-    "codecraft": "node packages/core/src/cli.ts",
+    "test": "node --test \"packages/*/test/**/*.test.ts\"",
     "pipeline": "node pipeline/src/index.ts",
     "pipeline:bedrock": "node pipeline/src/bedrock-samples.ts",
     "pipeline:commands": "node pipeline/src/commands.ts",

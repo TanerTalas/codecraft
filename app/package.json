@@ -8,7 +8,6 @@
     "start": "next start"
   },
   "dependencies": {
-    "@codecraft/core": "*",
     "@codecraft/mcp": "*",
     "next": "^16.0.0",
     "react": "^19.2.0",

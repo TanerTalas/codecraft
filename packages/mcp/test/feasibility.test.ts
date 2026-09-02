@@ -4,7 +4,7 @@
  * Asıl değerli kısmı ikinci blok: kuralların dayandığı API YOKLUĞU gerçekten
  * ölçülüyor. Mojang bir gün SimulatedPlayer'ı @minecraft/server'a taşırsa bu
  * test kırmızıya döner ve kural yeniden ölçülür — "muhtemelen hâlâ yoktur"
- * diye devam edilmez (CLAUDE.md).
+ * diye devam edilmez.
  */
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -13,7 +13,7 @@ import { test } from "node:test";
 
 import { resolveVersion } from "@codecraft/knowledge";
 
-import { ABSENT_APIS, checkFeasibility, feasibilityRules } from "../src/feasibility.ts";
+import { ABSENT_APIS, checkFeasibility, feasibilityRules } from "../src/bedrock/feasibility.ts";
 
 test("girdi simülasyonu isteği yakalanır ve alternatif önerilir", () => {
   const result = checkFeasibility("Fareme basılı tutmuş gibi otomatik kazsın");
@@ -97,11 +97,10 @@ test("fetch yalnızca doküman yorumunda geçiyor, API olarak tanımlı değil",
 /**
  * Girdinin YOKLUĞU üzerinden kurulan istek.
  *
- * Ölçüldü 01-09-2026, Aşama M5 senaryo 4: bu istek gerçek bir oturumda
- * MCP üzerinden soruldu, check_feasibility "blocked: false" döndü ve modeli
- * durduran şey araç DEĞİL kendi bilgisi oldu. Oysa istek bu deponun kendi
- * eval korpusunda duruyor (python-afk-fish-01) ve vakanın notu açık:
- * "doğru cevap dışarıdan çalışan script".
+ * Ölçüldü 01-09-2026 (docs/mcp-kullanim.md, senaryo 4): bu istek gerçek bir
+ * oturumda MCP üzerinden soruldu, check_feasibility "blocked: false" döndü ve
+ * modeli durduran şey araç DEĞİL kendi bilgisi oldu. Doğru cevap oyunun
+ * dışından çalışan bir script'ti ve araç bunu söylemiyordu.
  *
  * Tetikleyici listesi bir regex listesi, yani doğası gereği eksik kalabilir.
  * Bu testin işi kapsamı genişletmek değil, ÖLÇÜLEN kaybı sabitlemek.

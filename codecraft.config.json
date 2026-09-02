@@ -1,8 +1,0 @@
-{
-  "provider": "google",
-  "model": "gemini-3.6-flash",
-  "maxOutputTokens": 8192,
-  "temperature": 0,
-  "maxRetries": 1,
-  "requestDelayMs": 13000
-}

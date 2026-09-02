@@ -24,10 +24,19 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /**
- * Kökü ele veren işaretçiler. İkisi de yalnızca repo kökünde bulunur ve ikisi
- * de git içinde durur, yani dağıtımda da varlar.
+ * Kökü ele veren işaretçiler. İkisi de yalnızca birlikte kökte bulunur ve
+ * ikisi de git içinde durur, yani dağıtımda da varlar.
+ *
+ * `package.json` TEK BAŞINA yetmez — her workspace'te bir tane var, yukarı
+ * arama ilk rastladığı yerde dururdu. `data` ile birlikte kökü tekilleştiriyor.
+ *
+ * İkinci işaretçi önce `codecraft.config.json` idi ve o dosya LLM sağlayıcı
+ * ayarlarını tutuyordu; asistan katmanı silinince dosya da gitti. Dağıtımda
+ * izlenen dosya listesi buraya bağlı: `app/next.config.ts` içindeki
+ * `outputFileTracingIncludes` ikisini de pakete almak zorunda, yoksa uç
+ * modül yüklenirken "Repo kökü bulunamadı" ile düşer (31-08-2026'da ölçüldü).
  */
-export const MARKERS: readonly string[] = ["data", "codecraft.config.json"];
+export const MARKERS: readonly string[] = ["data", "package.json"];
 
 const isRoot = (dir: string): boolean => MARKERS.every((name) => existsSync(join(dir, name)));
 
