@@ -8,6 +8,7 @@
  */
 import {
   checkCommandIdentities,
+  checkComponents,
   checkAssets,
   checkFileNames,
   checkIdentities,
@@ -193,6 +194,8 @@ export async function review(files: readonly PackFile[], version: string): Promi
   findings.push(...(await checkMolang(files, { version })).findings);
   // minecraft:loot ve trade_table bir dosya YOLUNA isaret ediyor, kimlige degil.
   findings.push(...(await checkReferences(files, { version })).findings);
+  // Bilesen adi: ne Blockception ne Mojang semasi bilinmeyen adi reddediyor.
+  findings.push(...(await checkComponents(files, { version })).findings);
   for (const file of files) {
     if (isScript(file.path)) {
       findings.push(...checkPatterns(file.content, { path: file.path }).findings);

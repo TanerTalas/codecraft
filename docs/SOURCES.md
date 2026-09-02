@@ -30,6 +30,8 @@ public yapıldı (aşağıda, "Ne dışarı çıkıyor").
 | `Mojang/bedrock-samples` → `resource_pack/particles/` | 189 parçacık kimliği | Minecraft EULA | Türetilmiş indeks (yalnızca `identifier`) |
 | `Mojang/bedrock-samples` → `resource_pack/sounds/` | 1824 ses, 48 müzik olayı | Minecraft EULA | Türetilmiş indeks (yalnızca anahtar adları) |
 | `Mojang/bedrock-samples` → `behavior_pack/{loot_tables,trading}/` | 207 loot + 27 takas tablosu YOLU | Minecraft EULA | Türetilmiş indeks (yalnızca yollar, içerik değil) |
+| `Mojang/bedrock-samples` → `metadata/doc_modules/` | Bileşen adları: 32 blok, 124 entity, 28 feature tipi | Minecraft EULA | Türetilmiş indeks (yalnızca adlar, açıklamalar atılır) |
+| `Mojang/bedrock-samples` → `metadata/engine_modules/` | 31 modül sürümü için afterEvent sırası | Minecraft EULA | Türetilmiş indeks |
 | `Mojang/bedrock-schemas` | Resmi şema deposu | — | **Bugün kullanılmıyor.** İncelenecek; lisansı ve içeriği henüz kaynağa karşı doğrulanmadı |
 | `Blockception/Minecraft-bedrock-json-schemas` | Doğrulamanın kullandığı şemalar | **BSD-3-Clause**, atıf zorunlu | Birebir kopya + `LICENSE` + türetilmiş `schema-map.json` |
 | `@minecraft/*` (npm, 9 paket) | Script tip tanımları | **MIT** (paketlerin `package.json` beyanı) | Birebir `index.d.ts` + `package.json` |
@@ -152,6 +154,54 @@ koşulan biçim o. Kaynak:
 | Alan adında "Minecraft" geçmemeli | Alan adı alınırken dikkat edilecek |
 | Resmi görünüm/onay izlenimi verilmemeli | Mojang logosu, resmi font ve blok dokusu kullanılmayacak |
 | Feragat görünür olmalı | **Uygun** (02-09-2026) — `README.md` altbilgisinde ve `NOTICE` içinde, İngilizce aslı korunarak |
+
+## `doc_modules` — 20 dosyanın yalnızca 5'i makine okunur
+
+Bu bölüm bir ölçümün kaydı. "20 doküman modülünü indeksle" cümlesi kolay
+yazılırdı ve **yanlış** olurdu.
+
+**Ölçüldü 02-09-2026**, 20 dosyanın hepsi indirildi ve `nodes` ağacındaki her
+düğüm sayıldı:
+
+| Dosya | Düğüm | `minecraft:` adlı | Alındı mı |
+|---|---|---|---|
+| `entities.json` | 5068 | 708 | **evet** |
+| `blocks.json` | 186 | 39 | **evet** |
+| `biomes.json` | 154 | 43 | **evet** |
+| `features.json` | 81 | 29 | **evet** |
+| `client-biomes.json` | 73 | 29 | **evet** |
+| `addons.json` | 7636 | 5339 | hayır — adlar `minecraft:acacia_button:000`, veri değerli eski blok kimlikleri |
+| `particles.json` | 103 | 22 | **hayır — tuzak**, adlar `minecraft:example_*`, dokümantasyon örneği |
+| `molang.json` | 502 | 0 | hayır — düz prosa |
+| `entity-events.json` | 10 | 0 | hayır — düz prosa |
+| `recipes.json` | 44 | 0 | hayır — `minecraft:` adlı düğüm yok |
+| diğer 10 dosya | <60 | 0-1 | hayır |
+
+`particles.json` satırı en önemlisi: dosya makine okunur GÖRÜNÜYOR ve 22
+`minecraft:` adı var, ama hepsi `minecraft:example_beziercurve` gibi
+dokümantasyon örnekleri. İndekse girseydi uydurma kimlikleri "geçerli"
+sayardık. Gerçek parçacık kimlikleri `resource_pack/particles/` altından
+okunuyor (189 dosya, ayrı bir toplayıcı).
+
+### Bölüm adları elle yazılı ve bu bilinçli
+
+Ağacın tamamından `minecraft:` adları toplamak daha kısa olurdu ama **anlamı
+bozardı.** `entities.json` içinde dört ayrı bölüm var ve hepsi aynı önekle
+başlıyor:
+
+| Bölüm | Adet | `components` altına yazılır mı |
+|---|---|---|
+| Components | 124 | evet |
+| AI Goals | 171 | evet |
+| Properties | 49 | evet |
+| Attributes | 3 | evet |
+| **Built-in Events** | 4 | **hayır** |
+
+Son satır kümeleri ayrı tutmanın sebebi: hepsini tek torbaya koysaydık, olay
+adını bileşen yerine yazan bir dosya sessizce geçerdi. Test olarak sabitlendi.
+
+Bölüm bulunamazsa **pipeline durur.** Upstream başlığı değiştirmişse sessizce
+boş indeks yazmak, doğrulamayı sessizce kapatmak demek olurdu.
 
 ## Şema kaynağı: Blockception'ın derlenmiş çıktısı
 

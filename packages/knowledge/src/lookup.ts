@@ -301,3 +301,53 @@ export async function referenceSet(
   idCache.set(key, set);
   return set;
 }
+
+
+/**
+ * Doküman tipi başına geçerli bileşen adları — `data/<sürüm>/components.json`.
+ *
+ * Kaynak Mojang'ın kendi dokümantasyonu (`metadata/doc_modules/`). Bölümler
+ * ayrı tutuluyor çünkü hepsi aynı `minecraft:` önekiyle başlıyor ama anlamları
+ * farklı: AI hedefi bileşen değil, olay bileşen değil. Hepsini tek kümeye
+ * koymak, olay adını bileşen yerine yazan bir dosyayı geçirirdi.
+ */
+export type ComponentIndex = {
+  blockComponents: string[];
+  blockTriggers: string[];
+  entityComponents: string[];
+  entityGoals: string[];
+  entityAttributes: string[];
+  entityProperties: string[];
+  entityEvents: string[];
+  featureTypes: string[];
+  biomeComponents: string[];
+  clientBiomeComponents: string[];
+};
+
+const COMPONENTS_FILE = "components.json";
+
+export async function componentIndex(
+  options: { version?: string } = {},
+): Promise<ComponentIndex> {
+  const { dir } = await resolveVersion(options.version);
+  return readIndex<ComponentIndex>(dir, COMPONENTS_FILE);
+}
+
+/** Modül sürümü → o sürümdeki `afterEvents` tetiklenme sırası. */
+export type EventOrderIndex = Record<string, string[]>;
+
+const EVENT_ORDER_FILE = "event-order.json";
+
+/**
+ * `@minecraft/server` sürümü başına afterEvent sırası.
+ *
+ * D sınıfı (geçerli ama amaçlanmayan) için veri ayağı: hangi olayın var
+ * olduğu ve hangi sırada tetiklendiği burada yazılı
+ * (docs/VALIDATION-LIMITS.md D).
+ */
+export async function eventOrder(
+  options: { version?: string } = {},
+): Promise<EventOrderIndex> {
+  const { dir } = await resolveVersion(options.version);
+  return readIndex<EventOrderIndex>(dir, EVENT_ORDER_FILE);
+}

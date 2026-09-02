@@ -51,6 +51,12 @@ export type DataIndex = {
      * Opsiyonel: bu adım eklenmeden önce üretilmiş sürüm klasörleri hâlâ
      * okunabilmeli.
      */
+    /**
+     * Mojang dokümantasyonundan türetilen bileşen adları ve afterEvent sırası.
+     * Opsiyonel: eski sürüm klasörleri hâlâ okunabilmeli.
+     */
+    components?: { file: string; counts: Record<string, number> };
+    eventOrder?: { file: string; versions: number };
     references?: {
       particles: { file: string; count: number };
       file: string;

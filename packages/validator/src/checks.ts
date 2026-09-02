@@ -23,8 +23,10 @@ import {
   lookupAny,
   molangIndex,
   normalizeId,
+  componentIndex,
   referenceSet,
   textureKeys,
+  type ComponentIndex,
   type ReferenceKind,
 } from "@codecraft/knowledge";
 
@@ -1159,6 +1161,138 @@ export async function checkSounds(
         `satır ${line}: ses olayı "${sound}" bu sürümde tanımlı değil` +
         (near.length === 0 ? "" : `. Yakın adlar: ${near.map((n) => n.replace(/_/g, ".")).join(", ")}`),
       evidence: "data/<sürüm>/references.json (resource_pack/sounds/sound_definitions.json)",
+    });
+  }
+
+  return toResult(findings);
+}
+
+// --------------------------------------------------------------------------
+// G · bileşen adları — şema bunu yakalamıyor
+// --------------------------------------------------------------------------
+
+/**
+ * Kök anahtar → hangi bileşen kümelerine bakılacağı.
+ *
+ * Kümeler AYRI tutuluyor ve burada birleştiriliyor, çünkü hepsi aynı
+ * `minecraft:` önekiyle başlasa da anlamları farklı: entity'de AI hedefi,
+ * öznitelik ve özellik `components` altına yazılabiliyor, ama "Built-in
+ * Events" yazılamaz — o yüzden entityEvents bu birleşime GİRMİYOR.
+ */
+const COMPONENT_SETS: Readonly<Record<string, readonly (keyof ComponentIndex)[]>> = {
+  "minecraft:block": ["blockComponents", "blockTriggers"],
+  "minecraft:entity": [
+    "entityComponents",
+    "entityGoals",
+    "entityAttributes",
+    "entityProperties",
+  ],
+};
+
+/**
+ * `components` ve `component_groups` altındaki anahtarları toplar.
+ *
+ * `permutations[].components` de dahil: blok permütasyonları aynı bileşenleri
+ * kullanıyor ve orada yazılan yanlış ad da sessizce geçerdi.
+ */
+function collectComponentKeys(
+  value: unknown,
+  path: string,
+  out: { name: string; where: string }[],
+): void {
+  if (Array.isArray(value)) {
+    for (const [i, item] of value.entries()) collectComponentKeys(item, `${path}/${i}`, out);
+    return;
+  }
+  const object = asObject(value);
+  if (object === null) return;
+
+  for (const [key, item] of Object.entries(object)) {
+    if (key === "components") {
+      const components = asObject(item);
+      if (components !== null) {
+        for (const name of Object.keys(components)) {
+          out.push({ name, where: `${path}/components/${name}` });
+        }
+      }
+      continue;
+    }
+    if (key === "component_groups") {
+      const groups = asObject(item);
+      if (groups !== null) {
+        for (const [group, body] of Object.entries(groups)) {
+          const components = asObject(body);
+          if (components === null) continue;
+          for (const name of Object.keys(components)) {
+            out.push({ name, where: `${path}/component_groups/${group}/${name}` });
+          }
+        }
+      }
+      continue;
+    }
+    collectComponentKeys(item, `${path}/${key}`, out);
+  }
+}
+
+export type ComponentOptions = { version?: string };
+
+/**
+ * Bileşen adı bu sürümde gerçekten var mı.
+ *
+ * NEDEN VAR: ne Blockception ne Mojang şemaları bilinmeyen bir bileşen adını
+ * reddediyor — `cases.json` içindeki `block-unknown-component` vakası tam
+ * bunu ölçüyor ve iki kaynak da "geçti" diyor. Yani `minecraft:destructable`
+ * (doğrusu `destructible_by_mining`) yazan bir dosya doğrulamadan geçiyor.
+ *
+ * Yalnızca `minecraft:` önekli adlar ölçülüyor. Özel namespace'li bir anahtar
+ * bileşen değil (kullanıcının kendi verisi olabilir) ve ona "bilinmiyor"
+ * demek uydurma hata olurdu.
+ *
+ * NEDEN WARNING: dokümantasyon oyunun gerisinde kalabiliyor ve yeni eklenmiş
+ * bir bileşene "yok" demek yanlış pozitif olurdu. Ayrıca bu sınıf gerçek
+ * oyunda ÖLÇÜLMEDİ — A–E'nin ContentLog kanıtı var, bunun yok.
+ */
+export async function checkComponents(
+  files: readonly PackFile[],
+  options: ComponentOptions = {},
+): Promise<CheckResult> {
+  const { parsed, findings } = parseJsonFiles(files);
+
+  const refs: { file: PackFile; root: string; name: string; where: string }[] = [];
+  for (const { file, root, body } of parsed) {
+    if (COMPONENT_SETS[root] === undefined) continue;
+    const found: { name: string; where: string }[] = [];
+    collectComponentKeys(body, `/${root}`, found);
+    for (const ref of found) refs.push({ file, root, ...ref });
+  }
+
+  if (refs.length === 0) return toResult(findings);
+
+  const index = await componentIndex(options);
+  for (const { file, root, name, where } of refs) {
+    if (!name.startsWith("minecraft:")) continue;
+
+    const keys = COMPONENT_SETS[root] ?? [];
+    const valid = new Set(keys.flatMap((key) => index[key]));
+    if (valid.has(name)) continue;
+
+    const bare = name.replace("minecraft:", "");
+    const pool = new Set([...valid].map((value) => value.replace("minecraft:", "")));
+    // nearestKeys parça bazlı çalışıyor ve alt çizgi taşımayan bir yazım
+    // hatasında ("destructable") hiç öneri üretmiyor. Ortak önek geriye
+    // düşüşü tam o durumu kurtarıyor: "destructable" -> "destructible_by_*".
+    const near =
+      nearestKeys(bare, pool).length > 0
+        ? nearestKeys(bare, pool)
+        : [...pool].filter((value) => value.slice(0, 5) === bare.slice(0, 5)).sort().slice(0, 3);
+    findings.push({
+      check: "component",
+      severity: "warning",
+      path: file.path,
+      message:
+        `${where} :: "${name}" bu sürümde tanımlı bir ${root} bileşeni değil` +
+        (near.length === 0 ? "" : `. Yakın adlar: ${near.map((n) => `minecraft:${n}`).join(", ")}`),
+      evidence: `${LIMITS} · G · data/<sürüm>/components.json (metadata/doc_modules)`,
     });
   }
 

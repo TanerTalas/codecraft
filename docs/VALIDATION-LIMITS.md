@@ -365,6 +365,46 @@ operatör önceliği, tip uyumu (`bool` beklenen yere `float`), `->` zinciri,
 tanımlı olup olmadığı. Sonuncusu yapısal olarak ölçülemez: o adlar kullanıcı
 tanımlı, kapalı bir küme yok.
 
+## G · Bileşen adları — iki şema kaynağı da geçiriyor
+
+Bu boşluk aslında **zaten ölçülmüştü** ve fixture'ı da vardı:
+`packages/validator/test/fixtures/cases.json` içindeki
+`block-unknown-component` vakasının beklenen sonucu **"pass"** — yani hem
+Blockception hem Mojang şemaları bilinmeyen bir bileşen adını geçiriyor
+(`npm run validator:compare` tablosunda iki sütun da "geçti ✓").
+
+```json
+{ "minecraft:block": { "components": { "minecraft:destructable": {} } } }
+```
+
+Doğrusu `minecraft:destructible_by_mining`. Şemadan geçiyor, `tsc` görmüyor,
+oyunda bileşen hiç uygulanmıyor.
+
+**Kaynak makine okunur ve doğrulandı** (02-09-2026):
+`metadata/doc_modules/` içinde 32 blok bileşeni, 124 entity bileşeni,
+171 AI hedefi, 49 entity özelliği, 28 feature tipi ve 27 biyom bileşeni
+adı bölüm bölüm yazılı. `data/<sürüm>/components.json` bundan türetiliyor.
+Hangi dosyanın alındığı ve **neden 20 dosyadan 5'i** alındığı
+`docs/SOURCES.md` içinde tabloyla duruyor.
+
+Ölçülen bir tuzak: `doc_modules/particles.json` makine okunur görünüyor ve 22
+`minecraft:` adı taşıyor, ama hepsi `minecraft:example_*` — dokümantasyon
+örneği. İndekse girseydi uydurma kimlikleri geçerli sayardık.
+
+**Kümeler ayrı tutuluyor.** Entity'de bileşen, AI hedefi, öznitelik ve özellik
+`components` altına yazılabiliyor; "Built-in Events" yazılamaz. Hepsini tek
+kümeye koymak, olay adını bileşen yerine yazan bir dosyayı geçirirdi — bu da
+test olarak sabitlendi.
+
+**Warning, error değil:** dokümantasyon oyunun gerisinde kalabiliyor ve yeni
+eklenmiş bir bileşene "yok" demek yanlış pozitif olurdu. Bu sınıf da oyunda
+ölçülmedi.
+
+Yan ürün: `metadata/engine_modules/engine-after-events-ordering.json` da
+indeksleniyor (`data/<sürüm>/event-order.json`, 31 modül sürümü). D sınıfının
+veri ayağı — hangi `afterEvent`'in var olduğu ve hangi sırada tetiklendiği
+artık hatırlanmıyor, okunuyor.
+
 ---
 
 ## Özet
@@ -378,6 +418,7 @@ tanımlı, kapalı bir küme yok.
 | D · geçerli ama yanlış | **Yapısal olarak hayır** | `checkPatterns` | **Bulunuyor + önceden anlatılıyor** — `patternGuide()` aynı tablodan besliyor |
 | E · yüklenmeyen manifest | Hayır — eski tip listede | `checkManifest` | **Bulunuyor** — yanlış modül tipi rapor ediliyor |
 | F · Molang | Hayır — string'in içine bakmıyor | `checkMolang` | **Bulunuyor, warning** — oyunda henüz ölçülmedi |
+| G · bileşen adı | Hayır — iki kaynak da geçiriyor | `checkComponents` | **Bulunuyor, warning** — oyunda henüz ölçülmedi |
 
 > **Dördüncü sütun 02-09-2026'da düzeltildi.** Önce B ve E için "düzeltiliyor"
 > yazıyordu ve doğruydu: bir `normalize()` fonksiyonu dosya adını ve manifest
@@ -390,10 +431,11 @@ gövdesi `packages/validator/src/molang.ts`), saf fonksiyon, model çağrısı y
 `review_pack` hepsini birden koşuyor; `packages/validator/test/` altındaki
 fixture'lar tek tek ölçüyor.
 
-> **F satırı diğerlerinden farklı okunmalı.** A–E "oyunda patladığı görüldü,
+> **F ve G satırları diğerlerinden farklı okunmalı.** A–E "oyunda patladığı görüldü,
 > sonra kontrol yazıldı" sırasıyla geldi. F ters yönden geldi: kaynak makine
 > okunur olduğu için kontrol önce yazıldı, oyun ölçümü henüz yapılmadı. Bu
-> yüzden warning ve bu yüzden ayrı yazılıyor.
+> yüzden warning ve bu yüzden ayrı yazılıyor. G aynı yoldan geldi; farkı,
+> boşluğun `cases.json` içinde zaten kayıtlı olması.
 
 İki sınır kayda geçmeli:
 

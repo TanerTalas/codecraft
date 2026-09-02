@@ -22,6 +22,8 @@ type IndexFile = {
   sources?: {
     mojangSchemas?: { index?: string; files?: number };
     molang?: { file?: string; queries?: number; math?: number };
+    components?: { file?: string; counts?: Record<string, number> };
+    eventOrder?: { file?: string; versions?: number };
     references?: {
       file?: string;
       sounds?: number;
@@ -67,7 +69,8 @@ export async function checkFreshness(): Promise<string[]> {
     problems.push(`data/${version}/index.json içindeki sürüm "${index.version}" — klasör adıyla uyuşmuyor`);
   }
 
-  const { mojangSchemas, molang, references, blockception, scriptTypes } = index.sources ?? {};
+  const { mojangSchemas, molang, references, components, eventOrder, blockception, scriptTypes } =
+    index.sources ?? {};
 
   if (blockception?.path === undefined || blockception.files === undefined) {
     problems.push("index.json içinde blockception kaydı eksik");
@@ -145,6 +148,22 @@ export async function checkFreshness(): Promise<string[]> {
       } catch {
         problems.push(`referans indeksi yok — ${join(dir, file)}`);
       }
+    }
+  }
+
+  // Bilesen ve olay sirasi indeksleri.
+  for (const [label, source] of [
+    ["bileşen", components],
+    ["afterEvent sırası", eventOrder],
+  ] as const) {
+    if (source?.file === undefined) {
+      problems.push(`index.json içinde ${label} kaydı eksik`);
+      continue;
+    }
+    try {
+      await access(join(dir, source.file));
+    } catch {
+      problems.push(`${label} indeksi yok — ${join(dir, source.file)}`);
     }
   }
 

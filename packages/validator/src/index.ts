@@ -56,6 +56,7 @@ export type { Detail, SchemaProperty, SchemaSummary, SummaryOptions } from "./sc
 export {
   checkAssets,
   checkCommandIdentities,
+  checkComponents,
   checkFileNames,
   checkManifest,
   checkIdentities,
@@ -70,6 +71,7 @@ export type {
   AssetOptions,
   CheckResult,
   CommandIdentityOptions,
+  ComponentOptions,
   Finding,
   IdentityOptions,
   MolangCheckOptions,

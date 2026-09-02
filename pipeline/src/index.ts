@@ -15,6 +15,7 @@ import { collectVanillaData } from "./bedrock-samples.ts";
 import { COMMANDS_FILE, collectCommands } from "./commands.ts";
 import { MOLANG_FILE, collectMolang } from "./molang.ts";
 import { PARTICLES_FILE, REFERENCES_FILE, collectReferences } from "./references.ts";
+import { COMPONENTS_FILE, EVENT_ORDER_FILE, collectComponents } from "./components.ts";
 import { collectMojangSchemas } from "./schemas-mojang.ts";
 import {
   BLOCKCEPTION_DIR,
@@ -62,6 +63,13 @@ export async function runPipeline(): Promise<void> {
   console.log(
     `  referanslar      ${references.particles} parçacık, ${references.sounds} ses, ` +
       `${references.music} müzik, ${references.lootTables} loot, ${references.tradeTables} trade`,
+  );
+
+  const components = await collectComponents(version);
+  console.log(
+    `  bileşenler       ${components.counts["blockComponents"]} blok, ` +
+      `${components.counts["entityComponents"]} entity, ${components.counts["featureTypes"]} feature tipi, ` +
+      `${components.eventVersions} afterEvent sürümü`,
   );
 
   const mojang = await collectMojangSchemas(version);
@@ -126,6 +134,11 @@ export async function runPipeline(): Promise<void> {
         lootTables: references.lootTables,
         tradeTables: references.tradeTables,
       },
+      // doc_modules'un YALNIZCA BESI makine okunur; olcum docs/SOURCES.md'de.
+      // particles.json bilerek alinmiyor: icindeki minecraft: adlar gercek
+      // parcacik degil dokumantasyon ornegi (minecraft:example_*).
+      components: { file: COMPONENTS_FILE, counts: components.counts },
+      eventOrder: { file: EVENT_ORDER_FILE, versions: components.eventVersions },
       blockception: {
         repo: BLOCKCEPTION_REPO,
         ref: BLOCKCEPTION_REF,

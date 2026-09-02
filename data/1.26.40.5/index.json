@@ -77,6 +77,25 @@
       "lootTables": 207,
       "tradeTables": 27
     },
+    "components": {
+      "file": "components.json",
+      "counts": {
+        "blockComponents": 32,
+        "blockTriggers": 7,
+        "entityComponents": 124,
+        "entityGoals": 171,
+        "entityAttributes": 3,
+        "entityProperties": 49,
+        "entityEvents": 4,
+        "featureTypes": 28,
+        "biomeComponents": 27,
+        "clientBiomeComponents": 14
+      }
+    },
+    "eventOrder": {
+      "file": "event-order.json",
+      "versions": 31
+    },
     "blockception": {
       "repo": "Blockception/Minecraft-bedrock-json-schemas",
       "ref": "main",
