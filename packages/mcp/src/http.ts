@@ -52,7 +52,7 @@ function methodNotAllowed(method: string): Response {
   return jsonRpcError(
     405,
     -32000,
-    `${method} desteklenmiyor. Bu uç durumsuz Streamable HTTP: yalnızca POST.`,
+    `${method} is not supported. This endpoint is stateless Streamable HTTP: POST only.`,
     { allow: "POST" },
   );
 }
@@ -80,7 +80,7 @@ export async function handleMcpRequest(request: Request): Promise<Response> {
   } catch (error) {
     // Buraya düşmek araç hatası DEĞİL, transport veya sunucu kurulumu hatası.
     // Araçların kendi hataları `isError: true` taşıyan normal sonuçlar.
-    return jsonRpcError(500, -32603, `MCP sunucusu isteği karşılayamadı: ${String(error)}`);
+    return jsonRpcError(500, -32603, `The MCP server could not handle the request: ${String(error)}`);
   } finally {
     await server.close();
   }

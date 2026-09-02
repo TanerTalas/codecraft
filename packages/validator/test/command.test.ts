@@ -222,14 +222,14 @@ test("eşittir ayracı reddedilir ve doğrusu söylenir", () => {
   // Doğrulayıcının ilk hâli tam tersini yapıyordu.
   const result = parseBlockStates('["facing_direction"=0]');
   assert.equal(result.ok, false);
-  assert.match(result.ok === false ? result.reason : "", /iki nokta/);
+  assert.match(result.ok === false ? result.reason : "", /must be a colon/);
 });
 
 test("tırnaksız durum adı reddedilir", () => {
   // Ölçüldü: [facing_direction=0] → Syntax error: Unexpected "facing_direction"
   const result = parseBlockStates("[facing_direction:0]");
   assert.equal(result.ok, false);
-  assert.match(result.ok === false ? result.reason : "", /tırnak/);
+  assert.match(result.ok === false ? result.reason : "", /quote/);
 });
 
 test("değersiz durum reddedilir", () => {
@@ -253,14 +253,14 @@ test("geçerli blok durumları geçer", async () => {
 test("uydurulmuş durum adı yakalanır", async () => {
   const result = await check('/setblock ~ ~ ~ minecraft:acacia_button ["uydurma_durum":1]');
   assert.equal(result.ok, false);
-  assert.match(result.errors[0]?.message ?? "", /durumu değil/);
+  assert.match(result.errors[0]?.message ?? "", /is not a state of/);
 });
 
 test("aralık dışı durum değeri yakalanır", async () => {
   // facing_direction 0..5; 99 kabul edilmemeli.
   const result = await check('/setblock ~ ~ ~ minecraft:acacia_button ["facing_direction":99]');
   assert.equal(result.ok, false);
-  assert.match(result.errors[0]?.message ?? "", /geçerli değil/);
+  assert.match(result.errors[0]?.message ?? "", /is not valid for/);
 });
 
 test("paketin kendi kimlikleri reddedilmez", async () => {
@@ -323,7 +323,7 @@ test("eklenti kimliği kalıbı dar — köşeli parantez enum sanılmaz", async
   // uyuyordu ve durum denetimi hiç koşmuyordu. Testler yakaladı.
   const bad = await check('/setblock ~ ~ ~ minecraft:acacia_button ["uydurma_durum":1]');
   assert.equal(bad.ok, false, "blok durumu denetimi koşmadı");
-  assert.match(bad.errors[0]?.message ?? "", /durumu değil/);
+  assert.match(bad.errors[0]?.message ?? "", /is not a state of/);
 
   // Gerçek eklenti kimliği hâlâ kabul edilmeli.
   const custom = await check("/setblock ~ ~ ~ codecraft:ruby_ore");
@@ -387,8 +387,8 @@ test("eski veri değeri reddediliyor ve ne yapılacağı söyleniyor", async () 
     const result = await check(line);
     assert.equal(result.ok, false, `${line} geçti, oysa oyun sohbette reddediyor`);
     // Hata eyleme dönüştürülebilir olmalı: doğru biçimi söylesin.
-    assert.match(result.errors[0]?.message ?? "", /eski veri değeri/);
-    assert.match(result.errors[0]?.message ?? "", /["ad":değer]/);
+    assert.match(result.errors[0]?.message ?? "", /legacy data value/);
+    assert.match(result.errors[0]?.message ?? "", /["name":value]/);
   }
 });
 

@@ -70,7 +70,7 @@ test("olmayan blok dokusu reddedilir ve yakın anahtar önerilir", async () => {
   const finding = result.findings[0];
   assert.equal(finding?.severity, "error");
   // Öneri olmadan retry modele ne yazacağını söylemiyor.
-  assert.match(finding?.message ?? "", /Yakın anahtarlar: .*ore/);
+  assert.match(finding?.message ?? "", /Nearest keys: .*ore/);
 });
 
 test("var olan blok dokusu geçer", async () => {
@@ -88,7 +88,7 @@ test("yanlış atlas hata değil uyarı — anahtar gerçekten var", async () =>
 
   assert.equal(result.ok, true, "uyarı sonucu düşürmemeli");
   assert.equal(result.findings[0]?.severity, "warning");
-  assert.match(result.findings[0]?.message ?? "", /terrain atlasında/);
+  assert.match(result.findings[0]?.message ?? "", /it is in the terrain atlas/);
 });
 
 test("doku referansı olmayan dosyada kontrol sessiz", async () => {

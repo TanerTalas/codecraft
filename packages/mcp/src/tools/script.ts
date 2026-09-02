@@ -28,23 +28,24 @@ export const validateScriptTool: ToolModule = {
     server.registerTool(
       "validate_script",
       {
-        title: "@minecraft/server script'ini derle",
+        title: "Compile an @minecraft/server script",
         description:
-          "Bir behavior pack script'ini o sürümün gerçek @minecraft/server tip " +
-          "tanımlarına karşı TypeScript derleyicisiyle derler. Satır, sütun, TS " +
-          "hata kodu ve mesajıyla birlikte tanı döndürür; hangi modül sürümlerine " +
-          "karşı derlendiğini de söyler. Var olmayan API'leri ve sürümden " +
-          "kaldırılmış çağrıları burada yakala — ezberden yazılmış Bedrock script " +
-          "API'si en sık sessizce çalışmayan çıktıyı üretiyor.",
+          "Compiles a behavior pack script with the real TypeScript compiler against " +
+          "the actual @minecraft/server type definitions for that version. Returns " +
+          "diagnostics with line, column, TS error code and message, and reports which " +
+          "module versions it compiled against. Catch non-existent APIs and calls " +
+          "removed in later versions here — Bedrock scripting APIs written from memory " +
+          "are the most common source of output that fails silently.",
         inputSchema: {
-          code: z.string().min(1).describe("Script'in tam içeriği. JavaScript veya TypeScript."),
+          code: z.string().min(1).describe("The complete script content. JavaScript or TypeScript."),
           version: versionField,
           channel: z
             .enum(["stable", "beta"])
             .optional()
             .describe(
-              "Modül kanalı. Varsayılan stable. beta istenip o modülün betası yoksa " +
-                "kararlıya düşer — hangi sürüme karşı derlendiği sonuçtaki modules alanında.",
+              "Module channel. Defaults to stable. If beta is requested but a module has " +
+                "no beta release it falls back to stable — the modules field in the result " +
+                "says which version each module was compiled against.",
             ),
         },
         annotations: READ_ONLY,

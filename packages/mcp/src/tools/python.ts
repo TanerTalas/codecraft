@@ -28,20 +28,20 @@ export const validatePythonTool: ToolModule = {
     server.registerTool(
       "validate_python",
       {
-        title: "Otomasyon script'ini doğrula",
+        title: "Validate an automation script",
         description:
-          "Oyunun DIŞINDA çalışan bir Python otomasyon script'ini üç eksende " +
-          "doğrular: Python sözdizimi (gerçek yorumlayıcıyla), script'e gömülü " +
-          "Minecraft komutları (resmi komut indeksine karşı) ve /connect " +
-          "WebSocket mesaj zarfının biçimi. Behavior pack script'i için bunu " +
-          "değil validate_script'i kullan — Python paketin içinde çalışmaz. " +
-          "Gömülü komut kontrolü en değerlisi: ezberden yazılmış bir komut " +
-          "sözdizimi olarak doğru görünüp oyunda sessizce çalışmıyor. " +
-          "Yalnızca / ile başlayan dizeler komut sayılır. Sözdizimi " +
-          "bakılamazsa sonuçtaki syntaxChecked false olur; ok:true tek başına " +
-          "sözdiziminin doğru olduğu anlamına gelmez.",
+          "Validates a Python automation script that runs OUTSIDE the game, on three " +
+          "axes: Python syntax (using the real interpreter), Minecraft commands " +
+          "embedded in the script (against the official command index), and the shape " +
+          "of the /connect WebSocket message envelope. For behavior pack scripts use " +
+          "validate_script instead — Python does not run inside a pack. The embedded " +
+          "command check is the most valuable one: a command written from memory can " +
+          "look syntactically fine and still do nothing in the game. Only strings " +
+          "starting with / are treated as commands. If syntax could not be checked, " +
+          "syntaxChecked is false in the result; ok:true alone does not mean the " +
+          "syntax is valid.",
         inputSchema: {
-          code: z.string().min(1).describe("Python script'inin tam içeriği."),
+          code: z.string().min(1).describe("The complete Python script content."),
           version: versionField,
         },
         annotations: READ_ONLY,

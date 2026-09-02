@@ -67,13 +67,13 @@ export function createServer(): McpServer {
     { name: "codecraft", version: SERVER_VERSION },
     {
       instructions:
-        "Minecraft Bedrock için doğrulanmış çıktı üretmeye yarayan araçlar. " +
-        "Sıra önemli: önce check_feasibility (istek Bedrock'ta yapılabilir mi), " +
-        "sonra get_version_info ve get_schema (hangi alanlar zorunlu, " +
-        "format_version ne olmalı), üretimden sonra review_pack. " +
-        "Bedrock'un sürüm alanları birbirine karışıyor — format_version oyun " +
-        "sürümü DEĞİL, o dosya tipinin kendi şema sürümü. Değerleri buradan al, " +
-        "hatırladığından değil.",
+        "Tools for producing verified Minecraft Bedrock content. " +
+        "Order matters: call check_feasibility first (can Bedrock do this at all), " +
+        "then get_version_info and get_schema (which fields are required, what " +
+        "format_version to use), and review_pack after you have written the files. " +
+        "Bedrock's version fields are easy to confuse — format_version is NOT the " +
+        "game version, it is the schema version of that specific file type. Read " +
+        "these values from the tools, not from memory.",
     },
   );
 

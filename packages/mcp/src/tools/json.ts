@@ -31,24 +31,25 @@ export const validateJsonTool: ToolModule = {
     server.registerTool(
       "validate_json",
       {
-        title: "Bedrock JSON'unu şemaya karşı doğrula",
+        title: "Validate Bedrock JSON against its schema",
         description:
-          "Bir behavior/resource pack JSON dosyasını resmi şemaya karşı doğrular ve " +
-          "her hatanın JSON pointer'ını, ihlal edilen kuralı ve okunabilir mesajını " +
-          "döndürür. Fazla alanın adını ve geçerli enum değerlerini mesaja koyar. " +
-          "Ürettiğin her JSON dosyasını kullanıcıya vermeden önce buradan geçir.",
+          "Validates a behavior or resource pack JSON file against the official " +
+          "schema and returns the JSON pointer, the violated rule and a readable " +
+          "message for every error. Unexpected property names and the valid enum " +
+          "values are included in the message. Run every JSON file you produce " +
+          "through this before handing it to the user.",
         inputSchema: {
           content: z
             .string()
             .min(1)
-            .describe("Dosyanın tam içeriği, metin olarak. Ayrıştırma hataları da yakalanır."),
+            .describe("The complete file content as text. Parse errors are reported too."),
           type: z
             .string()
             .min(1)
             .describe(
-              'Belge tipi. Kanonik ad ("behavior/blocks/blocks"), kısaltma ' +
-                '("behavior/blocks") ya da dosya yolu ("BP/blocks/ruby.json") kabul edilir. ' +
-                "Tanınan tiplerin listesi get_version_info çıktısında.",
+              'Document type. A canonical name ("behavior/blocks/blocks"), a short ' +
+                'form ("behavior/blocks") or a file path ("BP/blocks/ruby.json") are all ' +
+                "accepted. The list of recognised types is in the get_version_info output.",
             ),
           version: versionField,
         },

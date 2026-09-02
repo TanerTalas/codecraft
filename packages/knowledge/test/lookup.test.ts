@@ -41,11 +41,11 @@ test("sürüm çözümleme: eksik hane önek sayılmaz", async () => {
   const latest = (await listDataVersions()).at(-1) as string;
   const [major, minor, patch] = latest.split(".");
   const truncated = `${major}.${minor}.${(patch as string).slice(0, -1)}`;
-  await assert.rejects(() => resolveVersion(truncated), /data\/ içinde yok/);
+  await assert.rejects(() => resolveVersion(truncated), /is not present under data\//);
 });
 
 test("sürüm çözümleme: pazarlama numarası reddedilir", async () => {
-  await assert.rejects(() => resolveVersion("26.40"), /Geçersiz sürüm biçimi/);
+  await assert.rejects(() => resolveVersion("26.40"), /Invalid version format/);
 });
 
 test("normalizeId namespace ekler, var olanı bozmaz", () => {

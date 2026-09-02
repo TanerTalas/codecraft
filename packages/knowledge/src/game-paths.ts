@@ -46,8 +46,9 @@ export async function findDevPacksDir(env: NodeJS.ProcessEnv = process.env): Pro
     }
   }
   throw new Error(
-    "com.mojang klasörü bulunamadı. Bakılan yerler:\n" +
+    "The com.mojang folder was not found. Locations checked:\n" +
       candidates.map((path) => `  ${path}`).join("\n") +
-      "\nMinecraft en az bir kez açılıp ana menüye ulaşmadıysa bu klasör oluşmaz.",
+      "\nThis folder is not created until Minecraft has been opened at least once " +
+      "and reached the main menu.",
   );
 }

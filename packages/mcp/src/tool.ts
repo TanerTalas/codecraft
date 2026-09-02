@@ -32,8 +32,8 @@ export const versionField = z
   .string()
   .optional()
   .describe(
-    "data/ altındaki oyun sürümü, örn. 1.26.40 veya 1.26.40.5. " +
-      "Verilmezse en yeni sürüm kullanılır. Pazarlama numarası (26.40) geçersiz.",
+    "Game version under data/, e.g. 1.26.40 or 1.26.40.5. " +
+      "Defaults to the newest available version. Marketing numbers (26.40) are rejected.",
   );
 
 /**

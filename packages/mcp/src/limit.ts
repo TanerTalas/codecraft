@@ -50,8 +50,8 @@ export function capText(text: string, limit: number = BYTE_LIMIT): string {
   if (total <= limit) return text;
 
   const notice =
-    `\n\n[KESİLDİ] Çıktı ${total} bayttı, ${limit} bayt tavanına indirildi. ` +
-    "Yukarıdaki JSON eksik ve ayrıştırılamayabilir. Daha dar bir istekle tekrar çağır.";
+    `\n\n[TRUNCATED] Output was ${total} bytes and was cut to the ${limit} byte cap. ` +
+    "The JSON above is incomplete and may not parse. Call again with a narrower request.";
   const room = limit - Buffer.byteLength(notice, "utf8");
   // Çok haneli karakterin ortasından kesmemek için Buffer üzerinden gidiliyor.
   return Buffer.from(text, "utf8").subarray(0, Math.max(0, room)).toString("utf8") + notice;

@@ -28,13 +28,14 @@ export const getVersionInfo: ToolModule = {
     server.registerTool(
       "get_version_info",
       {
-        title: "Bedrock sürüm ve şema bağlamı",
+        title: "Bedrock version and schema context",
         description:
-          "Bu sürümde hangi sürüm numarasının nereye yazıldığını döndürür: " +
-          "min_engine_version (üç parçalı dizi), @minecraft/server modül sürümleri, " +
-          "her belge tipi için geçerli format_version değerleri, ve tanınan belge " +
-          "tiplerinin listesi. format_version oyun sürümünden bağımsız bir eksendir. " +
-          "Bir behavior pack dosyası yazmadan önce bunu çağır.",
+          "Returns which version number belongs where for this game version: " +
+          "min_engine_version (a three-part array), @minecraft/server module versions, " +
+          "the valid format_version values for every document type, and the list of " +
+          "recognised document types. format_version is an axis of its own and is " +
+          "unrelated to the game version. Call this before writing any behavior pack " +
+          "file.",
         inputSchema: { version: versionField },
         annotations: READ_ONLY,
       },

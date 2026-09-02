@@ -29,20 +29,20 @@ export const validateCommandTool: ToolModule = {
     server.registerTool(
       "validate_command",
       {
-        title: "Bedrock komutunu doğrula",
+        title: "Validate a Bedrock command",
         description:
-          "Tek bir Bedrock komut satırını resmi komut indeksine karşı doğrular: " +
-          "komut var mı, argüman sayısı tutuyor mu, seçiciler ve blok durumları " +
-          "geçerli mi. Eşleşen bir kullanım yoksa geçerli biçimleri döndürür ve " +
-          "komutun hile (cheats) gerektirip gerektirmediğini söyler. " +
-          "Kullanıcıya komut vermeden önce buradan geçir. " +
-          "`execute ... run <komut>` zincirlemesi çözülüyor: run sonrasındaki " +
-          "komut da doğrulanır, iç içe execute dahil.",
+          "Validates a single Bedrock command line against the official command " +
+          "index: does the command exist, does the argument count match, are the " +
+          "selectors and block states valid. When no overload matches it returns the " +
+          "valid usages, and it tells you whether the command requires cheats. Run " +
+          "every command through this before giving it to the user. " +
+          "`execute ... run <command>` chains are resolved: the command after run is " +
+          "validated too, including nested execute.",
         inputSchema: {
           line: z
             .string()
             .min(1)
-            .describe('Tek bir komut satırı, örn. "/give @p diamond 1". Baştaki / isteğe bağlı.'),
+            .describe('A single command line, e.g. "/give @p diamond 1". The leading / is optional.'),
           version: versionField,
         },
         annotations: READ_ONLY,

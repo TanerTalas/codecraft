@@ -115,8 +115,8 @@ function tscBin(): string {
   const resolved = require_.resolve("typescript/package.json");
   if (typeof resolved !== "string") {
     throw new Error(
-      "typescript paketi bulunamadı: require.resolve dosya yolu yerine " +
-        `${typeof resolved} döndürdü. Paketleyici araya girmiş olabilir; ` +
+      "the typescript package was not found: require.resolve returned " +
+        `${typeof resolved} instead of a file path. A bundler may have interfered; ` +
         `beklenen yol ${hoisted}`,
     );
   }
@@ -153,7 +153,7 @@ async function resolveModules(
   }
 
   if (Object.keys(paths).length === 0) {
-    throw new Error(`data/${version}/index.json içinde script modülü kaydı yok`);
+    throw new Error(`data/${version}/index.json has no script module record`);
   }
   return { version, paths, modules: chosen };
 }
@@ -261,16 +261,16 @@ export async function validateScript(
           previous.message = `${previous.message} ${line.trim()}`;
           continue;
         }
-        throw new Error(`tsc çıktısı çözümlenemedi (öncesinde tanı yok): ${line}`);
+        throw new Error(`tsc output could not be parsed (no preceding diagnostic): ${line}`);
       }
 
       const match = DIAGNOSTIC_RE.exec(line);
       if (match === null) {
-        throw new Error(`tsc çıktısı çözümlenemedi: ${line}`);
+        throw new Error(`tsc output could not be parsed: ${line}`);
       }
       const [, file, row, column, errorCode, message] = match as unknown as string[];
       if (file !== ENTRY) {
-        throw new Error(`tsc ${file} dosyasından hata verdi — doğrulama ortamı bozuk: ${message}`);
+        throw new Error(`tsc reported an error in ${file} — the validation environment is broken: ${message}`);
       }
       errors.push({
         // Kullanıcının kodu dosyaya olduğu gibi yazılıyor: satır numaraları
@@ -283,7 +283,7 @@ export async function validateScript(
     }
 
     if (exit !== 0 && errors.length === 0) {
-      throw new Error(`tsc ${exit} koduyla çıktı ama tanı üretmedi:\n${output}`);
+      throw new Error(`tsc exited with code ${exit} but produced no diagnostics:\n${output}`);
     }
 
     return { ok: errors.length === 0, version, modules, errors };
@@ -346,8 +346,8 @@ function tscExePath(): string {
   const resolved = require_.resolve(`@typescript/${pkg}/package.json`);
   if (typeof resolved !== "string") {
     throw new Error(
-      `@typescript/${pkg} bulunamadı: require.resolve dosya yolu yerine ` +
-        `${typeof resolved} döndürdü. Beklenen yol ${hoisted}`,
+      `@typescript/${pkg} was not found: require.resolve returned ` +
+        `${typeof resolved} instead of a file path. The expected path is ${hoisted}`,
     );
   }
   return join(dirname(resolved), "lib", bin);
@@ -380,7 +380,7 @@ export async function scriptRuntimeReport(): Promise<RuntimeReport> {
     const override = process.env["CODECRAFT_ROOT"];
     return (
       `ROOT=${ROOT} ${markers} ` +
-      `CODECRAFT_ROOT=${override === undefined || override.trim() === "" ? "ayarsız" : override} ` +
+      `CODECRAFT_ROOT=${override === undefined || override.trim() === "" ? "unset" : override} ` +
       `cwd=${process.cwd()} platform=${process.platform}-${process.arch} node=${process.version}`
     );
   });
@@ -392,14 +392,14 @@ export async function scriptRuntimeReport(): Promise<RuntimeReport> {
       const { size } = await stat(file);
       sizes.push(`${name}@${modules[name]} ${size} bayt`);
     }
-    return `sürüm=${version} ${sizes.join(" | ")}`;
+    return `version=${version} ${sizes.join(" | ")}`;
   });
 
   report["tmpdir"] = await check(async () => {
     const dir = await mkdtemp(join(tmpdir(), "codecraft-probe-"));
     try {
       await writeFile(join(dir, "probe.txt"), "codecraft", "utf8");
-      return `${tmpdir()} yazılabilir (${dir})`;
+      return `${tmpdir()} is writable (${dir})`;
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
@@ -426,8 +426,9 @@ export async function scriptRuntimeReport(): Promise<RuntimeReport> {
     const libDts = join(dirname(exe), "lib.d.ts");
     if (!existsSync(libDts)) {
       throw new Error(
-        `${exe} var ama yanındaki lib.d.ts yok (${libDts}). tsgo standart ` +
-          "kütüphanesiz panik eder; ikili ile lib.*.d.ts dosyaları ayrılamaz.",
+        `${exe} exists but the lib.d.ts next to it is missing (${libDts}). tsgo ` +
+          "panics without its standard library; the binary and the lib.*.d.ts files " +
+          "cannot be separated.",
       );
     }
 
@@ -436,7 +437,7 @@ export async function scriptRuntimeReport(): Promise<RuntimeReport> {
       await access(exe, constants.X_OK);
       exec = "exec izni var";
     } catch {
-      exec = "EXEC İZNİ YOK";
+      exec = "NO EXEC PERMISSION";
     }
     return `${exe} (${size} bayt) lib.d.ts var ${exec}`;
   });
@@ -446,7 +447,7 @@ export async function scriptRuntimeReport(): Promise<RuntimeReport> {
     const { code, output } = await runTsc(ROOT, ["--version"]);
     const line = output.trim().split(NEWLINE_RE)[0]?.trim() ?? "";
     if (code !== 0) {
-      throw new Error(`tsc --version ${code} koduyla çıktı: ${output.trim()}`);
+      throw new Error(`tsc --version exited with code ${code}: ${output.trim()}`);
     }
     return `${line} (exit ${code})`;
   });

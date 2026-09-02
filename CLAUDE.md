@@ -210,6 +210,28 @@ veri indeksleri geride kalır. Çakışma beklenmez, `data/` elle düzenlenmiyor
 > görünen oydu. Ayrıca çalışma dalının `index.json`'ı, cron main'e yazdığı için
 > iki toplayıcı kadar eksikti.
 
+### Dil
+
+**Modelin gördüğü her metin İngilizce.** MCP ucuna bağlanan şey bir model ve o
+model global.
+
+| Nerede | Dil |
+|---|---|
+| Araç adı, `title`, `description`, girdi şeması açıklamaları | **İngilizce** |
+| Sunucu yönergesi (`instructions`) | **İngilizce** |
+| Bulgu mesajları, `evidence`, hata metinleri | **İngilizce** |
+| JSON alan DEĞERLERİ (`validator: "skipped"` gibi) | **İngilizce** |
+| Kod yorumları, `docs/`, `README.md`, test başlıkları | Türkçe |
+
+Ayrım keyfi değil: ilk dört satır ürünün yüzeyi, son satır geliştiricinin
+defteri. Ölçüsü `packages/mcp/test/english-surface.test.ts` — kural yorumda
+değil testte duruyor, çünkü depo Türkçe yazılıyor ve Türkçe bir mesajı
+yanlışlıkla modele göndermek kolay.
+
+`check_feasibility` bir istisna taşıyor ve bilerek: **girdi** dil bağımsız
+(kullanıcı Türkçe de İngilizce de yazabilir, tetikleyiciler iki dili de
+tanıyor), **çıktı** her zaman İngilizce.
+
 ### Commit sıklığı
 
 Her tamamlanan değişiklikten sonra commit at. Birden fazla işi tek commit'te

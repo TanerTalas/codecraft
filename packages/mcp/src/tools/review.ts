@@ -32,14 +32,15 @@ export const reviewPack: ToolModule = {
     server.registerTool(
       "review_pack",
       {
-        title: "Paketin tamamını doğrula",
+        title: "Validate a whole pack",
         description:
-          "Bir behavior/resource pack'in bütün dosyalarını tek çağrıda doğrular: " +
-          "her dosyaya doğru doğrulayıcıyı uygular (JSON şeması, script derlemesi, " +
-          "komut sözdizimi) ve üstüne şemanın yakalayamadığı kontrolleri koşar — " +
-          "kimlik tutarlılığı, dosya adı türetme, manifest, doku anahtarları. " +
-          "Paketi kullanıcıya vermeden önceki SON adım bu; tek tek doğrulamaktan " +
-          "hem daha hızlı hem daha kapsamlı.",
+          "Validates every file of a behavior or resource pack in one call: it applies " +
+          "the right validator to each file (JSON schema, script compilation, command " +
+          "syntax) and then runs the checks a schema structurally cannot do — " +
+          "identifier consistency, filename rules, manifest module type, texture keys, " +
+          "component names, Molang queries and loot/trade table paths. This is the LAST " +
+          "step before handing a pack to the user, and it is both faster and broader " +
+          "than validating each file separately.",
         inputSchema: {
           files: z
             .array(
@@ -47,12 +48,12 @@ export const reviewPack: ToolModule = {
                 path: z
                   .string()
                   .min(1)
-                  .describe('Paket içi yol, örn. "behavior_packs/ruby/blocks/ruby_ore.json".'),
-                content: z.string().describe("Dosyanın tam içeriği."),
+                  .describe('Path inside the pack, e.g. "behavior_packs/ruby/blocks/ruby_ore.json".'),
+                content: z.string().describe("The complete file content."),
               }),
             )
             .min(1)
-            .describe("Paketteki dosyalar. Manifest'i de gönder — kontrollerin bir kısmı ona bakıyor."),
+            .describe("The files in the pack. Include the manifest — several checks depend on it."),
           version: versionField,
         },
         annotations: READ_ONLY,

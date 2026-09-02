@@ -51,9 +51,9 @@ function findRoot(start: string): string {
   }
 
   throw new Error(
-    `Repo kökü bulunamadı (${start} noktasından yukarı arandı). ` +
-      `Aranan işaretçiler: ${MARKERS.join(", ")}. ` +
-      "CODECRAFT_ROOT ortam değişkeniyle açıkça verilebilir.",
+    `The repository root was not found (searched upwards from ${start}). ` +
+      `Markers looked for: ${MARKERS.join(", ")}. ` +
+      "It can be set explicitly with the CODECRAFT_ROOT environment variable.",
   );
 }
 

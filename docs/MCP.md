@@ -42,7 +42,7 @@ Eklendikten sonra görülmesi gereken üç şey — tek bir "çalıştı" cümle
 |---|---|
 | Araç sayısı | **9**, eksiksiz |
 | İstemcinin sınıflandırması | **"read only tools"** — ayrı bir izin sınıfı |
-| Başlıklar | Kendi `title` alanlarımız, örn. "İstek Bedrock'ta yapılabilir mi" |
+| Başlıklar | Kendi `title` alanlarımız, örn. "Can Bedrock do this" |
 
 İkinci satır kayda değer: `annotations` uçtan uca taşınıyor ve istemci
 hepsini ayrı bir izin sınıfına koyuyor (01-09-2026'da sekiz araçla ölçüldü). Bu, bağlanmadan önce bilinmiyordu
@@ -169,9 +169,13 @@ yok — bu, bütçenin yaklaşık **%8,5**'i. Asıl sınır sonuçlarda.
 Tavan aşılırsa gövdenin sonuna şu ekleniyor:
 
 ```
-[KESİLDİ] Çıktı <n> bayttı, 24000 bayt tavanına indirildi. Yukarıdaki JSON
-eksik ve ayrıştırılamayabilir. Daha dar bir istekle tekrar çağır.
+[TRUNCATED] Output was <n> bytes and was cut to the 24000 byte cap. The JSON
+above is incomplete and may not parse. Call again with a narrower request.
 ```
+
+> Metin 02-09-2026'da İngilizceye çevrildi. Modelin gördüğü her metin
+> İngilizce; kod yorumları ve bu dokümanlar Türkçe kalıyor
+> (`CLAUDE.md`, "Dil"). Ölçüsü `packages/mcp/test/english-surface.test.ts`.
 
 Model eksik veriyle çalıştığını bilmeli, yoksa yarım JSON'u tam sanıp ona göre
 üretir. Bu son savunma hattı; asıl daraltmayı `get_schema` kendi yapıyor.

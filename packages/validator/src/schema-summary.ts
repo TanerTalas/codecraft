@@ -321,9 +321,11 @@ function walk(root: Node, path: string): { node: unknown; walked: string } {
     if (next === undefined) {
       const available = children === null ? [] : Object.keys(children).slice(0, 20);
       throw new Error(
-        `Şema yolu çözümlenemedi: "${path}". ` +
-          `"${walked.join("/") || "(kök)"}" altında "${segment}" yok. ` +
-          (available.length > 0 ? `Oradaki alanlar: ${available.join(", ")}` : "Orada alan yok."),
+        `Schema path could not be resolved: "${path}". ` +
+          `There is no "${segment}" under "${walked.join("/") || "(root)"}". ` +
+          (available.length > 0
+            ? `Fields available there: ${available.join(", ")}`
+            : "There are no fields there."),
       );
     }
     node = next;
@@ -415,7 +417,7 @@ export async function summarizeSchema(
   // resolveType sürümü döndürmüyor; katalog zaten önbellekli, ikinci çağrı bedava.
   const { version } = await loadCatalog(options.version);
   const parsed: unknown = JSON.parse(await readFile(file, "utf8"));
-  if (!isNode(parsed)) throw new Error(`Şema bir nesne değil: ${entry.schema}`);
+  if (!isNode(parsed)) throw new Error(`The schema is not an object: ${entry.schema}`);
   const root = parsed;
 
   const { node, walked } = walk(root, options.path ?? "");
@@ -475,8 +477,8 @@ function narrow(summary: SchemaSummary, limit?: number): SchemaSummary {
     ...summary,
     detail: "no-descriptions",
     truncated:
-      `${total} alanın açıklamaları çıkarıldı (bayt tavanı). ` +
-      "Bir alanın ayrıntısı için path ile in.",
+      `Descriptions were dropped for ${total} fields (byte cap). ` +
+      "Use path to descend for the detail of a single field.",
     properties: summary.properties.map(({ name, type, required, hasChildren }) => {
       const property: SchemaProperty = { name };
       if (type !== undefined) property.type = type;
@@ -491,8 +493,8 @@ function narrow(summary: SchemaSummary, limit?: number): SchemaSummary {
     ...withoutDescriptions,
     detail: "names-only",
     truncated:
-      `${total} alanın yalnızca adı listelendi (bayt tavanı). ` +
-      "Hepsi burada; ayrıntı için path ile in.",
+      `Only the names of ${total} fields are listed (byte cap). ` +
+      "All of them are here; use path to descend for detail.",
     properties: summary.properties.map(({ name, required }) =>
       required === true ? { name, required } : { name },
     ),
@@ -508,8 +510,8 @@ function narrow(summary: SchemaSummary, limit?: number): SchemaSummary {
       ...namesOnly,
       detail: "clipped",
       truncated:
-        `${total} alandan ${kept} tanesi listelendi, gerisi kesildi (bayt tavanı). ` +
-        "Daralt: path ile alt bir düğüme in.",
+        `${kept} of ${total} fields are listed, the rest were cut (byte cap). ` +
+        "Narrow it down: use path to descend into a child node.",
       properties: namesOnly.properties.slice(0, kept),
     };
     if (size(clipped) <= limit) break;

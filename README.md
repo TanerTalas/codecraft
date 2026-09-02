@@ -80,7 +80,7 @@ Bağlandıktan sonra görülmesi gereken üç şey — tek bir "çalıştı" cü
 
 - Araç sayısı **9**, eksiksiz
 - İstemcinin sınıflandırması: **"read only tools"** (ayrı bir izin sınıfı)
-- Kendi başlıklarımız, örn. *"İstek Bedrock'ta yapılabilir mi"*
+- Kendi başlıklarımız, örn. *"Can Bedrock do this"* — araç yüzeyi İngilizce
 
 Ayrıntı: [`docs/MCP.md`](docs/MCP.md)
 

@@ -54,7 +54,7 @@ export async function loadCatalog(version?: string): Promise<Catalog> {
   const mapPath = join(dir, compiled.map);
   const entries = JSON.parse(await readFile(mapPath, "utf8")) as SchemaMapEntry[];
   if (entries.length === 0) {
-    throw new Error(`${mapPath} boş — pipeline yarım kalmış`);
+    throw new Error(`${mapPath} is empty — the pipeline did not finish`);
   }
 
   const byType = new Map(entries.map((entry) => [entry.type, entry]));
@@ -106,7 +106,7 @@ export async function resolveType(type: string, version?: string): Promise<Resol
   if (catalog.byAlias.has(type)) {
     const alias = catalog.byAlias.get(type);
     if (alias === null || alias === undefined) {
-      throw new Error(`Tip "${type}" birden fazla şemaya götürüyor, tam adı verin`);
+      throw new Error(`Type "${type}" resolves to more than one schema, give the full name`);
     }
     return { entry: alias, path: schemaPath(catalog, alias) };
   }
@@ -115,8 +115,8 @@ export async function resolveType(type: string, version?: string): Promise<Resol
   if (matched !== null) return { entry: matched, path: schemaPath(catalog, matched) };
 
   throw new Error(
-    `Doküman tipi çözümlenemedi: "${type}". ` +
-      `data/blockception/schema-map.json içinde ${catalog.entries.length} tip var.`,
+    `Document type could not be resolved: "${type}". ` +
+      `data/blockception/schema-map.json lists ${catalog.entries.length} types.`,
   );
 }
 

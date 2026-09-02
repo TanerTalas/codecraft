@@ -32,29 +32,31 @@ export const getSchema: ToolModule = {
     server.registerTool(
       "get_schema",
       {
-        title: "Belge tipinin şema özeti",
+        title: "Schema summary for a document type",
         description:
-          "Bir Bedrock belge tipinin şemasını özetler: zorunlu alanlar, geçerli " +
-          "format_version değerleri, ve o düğümdeki alanların adı, tipi, açıklaması. " +
-          "Ham şema döndürmez — çok büyük. Alan sayısı fazlaysa özet daralır ve " +
-          "neyin kısaldığını truncated alanında söyler; ayrıntı için path ile alt " +
-          "bir düğüme in. Bir dosya yazmadan önce hangi alanların zorunlu olduğunu " +
-          "ve format_version'ın ne olması gerektiğini buradan öğren.",
+          "Summarises the schema of a Bedrock document type: required fields, valid " +
+          "format_version values, and the name, type and description of every field on " +
+          "that node. It does not return the raw schema — that is far too large. When a " +
+          "node has many fields the summary narrows and says what was shortened in the " +
+          "truncated field; use path to descend into a child node for full detail. Call " +
+          "this before writing a file to learn which fields are required and what " +
+          "format_version must be.",
         inputSchema: {
           type: z
             .string()
             .min(1)
             .describe(
-              'Belge tipi: "behavior/blocks", "behavior/entities", ' +
-                '"behavior/spawn_rules" gibi. Tam liste get_version_info çıktısında.',
+              'Document type, e.g. "behavior/blocks", "behavior/entities", ' +
+                '"behavior/spawn_rules". The full list is in the get_version_info output.',
             ),
           path: z
             .string()
             .optional()
             .describe(
-              'Şema içinde inilecek yol, "/" ile ayrılmış. Örn. "minecraft:entity" ya da ' +
-                '"minecraft:entity/components/minecraft:health". Verilmezse kök özeti döner. ' +
-                "Çözülemeyen yol hata verir; o düğümdeki geçerli alanlar hata mesajında.",
+              'Path to descend into the schema, separated by "/". For example ' +
+                '"minecraft:entity" or "minecraft:entity/components/minecraft:health". ' +
+                "Omit it to get the root summary. An unresolvable path returns an error " +
+                "that lists the valid fields on that node.",
             ),
           version: versionField,
         },

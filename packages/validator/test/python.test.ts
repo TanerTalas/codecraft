@@ -67,7 +67,7 @@ test("gelen tarafın messagePurpose'u gönderilen zarfta yakalanıyor", async ()
   const result = await check('envelope = {"messagePurpose": "event"}\n');
   assert.equal(result.ok, false);
   assert.equal(result.findings[0]?.kind, "protocol");
-  assert.match(result.findings[0]?.message ?? "", /GELEN/);
+  assert.match(result.findings[0]?.message ?? "", /coming FROM the game/);
 });
 
 test("ölçülmemiş messagePurpose bildiriliyor", async () => {

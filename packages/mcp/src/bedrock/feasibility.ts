@@ -73,41 +73,68 @@ const RULES: FeasibilityRule[] = [
       // "ma" alıyor ama "değmeden" "me" alıyor; yalnızca "ma" yazınca
       // sonuncusu kaçıyordu ve bunu testin kendisi yakaladı.
       /(klavye|keyboard|fare|mouse|tu[şs]a?)\w*\s*(dokun|bas|de[ğg])\w*m[ae]/i,
+
+      // İngilizce kalıplar (02-09-2026). Türkçe olanların aynı dar tutulma
+      // kuralı burada da geçerli: yalnız başına /auto/ EKLENMEDİ, çünkü
+      // "spawn a zombie automatically" tamamen yapılabilir bir istek ve
+      // yanlış engellenirdi — Türkçe tarafta "otomatik <şey>" için ölçülen
+      // dersin aynısı.
+      /auto[\s-]?click/i,
+      /\bmacro\b/i,
+      /keep\s+(clicking|mining|attacking|hitting|farming)/i,
+      /(hold|press|spam)\w*\s+(down\s+)?(the\s+)?(key|button|mouse|left|right)/i,
+      /simulate\s+\w*\s*(input|click|key|mouse|player|press)/i,
+      /without\s+(me\s+)?(touching|pressing|using|holding)\s+(the\s+)?(keyboard|mouse|key|button)/i,
     ],
     reason:
-      "@minecraft/server oyuncu girdisini simüle edemez. Girdiyi okuyabilir " +
-      "(playerButtonInput) ve kısıtlayabilir (PlayerInputPermissions), ama " +
-      "üretemez — yani \"basılı tutmuş gibi\" davranış script'le kurulamaz.",
+      "@minecraft/server cannot simulate player input. It can read input " +
+      "(playerButtonInput) and restrict it (PlayerInputPermissions), but it cannot " +
+      "produce it — so \"as if a key were held down\" behaviour cannot be built " +
+      "with a behavior pack script.",
     evidence:
-      "@minecraft/server 2.9.0 index.d.ts: SimulatedPlayer/simulateUse/sendKey yok. " +
-      "SimulatedPlayer yalnızca @minecraft/server-gametest içinde ve o modül " +
-      "data/<sürüm>/script-types/ altında bulunmuyor.",
+      "@minecraft/server 2.9.0 index.d.ts defines no SimulatedPlayer, simulateUse " +
+      "or sendKey. SimulatedPlayer exists only in @minecraft/server-gametest, which " +
+      "is published as a beta-only module and is meant for automated GameTest runs, " +
+      "not for shipped behavior packs.",
     alternative:
-      "İki yol var: (1) istenen sonucu doğrudan yapan bir behavior pack — " +
-      "örneğin \"basılı tutup kazmak\" yerine kırılan bloğun komşularını da " +
-      "kıran zincirleme kazma; (2) oyunun dışından çalışan bir otomasyon " +
-      "script'i (Python).",
+      "Two options: (1) a behavior pack that produces the desired outcome " +
+      "directly — for example, instead of \"hold the button to mine\", chain " +
+      "mining that also breaks the neighbouring blocks of the block you broke; " +
+      "(2) an automation script that runs outside the game (Python).",
   },
   {
     category: "filesystem",
     triggers: [
       /yedek(le|lesin|leme)/i,
-      /\bbackup\b/i,
+      // "backup" ve "back up" — ikisi de. Ölçüldü (02-09-2026): yalnızca
+      // birleşik hâli aranırken "back up my world every night" kaçıyordu.
+      /\bback(ing)?\s?ups?\b/i,
       /dosya(ya|dan)?\s*(yaz|kaydet|oku)/i,
       /klas[öo]r[üu]?\w*\s*(kopyala|ta[şs][ıi])/i,
       /diske\s*kaydet/i,
+
+      // İngilizce kalıplar (02-09-2026).
+      // "write the player stats to a file" — fiil ile "file" arasına araya
+      // kelimeler girebiliyor, o yüzden sınırlı bir boşluk bırakılıyor. Sınır
+      // cümle sonu işaretleriyle kapatıldı ki iki ayrı cümleyi birleştirip
+      // yanlış eşleşme üretmesin.
+      /(write|read|save|append|dump)\b[^.!?\n]{0,40}?\b(to|into|from)\s+(a|the)\s+file\b/i,
+      /(write|read|save|append)\s+(it\s+)?(to\s+)?(a\s+|the\s+)?file\b/i,
+      /save\s+(it\s+)?to\s+(the\s+)?disk/i,
+      /(copy|move|zip)\s+(the\s+)?(world\s+)?(folder|directory)/i,
+      /file\s?system\s+access/i,
     ],
     reason:
-      "Behavior pack script'i dosya sistemine erişemez. @minecraft/server " +
-      "dosya okuma/yazma API'si sunmuyor; dünya verisi yalnızca oyunun " +
-      "kendi depolama API'leri üzerinden görünür.",
+      "A behavior pack script cannot reach the file system. @minecraft/server " +
+      "exposes no file read/write API; world data is visible only through the " +
+      "game's own storage APIs.",
     evidence:
-      "@minecraft/server 2.9.0 index.d.ts: readFile/writeFile/FileSystem yok, " +
-      "require()/import() dinamik yükleme yok.",
+      "@minecraft/server 2.9.0 index.d.ts defines no readFile, writeFile or " +
+      "FileSystem, and there is no dynamic require()/import() loading.",
     alternative:
-      "Oyunun dışından çalışan bir Python script'i — dünya klasörünü işletim " +
-      "sistemi üzerinden kopyalar. Bu, aracın \"otomasyon script'i\" çıktı " +
-      "tipine giren istek.",
+      "A Python script that runs outside the game and copies the world folder " +
+      "through the operating system. This is the \"automation script\" kind of " +
+      "output; validate it with validate_python.",
   },
   {
     category: "network",
@@ -118,19 +145,27 @@ const RULES: FeasibilityRule[] = [
       /http\s*iste[ğg]i/i,
       /internet(ten|e)\s*(veri|çek|gönder)/i,
       /sunucuya\s*(veri\s*)?g[öo]nder/i,
+
+      // İngilizce kalıplar (02-09-2026). "send to a server" dar tutuldu:
+      // yalnızca dış bir uca gönderme kastediliyorsa eşleşiyor, yoksa
+      // "send a message to players on the server" yanlış engellenirdi.
+      /http\s+request/i,
+      /(call|hit|query|consume)\s+(an?\s+)?(external\s+)?api\b/i,
+      /send\s+\w*\s*(data|stats|logs?|score\w*)?\s*to\s+(an?\s+)?(external\s+|remote\s+)?(server|endpoint|url|website|api)\b/i,
+      /fetch\s+(\w+\s+)?from\s+(the\s+)?(internet|web|url|api)\b/i,
     ],
     reason:
-      "Behavior pack script'i ağ isteği yapamaz. @minecraft/server'da fetch " +
-      "veya benzeri bir HTTP istemcisi yok; @minecraft/server-net yalnızca " +
-      "Bedrock Dedicated Server'da mevcut ve v1 kapsamı tek oyunculu PC.",
+      "A behavior pack script cannot make network requests. @minecraft/server has " +
+      "no fetch or any other HTTP client; @minecraft/server-net exists only on the " +
+      "Bedrock Dedicated Server, while the scope here is single-player PC.",
     evidence:
-      "@minecraft/server 2.9.0 index.d.ts: XMLHttpRequest/WebSocket/HttpRequest " +
-      "yok. \"fetch\" dosyada yalnızca bir doküman yorumunda geçiyor, API olarak " +
-      "tanımlı değil.",
+      "@minecraft/server 2.9.0 index.d.ts defines no XMLHttpRequest, WebSocket or " +
+      "HttpRequest. The word \"fetch\" appears in the file only inside a doc " +
+      "comment; it is not defined as an API.",
     alternative:
-      "Oyunun dışından çalışan bir Python script'i. Oyun ile konuşması " +
-      "gerekiyorsa /connect (WebSocket) yolu var ama belgelenmemiş ve her " +
-      "sürümde kırılabilir.",
+      "A Python script that runs outside the game. If it needs to talk to the " +
+      "game, the /connect WebSocket route exists, but it is undocumented and can " +
+      "break in any version.",
   },
 ];
 

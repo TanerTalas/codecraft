@@ -84,6 +84,11 @@ namespace taşımıyor, yani `COMMAND_ID_RE` onu hiç yakalamıyordu.
 → "minecraft:heart_particle" 1.26.40.5 sürümünde yok        [error]
 ```
 
+> Mesaj metni o gün Türkçeydi; araç yüzeyi aynı gün İngilizceye çevrildi
+> (`CLAUDE.md`, "Dil"). Bugünkü karşılığı
+> `"minecraft:heart_particle" does not exist in version 1.26.40.5`. Ölçümün
+> kaydı olduğu için yukarıdaki satır olduğu gibi bırakıldı.
+
 Komut tamamen geçerli. Sebep: `checkCommandIdentities` her `minecraft:`
 kimliğini `lookupAny` ile arıyor ve parçacıklar **hiçbir indekste yoktu**.
 189 parçacık `particles.json` olarak indekslendi ve `ALL_KINDS` içine girdi;

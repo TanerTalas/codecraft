@@ -33,8 +33,14 @@ export const isScript = (path: string): boolean =>
 /** Tek dosyanın doğrulama sonucu. */
 export type FileResult = {
   path: string;
-  /** Hangi doğrulayıcı koştu. "atlandı": ne json ne script. */
-  validator: "json" | "script" | "atlandı";
+  /**
+   * Hangi doğrulayıcı koştu. "skipped": ne json ne script.
+   *
+   * Değer İNGİLİZCE ve bilerek: bu bir JSON alanı, modelin okuduğu şema
+   * yüzeyinin parçası (CLAUDE.md, "Modelin gördüğü her metin İngilizce").
+   * 02-09-2026'ya kadar "atlandı" yazıyordu.
+   */
+  validator: "json" | "script" | "skipped";
   ok: boolean;
   /** Çözümlenen doküman tipi ya da derlenen modül sürümleri. */
   detail: string;
@@ -68,7 +74,7 @@ export async function validateFile(file: PackFile, version: string): Promise<Fil
         path: file.path,
         validator: "json",
         ok: false,
-        detail: "tip çözümlenemedi",
+        detail: "document type could not be resolved",
         errors: [error instanceof Error ? error.message : String(error)],
       };
     }
@@ -90,7 +96,7 @@ export async function validateFile(file: PackFile, version: string): Promise<Fil
     };
   }
 
-  return { path: file.path, validator: "atlandı", ok: true, detail: "doğrulayıcı yok", errors: [] };
+  return { path: file.path, validator: "skipped", ok: true, detail: "no validator", errors: [] };
 }
 
 export async function validateFiles(
@@ -151,10 +157,10 @@ async function commandSyntaxFindings(file: PackFile, version: string): Promise<F
         check: "commandSyntax",
         severity: "error",
         path: file.path,
-        message: `satır ${i + 1}: ${error.message}`,
+        message: `line ${i + 1}: ${error.message}`,
         evidence:
-          "Mojang komut tanımı (bedrock-samples metadata/command_modules)" +
-          (result.usage.length > 0 ? `. Kullanım: ${result.usage.join(" | ")}` : ""),
+          "Mojang command definition (bedrock-samples metadata/command_modules)" +
+          (result.usage.length > 0 ? `. Usage: ${result.usage.join(" | ")}` : ""),
       });
     }
   }
@@ -219,7 +225,7 @@ export async function review(files: readonly PackFile[], version: string): Promi
     }
   }
 
-  const measured = results.some((file) => file.validator !== "atlandı");
+  const measured = results.some((file) => file.validator !== "skipped");
   const validation = measured && results.every((file) => file.ok);
   const ok = validation && findings.every((finding) => finding.severity !== "error");
 
@@ -253,9 +259,9 @@ export function buildReport(
 
   for (const finding of findings) {
     if (finding.severity !== "error") continue;
-    lines.push(`${finding.path ?? "(paket)"} [${finding.check}]:`);
+    lines.push(`${finding.path ?? "(pack)"} [${finding.check}]:`);
     lines.push(`  - ${finding.message}`);
-    lines.push(`    kanıt: ${finding.evidence}`);
+    lines.push(`    evidence: ${finding.evidence}`);
   }
 
   return lines.join("\n");

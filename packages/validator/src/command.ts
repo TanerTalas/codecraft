@@ -114,14 +114,14 @@ export async function loadCommandIndex(version?: string): Promise<CommandIndex> 
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
     throw new Error(
-      `data/${resolved}/${file} yok — komut doğrulaması için ` +
-        "`npm run pipeline:commands` koşulmalı",
+      `data/${resolved}/${file} is missing — run \`npm run pipeline:commands\` ` +
+        "to build the command index",
     );
   }
 
   const loaded = JSON.parse(text) as CommandIndex;
   if (Object.keys(loaded.commands).length === 0) {
-    throw new Error(`data/${resolved}/${file} boş — pipeline yarım kalmış`);
+    throw new Error(`data/${resolved}/${file} is empty — the pipeline did not finish`);
   }
   indexes.set(resolved, loaded);
   return loaded;
@@ -244,23 +244,23 @@ const COMPARE = new Set(["<", "<=", "=", ">=", ">"]);
 function checkStructural(type: string, value: string): string | null | undefined {
   switch (type) {
     case "INT":
-      return INT_RE.test(value) ? null : "tam sayı bekleniyor";
+      return INT_RE.test(value) ? null : "expected an integer";
     case "WILDCARDINT":
-      return value === "*" || INT_RE.test(value) ? null : 'tam sayı ya da "*" bekleniyor';
+      return value === "*" || INT_RE.test(value) ? null : 'expected an integer or "*"';
     case "POSITION":
     case "POSITION_FLOAT":
       return COORD_RE.test(value)
         ? null
         : "koordinat bekleniyor (12, ~, ~-3, ^5 gibi)";
     case "FULLINTEGERRANGE":
-      return RANGE_RE.test(value) ? null : "sayı ya da aralık bekleniyor (3, 1..5, ..5)";
+      return RANGE_RE.test(value) ? null : "expected a number or a range (3, 1..5, ..5)";
     case "SELECTION":
     case "WILDCARDSELECTION":
       return checkSelector(value);
     case "OPERATOR":
-      return OPERATORS.has(value) ? null : `işleç bekleniyor (${[...OPERATORS].join(" ")})`;
+      return OPERATORS.has(value) ? null : `expected an operator (${[...OPERATORS].join(" ")})`;
     case "COMPAREOPERATOR":
-      return COMPARE.has(value) ? null : `karşılaştırma işleci bekleniyor (${[...COMPARE].join(" ")})`;
+      return COMPARE.has(value) ? null : `expected a comparison operator (${[...COMPARE].join(" ")})`;
     case "postfix_t":
     case "postfix_s":
     case "postfix_d":
@@ -268,7 +268,7 @@ function checkStructural(type: string, value: string): string | null | undefined
       const suffix = type.slice("postfix_".length);
       return new RegExp(`^\\d+(?:\\.\\d+)?${suffix}$`).test(value)
         ? null
-        : `sayı ve "${suffix}" eki bekleniyor (20${suffix} gibi)`;
+        : `expected a number with the "${suffix}" suffix (like 20${suffix})`;
     }
     default:
       // Henüz ayrıştırılmayan tip: kabul et, uydurma hata üretme.
@@ -295,13 +295,13 @@ function checkSelector(value: string): string | null {
   const letter = head.slice(1);
   if (!(SELECTOR_LETTERS as readonly string[]).includes(letter)) {
     return (
-      `geçersiz seçici "${head}" — kabul edilenler: ` +
+      `invalid selector "${head}" — accepted selectors: ` +
       SELECTOR_LETTERS.map((l) => `@${l}`).join(", ")
     );
   }
   if (bracket === -1) return null;
 
-  if (!value.endsWith("]")) return "seçici filtresi ']' ile kapanmalı";
+  if (!value.endsWith("]")) return "the selector filter must close with ']'";
   return null;
 }
 
@@ -367,7 +367,7 @@ export type BlockStateParse =
 export function parseBlockStates(text: string): BlockStateParse {
   const trimmed = text.trim();
   if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) {
-    return { ok: false, reason: 'blok durumu ["ad":değer] biçiminde olmalı' };
+    return { ok: false, reason: 'a block state must be written as ["name":value]' };
   }
 
   const inner = trimmed.slice(1, -1).trim();
@@ -381,11 +381,11 @@ export function parseBlockStates(text: string): BlockStateParse {
     // ("minecraft:cardinal_direction"), o yüzden ayraç kapanış tırnağından
     // sonra aranıyor — baştan aramak adı ikiye bölerdi.
     if (!part.startsWith('"')) {
-      return { ok: false, reason: `durum adı tırnak içinde olmalı: ${part}` };
+      return { ok: false, reason: `the state name must be quoted: ${part}` };
     }
     const closing = part.indexOf('"', 1);
     if (closing === -1) {
-      return { ok: false, reason: `durum adının tırnağı kapanmamış: ${part}` };
+      return { ok: false, reason: `the state name has an unclosed quote: ${part}` };
     }
 
     const rest = part.slice(closing + 1).trim();
@@ -393,8 +393,8 @@ export function parseBlockStates(text: string): BlockStateParse {
       return {
         ok: false,
         reason: rest.startsWith("=")
-          ? 'ayraç iki nokta olmalı, eşittir değil: ["ad":değer]'
-          : 'her durum bir değer almalı: ["ad":değer]',
+          ? 'the separator must be a colon, not an equals sign: ["name":value]'
+          : 'every state needs a value: ["name":value]',
       };
     }
 
@@ -449,8 +449,8 @@ async function checkBlockStates(
   // ÖLÇÜLMEDİ. Üçüncü bir kanal olabilir; ölçülmeden kural yazılmıyor.
   if (INT_RE.test(raw.trim())) {
     return (
-      `eski veri değeri "${raw.trim()}" sohbette kabul edilmiyor; ` +
-      'blok durumu kullan: ["ad":değer]'
+      `the legacy data value "${raw.trim()}" is not accepted in chat; ` +
+      'use a block state instead: ["name":value]'
     );
   }
 
@@ -468,13 +468,13 @@ async function checkBlockStates(
     if (property === undefined) {
       const known = Object.keys(states);
       return known.length === 0
-        ? `"${blockId}" bloğunun hiç durumu yok, "${key}" verilemez`
-        : `"${key}" ${blockId} bloğunun durumu değil. Durumları: ${known.join(", ")}`;
+        ? `the block "${blockId}" has no states, so "${key}" cannot be given`
+        : `"${key}" is not a state of ${blockId}. Its states are: ${known.join(", ")}`;
     }
 
     const allowed = property.values.map((v) => String(v));
     if (!allowed.includes(value)) {
-      return `"${key}" için "${value}" geçerli değil. Kabul edilenler: ${allowed.join(", ")}`;
+      return `"${value}" is not valid for "${key}". Accepted values: ${allowed.join(", ")}`;
     }
   }
 
@@ -661,7 +661,7 @@ async function tryOverload(
       if (param.optional) continue;
       errors.push({
         kind: "arity",
-        message: `eksik argüman: ${param.name} (${param.type})`,
+        message: `missing argument: ${param.name} (${param.type})`,
         index: cursor + 1,
       });
       return { consumed: cursor, errors };
@@ -674,7 +674,7 @@ async function tryOverload(
     if (slice.length < width) {
       errors.push({
         kind: "arity",
-        message: `${param.name} için ${width} değer bekleniyor, ${slice.length} verildi`,
+        message: `${param.name} expects ${width} values, ${slice.length} given`,
         index: cursor + 1,
       });
       return { consumed: cursor, errors };
@@ -745,7 +745,7 @@ async function tryOverload(
       errors.push({
         kind: "argument",
         message:
-          `"${value}" ${param.name} için geçerli değil. Kabul edilenler: ${shown}` +
+          `"${value}" is not valid for ${param.name}. Accepted values: ${shown}` +
           (values.length > 8 ? ` … (+${values.length - 8})` : ""),
         index: cursor + 1,
       });
@@ -773,7 +773,7 @@ async function tryOverload(
   if (cursor < args.length) {
     errors.push({
       kind: "arity",
-      message: `fazladan argüman: "${args.slice(cursor).join(" ")}"`,
+      message: `extra arguments: "${args.slice(cursor).join(" ")}"`,
       index: cursor + 1,
     });
   }
@@ -805,7 +805,7 @@ export async function validateCommand(
       ok: false,
       command: null,
       requiresCheats: false,
-      errors: [{ kind: "syntax", message: "komut boş", index: null }],
+      errors: [{ kind: "syntax", message: "the command is empty", index: null }],
       usage: [],
     };
   }
@@ -818,7 +818,7 @@ export async function validateCommand(
       ok: false,
       command: null,
       requiresCheats: false,
-      errors: [{ kind: "syntax", message: "komut adı okunamadı", index: null }],
+      errors: [{ kind: "syntax", message: "the command name could not be read", index: null }],
       usage: [],
     };
   }

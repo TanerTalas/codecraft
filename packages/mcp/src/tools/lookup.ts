@@ -28,19 +28,20 @@ export const lookupId: ToolModule = {
     server.registerTool(
       "lookup_id",
       {
-        title: "Vanilla kimliği doğrula",
+        title: "Verify a vanilla identifier",
         description:
-          "Bir minecraft: kimliğinin bu sürümde gerçekten var olup olmadığını ve " +
-          "hangi türde olduğunu söyler (blok, eşya, varlık, biyom, efekt, büyü, " +
-          "feature, boyut, kamera ön ayarı, potion). Blok çıkarsa geçerli blok " +
-          "durumlarını ve alabilecekleri değerleri de döndürür. Namespace'siz " +
-          "verilen kimlik minecraft: sayılır. Hatırladığın bir kimliği yazmadan " +
-          "önce buradan doğrula — var olmayan kimlik oyunda sessizce çalışmıyor.",
+          "Tells you whether a minecraft: identifier actually exists in this version " +
+          "and what kind it is (block, item, entity, biome, effect, enchantment, " +
+          "feature, dimension, camera preset, particle, potion). For a block it also " +
+          "returns the valid block states and the values they accept. An identifier " +
+          "without a namespace is treated as minecraft:. Verify every identifier here " +
+          "before writing it — an identifier that does not exist fails silently in " +
+          "the game.",
         inputSchema: {
           id: z
             .string()
             .min(1)
-            .describe('Kimlik, örn. "minecraft:blaze" ya da namespace\'siz "blaze".'),
+            .describe('Identifier, e.g. "minecraft:blaze" or just "blaze" without the namespace.'),
           version: versionField,
         },
         annotations: READ_ONLY,

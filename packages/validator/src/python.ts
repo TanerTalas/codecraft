@@ -84,7 +84,7 @@ const SYNTAX_PROBE = [
   "try:",
   "    compile(src, '<script>', 'exec')",
   "except SyntaxError as e:",
-  "    print('%d\\t%s' % (e.lineno or 0, (e.msg or 'sözdizimi hatası').replace('\\t', ' ')))",
+  "    print('%d\\t%s' % (e.lineno or 0, (e.msg or 'syntax error').replace('\\t', ' ')))",
   "    sys.exit(1)",
   "except ValueError as e:",
   "    print('0\\t%s' % str(e).replace('\\t', ' '))",
@@ -185,8 +185,8 @@ export async function validatePython(
   const python = await findPython();
   if (python === null) {
     syntaxSkipped =
-      "Python yorumlayıcısı bulunamadı (python3, python, py denendi). " +
-      "Sözdizimi kontrol EDİLMEDİ; diğer eksenler koştu.";
+      "No Python interpreter was found (tried python3, python, py). " +
+      "Syntax was NOT checked; the other axes did run.";
   } else {
     try {
       const result = await run(python, ["-c", SYNTAX_PROBE], code);
@@ -194,7 +194,7 @@ export async function validatePython(
       if (result.code !== 0) {
         const [rawLine, ...rest] = result.stdout.trim().split("\t");
         const line = Number(rawLine);
-        const message = rest.join("\t") || result.stderr.trim() || "sözdizimi hatası";
+        const message = rest.join("\t") || result.stderr.trim() || "syntax error";
         findings.push({
           kind: "syntax",
           line: Number.isFinite(line) && line > 0 ? line : null,
@@ -203,7 +203,7 @@ export async function validatePython(
         });
       }
     } catch (error) {
-      syntaxSkipped = `Python çalıştırılamadı: ${error instanceof Error ? error.message : String(error)}`;
+      syntaxSkipped = `Python could not be run: ${error instanceof Error ? error.message : String(error)}`;
     }
   }
 
@@ -235,10 +235,10 @@ export async function validatePython(
       kind: "protocol",
       line: at,
       message: known
-        ? `messagePurpose "${purpose}" oyundan GELEN mesajlarda görülüyor, ` +
-          `gönderilen bir zarfta değil. Gönderilecek olanlar: ${[...MESSAGE_PURPOSES].join(", ")}`
-        : `messagePurpose "${purpose}" ölçülmüş değerlerden biri değil. ` +
-          `Ölçülenler: ${[...MESSAGE_PURPOSES].join(", ")} (docs/WEBSOCKET.md)`,
+        ? `messagePurpose "${purpose}" appears on messages coming FROM the game, ` +
+          `not in an envelope you send. Sendable values: ${[...MESSAGE_PURPOSES].join(", ")}`
+        : `messagePurpose "${purpose}" is not one of the measured values. ` +
+          `Measured: ${[...MESSAGE_PURPOSES].join(", ")} (docs/WEBSOCKET.md)`,
       evidence: evidenceOf(code, at),
     });
   }
@@ -272,7 +272,7 @@ export async function pythonRuntimeReport(): Promise<Record<string, PythonRuntim
     return {
       python: {
         ok: false,
-        detail: `bulunamadı — denenenler: ${PYTHON_CANDIDATES.join(", ")}`,
+        detail: `not found — tried: ${PYTHON_CANDIDATES.join(", ")}`,
         ms,
       },
     };
@@ -286,7 +286,7 @@ export async function pythonRuntimeReport(): Promise<Record<string, PythonRuntim
     python: { ok: true, detail: `${python} — ${version.stdout.trim() || version.stderr.trim()}`, ms },
     compile: {
       ok: probe.code === 0,
-      detail: probe.code === 0 ? "geçerli kaynak kabul edildi" : probe.stdout.trim() || probe.stderr.trim(),
+      detail: probe.code === 0 ? "valid source accepted" : probe.stdout.trim() || probe.stderr.trim(),
       ms: Math.round(performance.now() - probeStarted),
     },
   };

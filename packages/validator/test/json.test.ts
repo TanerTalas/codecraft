@@ -104,7 +104,7 @@ test("tip çözümleme: kanonik ad, kısaltma ve dosya yolu aynı şemaya gider"
 });
 
 test("tip çözümleme: bilinmeyen tip sessizce bir şemaya düşmez", async () => {
-  await assert.rejects(() => resolveType("behavior/uydurma"), /çözümlenemedi/);
+  await assert.rejects(() => resolveType("behavior/uydurma"), /could not be resolved/);
 });
 
 test("her tipin şeması derleniyor", async () => {

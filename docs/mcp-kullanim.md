@@ -83,6 +83,11 @@ adresle eklendi ve araç izinleri ekranında göründü.
 | İstemcinin sınıflandırması | **"read only tools: 8"** — sekizin sekizi de salt okunur |
 | Başlıklar | Bizim `title` alanlarımız görünüyor: "İstek Bedrock'ta yapılabilir mi" (`check_feasibility`), "Belge tipinin şema özeti" (`get_schema`) |
 
+> **Başlıklar 02-09-2026'da İngilizceye çevrildi** — yukarıdaki satır o günkü
+> ölçümün kaydı, bugünkü yüzey değil. Aynı araçlar artık "Can Bedrock do this"
+> ve "Schema summary for a document type" diye görünüyor. Gerekçe: MCP'ye
+> bağlanan model global (`CLAUDE.md`, "Dil").
+
 İkinci satır kayda değer: `annotations: {readOnlyHint: true, openWorldHint:
 false}` (`packages/mcp/src/tool.ts`) uçtan uca taşınıyor. M3'te kendi
 testimizle ölçülmüştü; burada gerçek istemcinin onu okuyup **ayrı bir izin

@@ -228,7 +228,7 @@ test("D: worldLoad'da sendMessage yoksa bulgu yok", () => {
 test("D: bilinmeyen kalıp adı sessizce atlanmıyor", () => {
   assert.throws(
     () => checkPatterns(WELCOME_WRONG, { only: ["uydurma-kalip"] }),
-    /Bilinmeyen kalıp/,
+    /Unknown pattern/,
   );
   assert.ok(patternNames().includes("welcome-on-player-spawn"));
 });

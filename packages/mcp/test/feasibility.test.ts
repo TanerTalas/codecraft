@@ -20,7 +20,7 @@ test("girdi simülasyonu isteği yakalanır ve alternatif önerilir", () => {
   assert.equal(result.blocked, true);
   if (!result.blocked) return;
   assert.equal(result.category, "input-simulation");
-  assert.match(result.alternative, /zincirleme|komşu/i);
+  assert.match(result.alternative, /chain mining|neighbouring/i);
 });
 
 test("dosya sistemi isteği yakalanır", () => {

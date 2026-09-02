@@ -66,9 +66,9 @@ test("çözülemeyen yol hata veriyor, en yakına düşmüyor", async () => {
   await assert.rejects(
     () => summarizeSchema("behavior/blocks", { path: "minecraft:block/yokboyleseey" }),
     (error: Error) => {
-      assert.match(error.message, /Şema yolu çözümlenemedi/);
+      assert.match(error.message, /Schema path could not be resolved/);
       // Hata eyleme dönüştürülebilir olmalı: orada ne olduğunu söylesin.
-      assert.match(error.message, /Oradaki alanlar:/);
+      assert.match(error.message, /Fields available there:/);
       return true;
     },
   );
@@ -114,7 +114,7 @@ test("tavan çok küçükse en son basamağa iniyor ve gizlemiyor", async () => 
 
   assert.equal(summary.detail, "clipped");
   assert.ok(summary.properties.length < 390, "Kesilmemiş");
-  assert.match(summary.truncated ?? "", /390 alandan/);
+  assert.match(summary.truncated ?? "", /of 390 fields/);
 });
 
 test("tavan verilmezse tam özet dönüyor", async () => {

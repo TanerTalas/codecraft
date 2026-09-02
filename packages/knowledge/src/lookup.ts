@@ -184,7 +184,7 @@ export async function blockStates(
   for (const name of names) {
     const property = index.properties[name];
     if (property === undefined) {
-      throw new Error(`blocks.json tutarsız: "${normalized}" durumu "${name}" tanımsız`);
+      throw new Error(`blocks.json is inconsistent: state "${name}" of "${normalized}" is undefined`);
     }
     states[name] = property;
   }

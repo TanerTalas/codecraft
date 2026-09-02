@@ -163,7 +163,7 @@ test("get_schema çözülemeyen yolda eyleme dönüştürülebilir hata veriyor"
     });
     assert.equal(isError, true);
     // "Bulunamadı" yetmez; orada NE olduğu yazmalı ki model düzeltebilsin.
-    assert.match(text, /Oradaki alanlar:.*components/s);
+    assert.match(text, /Fields available there:.*components/s);
   } finally {
     await client.close();
   }
@@ -321,7 +321,7 @@ test("review_pack bütün dosyaları tek çağrıda doğruluyor", async () => {
     assert.equal(result.measured, true, "Hiçbir dosya ölçülemedi");
     assert.equal(result.files.length, 2);
     // Sürüm verilmedi; undefined sızmamalı, çözülmüş olmalı.
-    assert.ok(result.files.every((file) => file.validator !== "atlandı"), "Dosyalar atlandı");
+    assert.ok(result.files.every((file) => file.validator !== "skipped"), "Dosyalar atlandı");
   } finally {
     await client.close();
   }

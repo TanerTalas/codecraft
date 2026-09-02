@@ -119,7 +119,7 @@ const cache = new Map<string, DataVersion>();
 export async function resolveVersion(requested?: string): Promise<DataVersion> {
   const versions = await listDataVersions();
   if (versions.length === 0) {
-    throw new Error("data/ içinde hiç sürüm klasörü yok — pipeline koşmamış");
+    throw new Error("data/ contains no version folder — the pipeline has not run");
   }
 
   let version: string;
@@ -128,14 +128,14 @@ export async function resolveVersion(requested?: string): Promise<DataVersion> {
   } else {
     if (!VERSION_DIR_RE.test(requested)) {
       throw new Error(
-        `Geçersiz sürüm biçimi: "${requested}". Oyun sürümü bekleniyor ` +
-          "(1.26.40 veya 1.26.40.5), pazarlama numarası değil (26.40).",
+        `Invalid version format: "${requested}". A game version is expected ` +
+          "(1.26.40 or 1.26.40.5), not a marketing number (26.40).",
       );
     }
     const matches = versions.filter((candidate) => isPrefixOf(requested, candidate));
     if (matches.length === 0) {
       throw new Error(
-        `Sürüm "${requested}" data/ içinde yok. Mevcut: ${versions.join(", ")}`,
+        `Version "${requested}" is not present under data/. Available: ${versions.join(", ")}`,
       );
     }
     version = matches.at(-1) as string;
@@ -148,7 +148,7 @@ export async function resolveVersion(requested?: string): Promise<DataVersion> {
   const index = JSON.parse(await readFile(join(dir, "index.json"), "utf8")) as DataIndex;
   if (index.version !== version) {
     throw new Error(
-      `data/${version}/index.json içindeki sürüm "${index.version}" — klasör adıyla uyuşmuyor`,
+      `data/${version}/index.json declares version "${index.version}" — it does not match the folder name`,
     );
   }
 

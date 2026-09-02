@@ -22,18 +22,19 @@ export const checkFeasibilityTool: ToolModule = {
     server.registerTool(
       "check_feasibility",
       {
-        title: "İstek Bedrock'ta yapılabilir mi",
+        title: "Can Bedrock do this",
         description:
-          "Kullanıcının isteğini behavior pack ve @minecraft/server API'siyle " +
-          "yapılıp yapılamayacağına göre denetler. Engellenirse neden yapılamadığını, " +
-          "kanıtını ve önerilen alternatifi döndürür. Kod veya JSON üretmeden ÖNCE " +
-          "çağır: girdi simülasyonu, dosya sistemi ve ağ erişimi Bedrock script " +
-          "API'sinde yok, ve bunlar en sık uydurulan API'ler.",
+          "Checks whether a user request can be built with a behavior pack and the " +
+          "@minecraft/server API. If it is blocked, returns why, the evidence behind " +
+          "that rule, and a workable alternative. Call this BEFORE writing any code or " +
+          "JSON: input simulation, file system access and network access do not exist " +
+          "in the Bedrock scripting API, and those are the most commonly hallucinated " +
+          "APIs.",
         inputSchema: {
           request: z
             .string()
             .min(1)
-            .describe("Kullanıcının isteği, kendi cümlesiyle. Türkçe veya İngilizce."),
+            .describe("The user request in their own words. Any language is accepted."),
         },
         annotations: READ_ONLY,
       },

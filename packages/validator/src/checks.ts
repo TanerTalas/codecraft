@@ -197,8 +197,8 @@ function parseJsonDocuments(files: readonly PackFile[]): {
         check: "identity",
         severity: "warning",
         path: file.path,
-        message: "JSON ayrıştırılamadı, kontrol bu dosyada koşmadı",
-        evidence: "validateJson aynı hatayı ayrıntısıyla raporluyor",
+        message: "JSON could not be parsed, so this check did not run on the file",
+        evidence: "validateJson reports the same error in detail",
       });
     }
   }
@@ -321,8 +321,8 @@ export async function checkIdentities(
         severity: custom ? "error" : "warning",
         path: reference.path,
         message: custom
-          ? `${reference.where}: "${id}" hiçbir feature dosyasında tanımlı değil`
-          : `${reference.where}: "${id}" doğrulanamadı — vanilla feature indeksi eksik`,
+          ? `${reference.where}: "${id}" is not defined in any feature file`
+          : `${reference.where}: "${id}" could not be verified — the vanilla feature index is incomplete`,
         evidence: `${LIMITS} · A ("No definition found for feature")`,
       });
       continue;
@@ -336,8 +336,8 @@ export async function checkIdentities(
         severity: "error",
         path: reference.path,
         message:
-          `${reference.where}: "${id}" pakette tanımlı değil. ` +
-          "minecraft: dışı bir kimliği ancak paketin kendisi tanımlayabilir",
+          `${reference.where}: "${id}" is not defined in this pack. ` +
+          "An identifier outside the minecraft: namespace can only be defined by the pack itself",
         evidence: `${LIMITS} · A ("The Item … is missing or invalid")`,
       });
       continue;
@@ -353,7 +353,7 @@ export async function checkIdentities(
       check: "identity",
       severity: "error",
       path: reference.path,
-      message: `${reference.where}: "${id}" ${found.version} sürümünde yok`,
+      message: `${reference.where}: "${id}" does not exist in version ${found.version}`,
       evidence: `${LIMITS} · A`,
     });
   }
@@ -427,10 +427,10 @@ export function checkManifest(files: readonly PackFile[]): CheckResult {
           severity: "error",
           path: file.path,
           message:
-            `/modules/${i}/type: "javascript" 1.16 öncesinden kalma bir modül ` +
-            'tipi. @minecraft/server 2.x için "script" olmalı ve yanında ' +
-            '"language": "javascript" bulunmalı',
-          evidence: `${LIMITS} · E (oyunda ölçüldü: paket listede hiç görünmedi)`,
+            `/modules/${i}/type: "javascript" is a module type left over from ` +
+            'before 1.16. For @minecraft/server 2.x it must be "script", with ' +
+            '"language": "javascript" alongside it',
+          evidence: `${LIMITS} · E (measured in game: the pack never appeared in the list)`,
         });
         continue;
       }
@@ -442,7 +442,7 @@ export function checkManifest(files: readonly PackFile[]): CheckResult {
           check: "manifest",
           severity: "error",
           path: file.path,
-          message: `/modules/${i}: script modülünde "language": "javascript" eksik`,
+          message: `/modules/${i}: the script module is missing "language": "javascript"`,
           evidence: `${LIMITS} · E`,
         });
       }
@@ -451,7 +451,7 @@ export function checkManifest(files: readonly PackFile[]): CheckResult {
           check: "manifest",
           severity: "error",
           path: file.path,
-          message: `/modules/${i}: script modülünde "entry" eksik`,
+          message: `/modules/${i}: the script module is missing "entry"`,
           evidence: `${LIMITS} · E`,
         });
       }
@@ -479,8 +479,8 @@ export function checkFileNames(files: readonly PackFile[]): CheckResult {
       severity: "error",
       path: file.path,
       message:
-        `feature rule dosya adı "${actual}", identifier "${id}" ` +
-        `olduğu için "${expected}.json" olmalı`,
+        `the feature rule file is named "${actual}" but, because its identifier ` +
+        `is "${id}", it must be "${expected}.json"`,
       evidence: `${LIMITS} · B ("does not match filename")`,
     });
   }
@@ -708,8 +708,8 @@ export async function checkAssets(
         check: "asset",
         severity: "warning",
         path: file.path,
-        message: `doku anahtarı "${key}" ${atlas} atlasında değil, ${other} atlasında`,
-        evidence: `${LIMITS} · C · data/<sürüm>/textures.json`,
+        message: `texture key "${key}" is not in the ${atlas} atlas, it is in the ${other} atlas`,
+        evidence: `${LIMITS} · C · data/<version>/textures.json`,
       });
       continue;
     }
@@ -720,10 +720,10 @@ export async function checkAssets(
       severity: "error",
       path: file.path,
       message:
-        `doku anahtarı "${key}" ne vanilla atlasında ne de paketin kendi ` +
-        "terrain_texture.json / item_texture.json dosyasında tanımlı. Ya var " +
-        "olan bir vanilla anahtarı kullan ya da anahtarı kaynak paketinde tanımla" +
-        (near.length === 0 ? "" : `. Yakın anahtarlar: ${near.join(", ")}`),
+        `texture key "${key}" is defined neither in the vanilla atlas nor in ` +
+        "this pack's own terrain_texture.json / item_texture.json. Either use an " +
+        "existing vanilla key or define the key in a resource pack" +
+        (near.length === 0 ? "" : `. Nearest keys: ${near.join(", ")}`),
       evidence: `${LIMITS} · C ("Missing referenced asset")`,
     });
   }
@@ -785,8 +785,8 @@ export async function checkCommandIdentities(
         severity: "warning",
         ...(options.path === undefined ? {} : { path: options.path }),
         message:
-          `"${id}" komut metninden doğrulanamadı — minecraft: dışı bir kimliği ` +
-          "hangi paketin tanımladığı komuta bakarak bilinemez",
+          `"${id}" could not be verified from the command text — for an identifier ` +
+          "outside the minecraft: namespace there is no way to tell which pack defines it",
         evidence: `${LIMITS} · A`,
       });
       continue;
@@ -799,8 +799,8 @@ export async function checkCommandIdentities(
       check: "commandIdentity",
       severity: "error",
       ...(options.path === undefined ? {} : { path: options.path }),
-      message: `"${id}" ${found.version} sürümünde yok`,
-      evidence: `${LIMITS} · A (komut metnine uygulanan kimlik kontrolü)`,
+      message: `"${id}" does not exist in version ${found.version}`,
+      evidence: `${LIMITS} · A (the identifier check applied to command text)`,
     });
   }
 
@@ -855,22 +855,24 @@ const WORLD_LOAD = /\bworldLoad\s*\.\s*subscribe\s*\(/g;
 const PATTERNS: Pattern[] = [
   {
     name: "welcome-on-player-spawn",
-    evidence: `${LIMITS} · D (oyunda ölçüldü: olay tetikleniyor, mesaj kimseye ulaşmıyor)`,
+    evidence: `${LIMITS} · D (measured in game: the event fires, the message reaches nobody)`,
     guidance:
-      "Oyuncuya gösterilecek mesajı worldLoad aboneliğine yazma: olay " +
-      "tetikleniyor ama o anda dünyada mesajı alacak oyuncu yok. " +
+      "Do not put a message meant for players inside a worldLoad subscription: " +
+      "the event does fire, but at that moment there is no player in the world " +
+      "to receive it. " +
       "world.afterEvents.playerSpawn kullan ve event.player.sendMessage ile " +
-      "yaz; yalnızca ilk girişte istenen bir mesajsa event.initialSpawn ile " +
-      "ayıkla.",
+      "instead; if the message is only meant for the first join, filter with " +
+      "event.initialSpawn.",
     find: (code) => {
       WORLD_LOAD.lastIndex = 0;
       for (let match = WORLD_LOAD.exec(code); match !== null; match = WORLD_LOAD.exec(code)) {
         const body = argumentText(code, match.index + match[0].length - 1);
         if (/\bsendMessage\s*\(/.test(body)) {
           return (
-            "worldLoad aboneliğinde sendMessage var: olay tetikleniyor ama o anda " +
-            "mesajı alacak oyuncu yok. Karşılama mesajı playerSpawn ile yazılmalı " +
-            "(event.initialSpawn kontrolüyle)"
+            "sendMessage inside a worldLoad subscription: the event fires, but at " +
+            "that moment there is no player to receive the message. A welcome " +
+            "message must be sent from playerSpawn instead (guarded by " +
+            "event.initialSpawn)"
           );
         }
       }
@@ -920,7 +922,7 @@ export function checkPatterns(code: string, options: PatternOptions = {}): Check
           const pattern = PATTERNS.find((candidate) => candidate.name === name);
           if (pattern === undefined) {
             throw new Error(
-              `Bilinmeyen kalıp: "${name}". Tanınanlar: ${patternNames().join(", ")}`,
+              `Unknown pattern: "${name}". Known patterns: ${patternNames().join(", ")}`,
             );
           }
           return pattern;
@@ -1005,8 +1007,8 @@ export async function checkMolang(
           path: file.path,
           message: `${path || "/"} :: ${finding.message}`,
           evidence:
-            "data/<sürüm>/molang.json (bedrock-samples metadata/molang_modules)" +
-            ` · ${LIMITS} · F — oyunda henüz ölçülmedi, o yüzden warning`,
+            "data/<version>/molang.json (bedrock-samples metadata/molang_modules)" +
+            ` · ${LIMITS} · F — not yet measured in game, hence a warning`,
         });
       }
     }
@@ -1112,9 +1114,9 @@ export async function checkReferences(
       severity: "warning",
       path: file.path,
       message:
-        `${where} :: ${label} "${table}" ne vanilla'da var ne de pakette. ` +
-        "Var olan bir vanilla tablosuna işaret et ya da dosyayı pakete ekle",
-      evidence: `${LIMITS} · A (yol referansı) · data/<sürüm>/references.json`,
+        `${where} :: ${label} "${table}" exists neither in vanilla nor in this pack. ` +
+        "Point at an existing vanilla table or add the file to the pack",
+      evidence: `${LIMITS} · A (path reference) · data/<version>/references.json`,
     });
   }
 
@@ -1158,9 +1160,9 @@ export async function checkSounds(
       severity: "warning",
       ...(options.path === undefined ? {} : { path: options.path }),
       message:
-        `satır ${line}: ses olayı "${sound}" bu sürümde tanımlı değil` +
-        (near.length === 0 ? "" : `. Yakın adlar: ${near.map((n) => n.replace(/_/g, ".")).join(", ")}`),
-      evidence: "data/<sürüm>/references.json (resource_pack/sounds/sound_definitions.json)",
+        `line ${line}: sound event "${sound}" is not defined in this version` +
+        (near.length === 0 ? "" : `. Nearest names: ${near.map((n) => n.replace(/_/g, ".")).join(", ")}`),
+      evidence: "data/<version>/references.json (resource_pack/sounds/sound_definitions.json)",
     });
   }
 
@@ -1290,9 +1292,9 @@ export async function checkComponents(
       severity: "warning",
       path: file.path,
       message:
-        `${where} :: "${name}" bu sürümde tanımlı bir ${root} bileşeni değil` +
-        (near.length === 0 ? "" : `. Yakın adlar: ${near.map((n) => `minecraft:${n}`).join(", ")}`),
-      evidence: `${LIMITS} · G · data/<sürüm>/components.json (metadata/doc_modules)`,
+        `${where} :: "${name}" is not a ${root} component defined in this version` +
+        (near.length === 0 ? "" : `. Nearest names: ${near.map((n) => `minecraft:${n}`).join(", ")}`),
+      evidence: `${LIMITS} · G · data/<version>/components.json (metadata/doc_modules)`,
     });
   }
 

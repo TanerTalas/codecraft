@@ -167,8 +167,8 @@ export function scanMolang(expression: string): MolangCall[] {
 
 /** `min`/`max` aralığını insan diline çevirir. */
 function arityText(entry: MolangEntry): string {
-  if (entry.max === undefined) return `en az ${entry.min}`;
-  if (entry.max === entry.min) return `tam ${entry.min}`;
+  if (entry.max === undefined) return `at least ${entry.min}`;
+  if (entry.max === entry.min) return `exactly ${entry.min}`;
   return `${entry.min}-${entry.max}`;
 }
 
@@ -212,15 +212,15 @@ export async function validateMolang(
 
     if (entry === undefined) {
       const near = nearestNames(call.name, Object.keys(table));
-      const label = bucket === "math" ? "matematik fonksiyonu" : "sorgu";
+      const label = bucket === "math" ? "math function" : "query";
       findings.push({
         kind: bucket === "math" ? "unknown-math" : "unknown-query",
         call,
         message:
-          `${label} "${call.raw}" bu sürümde tanımlı değil` +
+          `${label} "${call.raw}" is not defined in this version` +
           (near.length === 0
             ? ""
-            : `. Yakın adlar: ${near.map((n) => `${call.prefix}.${n}`).join(", ")}`),
+            : `. Nearest names: ${near.map((n) => `${call.prefix}.${n}`).join(", ")}`),
       });
       continue;
     }
@@ -229,7 +229,7 @@ export async function validateMolang(
       findings.push({
         kind: "removed-query",
         call,
-        message: `"${call.raw}" ${entry.until} sürümünden sonra kaldırılmış`,
+        message: `"${call.raw}" was removed after version ${entry.until}`,
       });
     }
 
@@ -240,7 +240,7 @@ export async function validateMolang(
         kind: "arity",
         call,
         message:
-          `"${call.raw}" ${arityText(entry)} argüman alır, ${call.args} verilmiş`,
+          `"${call.raw}" takes ${arityText(entry)} arguments, ${call.args} given`,
       });
     }
   }
