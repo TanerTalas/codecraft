@@ -95,6 +95,30 @@
         "@minecraft/server-ui": {
           "stable": "2.1.0",
           "beta": "2.2.0-beta"
+        },
+        "@minecraft/server-gametest": {
+          "stable": null,
+          "beta": "1.0.0-beta"
+        },
+        "@minecraft/server-net": {
+          "stable": null,
+          "beta": "1.0.0-beta"
+        },
+        "@minecraft/server-admin": {
+          "stable": null,
+          "beta": "1.0.0-beta"
+        },
+        "@minecraft/server-graphics": {
+          "stable": null,
+          "beta": "1.0.0-beta"
+        },
+        "@minecraft/diagnostics": {
+          "stable": null,
+          "beta": "1.0.0-beta"
+        },
+        "@minecraft/debug-utilities": {
+          "stable": null,
+          "beta": "1.0.0-beta"
         }
       }
     },

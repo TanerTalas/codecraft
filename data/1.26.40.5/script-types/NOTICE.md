@@ -10,6 +10,12 @@ Dosya elle düzenlenmez, `pipeline/src/script-types.ts` üretir.
 | `@minecraft/server` | 2.10.0-beta | `2.10.0-beta.1.26.40-stable` | MIT |
 | `@minecraft/server-ui` | 2.1.0 | `2.1.0` | MIT |
 | `@minecraft/server-ui` | 2.2.0-beta | `2.2.0-beta.1.26.40-stable` | MIT |
+| `@minecraft/server-gametest` | 1.0.0-beta | `1.0.0-beta.1.26.40-stable` | MIT |
+| `@minecraft/server-net` | 1.0.0-beta | `1.0.0-beta.1.26.40-stable` | MIT |
+| `@minecraft/server-admin` | 1.0.0-beta | `1.0.0-beta.1.26.40-stable` | MIT |
+| `@minecraft/server-graphics` | 1.0.0-beta | `1.0.0-beta.1.26.40-stable` | MIT |
+| `@minecraft/diagnostics` | 1.0.0-beta | `1.0.0-beta.1.26.40-stable` | MIT |
+| `@minecraft/debug-utilities` | 1.0.0-beta | `1.0.0-beta.1.26.40-stable` | MIT |
 
 Klasör adları **modül** sürümüdür, oyun sürümü değil (bkz. `CLAUDE.md`
 sürüm tablosu). npm sürümü sütunu, beta kanalında oyun sürümünün etikete

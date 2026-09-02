@@ -172,3 +172,49 @@ world.afterEvents.playerSpawn.subscribe(() => {
   // Açıklama satırı asıl bilgiyi taşıyor, mesaja eklenmeli.
   assert.match(result.errors.map((e) => e.message).join(" "), /no call signatures/i);
 });
+
+// --------------------------------------------------------------------------
+// Beta-only modüller (02-09-2026'da eklendi)
+// --------------------------------------------------------------------------
+
+test("@minecraft/server-net beta kanalında çözümleniyor", async () => {
+  // Eklenmeden önce bu kod "Cannot find module" alıyordu — yani araç var olan
+  // bir API'ye "yok" diyordu. bedrock-samples bu modülü yalnızca beta olarak
+  // listeliyor, npm'de de yalnızca beta yayınlanıyor (ölçüldü 02-09-2026).
+  const result = await validateScript(
+    `import { http } from "@minecraft/server-net";\nconsole.warn(typeof http);`,
+    { channel: "beta" },
+  );
+  assert.equal(result.ok, true, JSON.stringify(result.errors));
+  assert.equal(result.modules["@minecraft/server-net"], "1.0.0-beta");
+});
+
+test("beta-only modül kararlı kanalda çözümlenmiyor", async () => {
+  // Kontrol grubu: modül eklendi diye her kanalda görünmüyor. Kararlı kanalda
+  // "yok" demek doğru cevap, kaynağın söylediği şey bu.
+  const result = await validateScript(`import { http } from "@minecraft/server-net";`, {
+    channel: "stable",
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.modules["@minecraft/server-net"], undefined);
+});
+
+test("beta-only modüller kararlı kanaldaki sıradan script'i bozmuyor", async () => {
+  // Önceki hâlde resolveModules kullanılabilir sürümü olmayan modülde throw
+  // ediyordu: altı beta-only modül eklendiği anda KARARLI kanaldaki her
+  // doğrulama, o modülleri hiç kullanmayanlar dahil patlardı.
+  const result = await validateScript(
+    `import { world } from "@minecraft/server";\nworld.sendMessage("selam");`,
+    { channel: "stable" },
+  );
+  assert.equal(result.ok, true, JSON.stringify(result.errors));
+  assert.equal(result.modules["@minecraft/server"], "2.9.0");
+});
+
+test("@minecraft/server-gametest beta kanalında çözümleniyor", async () => {
+  const result = await validateScript(
+    `import * as gametest from "@minecraft/server-gametest";\nconsole.warn(typeof gametest.register);`,
+    { channel: "beta" },
+  );
+  assert.equal(result.ok, true, JSON.stringify(result.errors));
+});

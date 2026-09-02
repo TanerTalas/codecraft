@@ -138,9 +138,16 @@ async function resolveModules(
   const chosen: Record<string, string> = {};
   for (const [name, available] of Object.entries(modules)) {
     const release = (channel === "beta" ? available.beta : null) ?? available.stable;
-    if (release === null) {
-      throw new Error(`${name}: data/${version} içinde kullanılabilir sürüm yok`);
-    }
+    // Bu kanalda sürümü olmayan modül ATLANIR, hata değil. 02-09-2026'da altı
+    // beta-only modül eklendi (server-net, server-admin, gametest, graphics,
+    // diagnostics, debug-utilities); önceki hâlde burada throw vardı ve o
+    // altısı eklendiği anda KARARLI kanaldaki her script doğrulaması, o
+    // modülleri hiç kullanmayanlar dahil, patlardı.
+    //
+    // Atlamanın sonucu doğru: kararlı kanalda `@minecraft/server-net` import
+    // eden bir script "Cannot find module" alır ve bu doğru cevaptır —
+    // bedrock-samples o modülü yalnızca beta olarak listeliyor.
+    if (release === null) continue;
     chosen[name] = release;
     paths[name] = join(dir, path, name, release, "index.d.ts");
   }

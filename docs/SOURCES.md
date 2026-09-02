@@ -29,7 +29,7 @@ public yapıldı (aşağıda, "Ne dışarı çıkıyor").
 | `Mojang/bedrock-samples` → `metadata/molang_modules/` | Molang: 315 sorgu, 61 matematik fonksiyonu (02-09-2026) | Minecraft EULA | Türetilmiş indeks (açıklama metinleri atılır) |
 | `Mojang/bedrock-schemas` | Resmi şema deposu | — | **Bugün kullanılmıyor.** İncelenecek; lisansı ve içeriği henüz kaynağa karşı doğrulanmadı |
 | `Blockception/Minecraft-bedrock-json-schemas` | Doğrulamanın kullandığı şemalar | **BSD-3-Clause**, atıf zorunlu | Birebir kopya + `LICENSE` + türetilmiş `schema-map.json` |
-| `@minecraft/common`, `@minecraft/server`, `@minecraft/server-ui` (npm) | Script tip tanımları | **MIT** (`npm view @minecraft/server license` ile doğrulandı) | Birebir `index.d.ts` + `package.json` |
+| `@minecraft/*` (npm, 9 paket) | Script tip tanımları | **MIT** (paketlerin `package.json` beyanı) | Birebir `index.d.ts` + `package.json` |
 | `MicrosoftDocs/minecraft-creator` | Sürüm notları | **CC-BY-4.0** (29-08-2026, GitHub API ile doğrulandı) | Birebir kopya + atıf başlığı |
 
 ### `Mojang/bedrock-samples` — açık lisanslı DEĞİL
@@ -197,13 +197,44 @@ kaynağın kesişimiyle kuruluyor (`pipeline/src/script-types.ts`):
 
 İkisi kesişmezse pipeline durur. Yakın bir sürüme düşmek yok.
 
-1.26.40.5 için sonuç (29-08-2026'da doğrulandı):
+1.26.40.5 için sonuç (29-08-2026'da doğrulandı, 02-09-2026'da genişletildi):
 
 | Paket | Kararlı | Beta |
 |---|---|---|
 | `@minecraft/common` | 1.3.0 | yok |
 | `@minecraft/server` | 2.9.0 | 2.10.0-beta |
 | `@minecraft/server-ui` | 2.1.0 | 2.2.0-beta |
+| `@minecraft/server-gametest` | **yok** | 1.0.0-beta |
+| `@minecraft/server-net` | **yok** | 1.0.0-beta |
+| `@minecraft/server-admin` | **yok** | 1.0.0-beta |
+| `@minecraft/server-graphics` | **yok** | 1.0.0-beta |
+| `@minecraft/diagnostics` | **yok** | 1.0.0-beta |
+| `@minecraft/debug-utilities` | **yok** | 1.0.0-beta |
+
+**Alt altı 02-09-2026'da eklendi.** Öncesinde bunlardan birini import eden bir
+script `validate_script`'te `Cannot find module` alıyordu — araç var olan bir
+API'ye "yok" diyordu, yani tam olarak önlemek için var olduğu hata sınıfını
+kendisi üretiyordu.
+
+İki şey ölçüldü, ikisi de tahmin değil:
+
+1. **Dosya adı eşlemesi farklı.** Mojang tip bilgisini `server` ve `server-ui`
+   için `-bindings` ekli dosyalarda tutuyor (`server-bindings_2.9.0.json`),
+   bu altısı için eklemiyor (`server-net_1.0.0-beta.json`). Ağaçtan okundu.
+2. **Altısı da yalnızca beta.** Hem bedrock-samples yalnızca
+   `<ad>_1.0.0-beta.json` listeliyor hem npm yalnızca beta yayınlıyor. Yani
+   kararlı kanalda görünmemeleri bir eksiklik değil, kaynağın söylediği şey.
+   `validate_script` kararlı kanalda bu modüllere hâlâ "yok" diyor ve bu doğru
+   cevap; `channel: "beta"` ile çözümleniyorlar.
+
+`pickModuleVersions` "kararlı sürüm yoksa dur" diyordu; o kural gevşetildi.
+Kararlı VE beta'nın ikisinin birden yokluğu hâlâ hata — o zaman dosya adı
+biçimi değişmiş demektir.
+
+Aynı sebeple `resolveModules` (script.ts) artık kanalda sürümü olmayan modülü
+**atlıyor**, throw etmiyor. Eski hâlde altı beta-only modül eklendiği anda
+kararlı kanaldaki HER script doğrulaması patlardı — o modülleri hiç
+kullanmayanlar dahil. Test olarak sabitlendi.
 
 Ek kanıt: npm'de `2.9.0` ile `2.10.0-beta.1.26.40-stable` aynı saniyede
 yayınlanmış (2026-08-04T17:57).

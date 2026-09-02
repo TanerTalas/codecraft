@@ -50,13 +50,31 @@ const PACKAGES = [
   { npm: "@minecraft/common", metadata: "common" },
   { npm: "@minecraft/server", metadata: "server-bindings" },
   { npm: "@minecraft/server-ui", metadata: "server-ui-bindings" },
+  // Aşağıdaki altısı 02-09-2026'da eklendi. Öncesinde bunlardan birini import
+  // eden bir script `validate_script`'te "Cannot find module" ile düşüyordu —
+  // yani araç var olan bir API'ye "yok" diyordu, tam olarak önlemek için var
+  // olduğu hata sınıfı.
+  //
+  // Dosya adı eşlemesi ilk üçünden FARKLI: Mojang tip bilgisini `server` ve
+  // `server-ui` için "-bindings" ekli dosyalarda tutuyor, bu altısı için
+  // eklemiyor. Ağaçtan doğrulandı, tahmin edilmedi.
+  //
+  // Altısı da npm'de YALNIZCA beta olarak yayınlanıyor ve bedrock-samples da
+  // yalnızca `<ad>_1.0.0-beta.json` listeliyor (ölçüldü 02-09-2026). Yani
+  // kararlı kanalda görünmemeleri bir eksiklik değil, kaynağın söylediği şey.
+  { npm: "@minecraft/server-gametest", metadata: "server-gametest" },
+  { npm: "@minecraft/server-net", metadata: "server-net" },
+  { npm: "@minecraft/server-admin", metadata: "server-admin" },
+  { npm: "@minecraft/server-graphics", metadata: "server-graphics" },
+  { npm: "@minecraft/diagnostics", metadata: "diagnostics" },
+  { npm: "@minecraft/debug-utilities", metadata: "debug-utilities" },
 ] as const;
 
 type NpmPackument = {
   versions?: Record<string, { dist?: { tarball?: string; integrity?: string } }>;
 };
 
-export type ModuleVersions = { stable: string; beta: string | null };
+export type ModuleVersions = { stable: string | null; beta: string | null };
 type NoticeEntry = { npm: string; moduleVersion: string; npmVersion: string; license: string };
 export type ScriptTypesResult = {
   modules: Record<string, ModuleVersions>;
@@ -88,10 +106,20 @@ function pickModuleVersions(paths: readonly string[], metadataName: string): Mod
   }
 
   const sorted = [...found].sort(compareVersions);
-  const stable = sorted.filter((v) => !v.includes("-")).at(-1);
+  const stable = sorted.filter((v) => !v.includes("-")).at(-1) ?? null;
   const beta = sorted.filter((v) => v.endsWith("-beta")).at(-1) ?? null;
-  if (stable === undefined) {
-    throw new Error(`${metadataName}: kararlı modül sürümü yok, sadece: ${sorted.join(", ")}`);
+
+  // Kararlı sürümün YOKLUĞU bir hata değil — 02-09-2026'da eklenen altı modül
+  // (server-net, server-admin, gametest, graphics, diagnostics,
+  // debug-utilities) yalnızca beta olarak yayınlanıyor. Önce burada throw
+  // vardı ve o altısı eklendiği anda pipeline'ı durdururdu.
+  //
+  // İkisinin birden yokluğu hâlâ hata: o zaman dosya adı biçimi değişmiş
+  // demektir ve sessizce atlamak veriyi eksik bırakırdı.
+  if (stable === null && beta === null) {
+    throw new Error(
+      `${metadataName}: ne kararlı ne beta sürüm çözülebildi, bulunanlar: ${sorted.join(", ")}`,
+    );
   }
   return { stable, beta };
 }
@@ -238,7 +266,9 @@ runIfMain(import.meta.url, async () => {
   const { version } = await resolveVersion();
   const result = await collectScriptTypes(version);
   for (const [npm, versions] of Object.entries(result.modules)) {
-    console.log(`  ${npm}: kararlı ${versions.stable}, beta ${versions.beta ?? "yok"}`);
+    console.log(
+      `  ${npm}: kararlı ${versions.stable ?? "yok"}, beta ${versions.beta ?? "yok"}`,
+    );
   }
   console.log(
     `script tipleri -> data/${version}/script-types/ — ` +
