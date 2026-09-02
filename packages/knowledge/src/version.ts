@@ -39,6 +39,13 @@ export type DataIndex = {
      */
     mojangSchemas: { index: string; files: number };
     /**
+     * Molang sorgu ve matematik fonksiyonu indeksi.
+     *
+     * Opsiyonel: bu adım eklenmeden önce üretilmiş sürüm klasörleri hâlâ
+     * okunabilmeli.
+     */
+    molang?: { file: string; queries: number; math: number; removed: number };
+    /**
      * Mojang'ın makine okunur komut tanımından türetilen indeks.
      *
      * Opsiyonel: pipeline bu adımı kazanmadan önce üretilmiş sürüm klasörleri

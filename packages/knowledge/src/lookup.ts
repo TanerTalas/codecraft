@@ -217,3 +217,37 @@ export async function textureKeys(
   idCache.set(`${path}#${atlas}`, keys);
   return keys;
 }
+
+/** Molang sorgusu / matematik fonksiyonu tanımı — `data/<sürüm>/molang.json`. */
+export type MolangEntry = {
+  min: number;
+  /** Yoksa üst sınır yok (değişken argümanlı). */
+  max?: number;
+  returns?: string;
+  sets?: string[];
+  since?: string;
+  /** Doluysa bu sürümden sonra kaldırılmış. */
+  until?: string;
+};
+
+export type MolangIndex = {
+  queries: Record<string, MolangEntry>;
+  math: Record<string, MolangEntry>;
+};
+
+const MOLANG_FILE = "molang.json";
+
+/**
+ * Bu sürümde tanımlı Molang sorguları ve matematik fonksiyonları.
+ *
+ * Anahtarlar önek atılmış ve küçük harfe indirilmiş: `query.Is_Baby` ve
+ * `q.is_baby` aynı kayda düşer. Molang büyük/küçük harfe duyarsız
+ * (`metadata/doc_modules/molang.json`, "Case Sensitivity").
+ *
+ * Molang entity bileşenlerinde, animasyon ve render denetleyicilerinde düz
+ * string olarak duruyor; ne JSON şeması ne `tsc` içine bakıyor.
+ */
+export async function molangIndex(options: { version?: string } = {}): Promise<MolangIndex> {
+  const { dir } = await resolveVersion(options.version);
+  return readIndex<MolangIndex>(dir, MOLANG_FILE);
+}

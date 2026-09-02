@@ -2,7 +2,12 @@
 
 Doğrulama oturduğunda şu soru açıktı: şemadan ve `tsc`'den geçen içerik oyunda
 gerçekten çalışıyor mu? 30-08-2026'da ölçüldü. Cevap: **çoğu çalışıyor, ama
-dört ayrı sınıf hata doğrulamadan geçip oyunda patlıyor.**
+beş ayrı sınıf hata doğrulamadan geçip oyunda patlıyor** (A–E).
+
+> Bu cümle önce "dört" diyordu ve doğruydu — E sınıfı aynı gün, ayrı bir
+> ölçümde bulundu. 02-09-2026'da bir **altıncısı** eklendi (F · Molang) ama o
+> diğerlerinden farklı: oyunda değil, kaynağın kendisinde bulundu ve henüz
+> `ContentLog` kanıtı yok. Sayıyı beşte tutan ayrım bu.
 
 Bu doküman o sınıfları kaydeder. `docs/SOURCES.md` verinin nereden geldiğini
 anlatır; burası doğrulamanın nerede bittiğini anlatır. Araçların hangi
@@ -107,7 +112,7 @@ Kaynak makine okunur ve doğrulandı — `Mojang/bedrock-samples@main` içinde
 |---|---|
 | `pipeline/src/textures.ts` | `data/<sürüm>/textures.json` üretiyor |
 | `packages/validator/src/checks.ts` → `checkAssets` | ölçüyor |
-| `packages/core/src/prompt.ts` | önceden anlatıyor |
+| ~~`packages/core/src/prompt.ts`~~ | ~~önceden anlatıyor~~ — dosya asistan katmanıyla birlikte silindi (02-09-2026). Aynı bilgi bugün `get_version_info` bağlamı üzerinden veriliyor |
 
 **Prompt'a yazılmayan bir kural var ve sebebi ölçüm.** İlk yazılacak cümle
 "anahtar, kimliğin namespace'siz hâlidir" idi. Veriye bakıldı ve **yanlış**
@@ -246,6 +251,74 @@ arıyor, bulamıyor, sebebini bilmiyor.
 → `checkManifest` ölçüyor ve doğru tipi söylüyor; aynı ölçüm
 `get_version_info` bağlamı üzerinden önceden de anlatılıyor.
 
+## F · Molang — string'in içi hiçbir doğrulayıcının görmediği yer
+
+Yukarıdaki beş sınıf gerçek oyunda ölçülerek yazıldı. **Bu altıncısı
+ölçülmedi** ve o yüzden ayrı duruyor; aşağıda ne bilindiği ve ne
+bilinmediği ayrı ayrı yazılı.
+
+Molang, entity bileşenlerinde, animasyon ve render denetleyicilerinde **düz
+string** olarak duruyor:
+
+```json
+{ "transitions": [ { "walk": "query.is_babyy && v.speed > 0.1" } ] }
+```
+
+JSON şeması bu alanın **string olduğunu** doğruluyor, içeriğini değil.
+`tsc` bu dosyayı hiç görmüyor. Yani yanlış yazılmış bir sorgu adı
+doğrulamanın her ayağından geçiyor — A–E ile aynı yapıdaki bir boşluk.
+
+**Kaynak makine okunur ve doğrulandı** (02-09-2026):
+`bedrock-samples/metadata/molang_modules/mojang-molang-queries.json` içinde
+**315 sorgu ve 61 matematik fonksiyonu** var, her biri `min_args`, `max_args`
+ve `return_type` ile. `data/<sürüm>/molang.json` bundan türetiliyor.
+
+Kaynaktan okunan üç kural doğrudan doğrulayıcıyı biçimlendirdi:
+
+| Kural | Nereden | Doğrulayıcıda karşılığı |
+|---|---|---|
+| Büyük/küçük harfe **duyarsız** | `doc_modules/molang.json`, "Case Sensitivity" | Karşılaştırma küçük harf üzerinden |
+| `q.`→`query.`, `v.`→`variable.`, `t.`→`temp.`, `c.`→`context.` | aynı dosya, "Alias Mapping" | `q.is_baby` geçerli sayılıyor |
+| Argümansız sorgu **parantezsiz** yazılır | aynı dosya, "Query Functions" | Parantez yokluğu = 0 argüman |
+
+Takma adları çözmemek en pahalı hata olurdu: `q.` ile yazılmış her geçerli
+ifadeye uydurma hata üretilirdi.
+
+**Ölçülen bir sürpriz:** 315 sorgunun **217'sinde `max_args` yok.** İlk okuyuş
+"max = min" idi; veriye bakıldı ve yanlış çıktı — `max_args` taşıyan 98 kaydın
+18'inde `max != min`, yani alan gerçekten bir üst sınır ve yokluğu "üst sınır
+yok" demek. Ters kurulsaydı değişken argümanlı her sorguya "fazla argüman"
+denirdi.
+
+Ayrıca **6 sorgu kaldırılmış** (`version_ranges[].last_version`) — örneğin
+`query.block_property` 1.20.10'dan sonra yok. Bunlar `until` alanıyla
+saklanıyor ve kullanıldıklarında sürüm numarasıyla birlikte raporlanıyor.
+
+### Neden hepsi warning
+
+`checkMolang`'ın ürettiği bulguların hepsi **warning**, hiçbiri error. İki
+sebep, ikisi de bu depoda yazılı:
+
+1. **Oyunda ölçülmedi.** A–E'nin hepsinin `ContentLog` kanıtı var, bunun yok.
+   Bu depoda "çalışıyor" ile "ölçüldü" ayrı şeyler.
+2. **Veri sürümü kurulu oyunun gerisinde kalabiliyor** (`docs/SOURCES.md`,
+   "Çekme notları"). Yeni eklenmiş bir sorguya "yok" demek yanlış pozitif
+   olurdu — ve yanlış pozitifin neden pahalı olduğu C bölümünde ölçüldü
+   (01-09-2026): aracın kendi hataları modele *"bu aracın hatalarını yok say"*
+   öğretiyor.
+
+**Error'a yükseltmek için gereken şey belli ve tek:** bilerek bozulmuş bir
+Molang ifadesi taşıyan bir paketi oyuna yükleyip `ContentLog`'a bakmak.
+Ölçülene kadar warning kalacak.
+
+### Ne ölçülmüyor
+
+Tam bir Molang ayrıştırıcısı **yazılmadı** ve yazılmayacak. Ölçülmeyenler:
+operatör önceliği, tip uyumu (`bool` beklenen yere `float`), `->` zinciri,
+`loop`/`for_each` gövdesi, `variable.`/`temp.`/`context.` adlarının o bağlamda
+tanımlı olup olmadığı. Sonuncusu yapısal olarak ölçülemez: o adlar kullanıcı
+tanımlı, kapalı bir küme yok.
+
 ---
 
 ## Özet
@@ -257,6 +330,7 @@ arıyor, bulamıyor, sebebini bilmiyor.
 | C · asset referansı | Hayır | `checkAssets` | **Bulunuyor** — vanilla doku indeksine karşı |
 | D · geçerli ama yanlış | **Yapısal olarak hayır** | `checkPatterns` | **Bulunuyor + önceden anlatılıyor** — `patternGuide()` aynı tablodan besliyor |
 | E · yüklenmeyen manifest | Hayır — eski tip listede | `checkManifest` | **Bulunuyor** — yanlış modül tipi rapor ediliyor |
+| F · Molang | Hayır — string'in içine bakmıyor | `checkMolang` | **Bulunuyor, warning** — oyunda henüz ölçülmedi |
 
 > **Dördüncü sütun 02-09-2026'da düzeltildi.** Önce B ve E için "düzeltiliyor"
 > yazıyordu ve doğruydu: bir `normalize()` fonksiyonu dosya adını ve manifest
@@ -264,9 +338,15 @@ arıyor, bulamıyor, sebebini bilmiyor.
 > silindi. Bugün araçlar **buluyor ve söylüyor**, yazmıyor — uç salt okunur.
 > Düzeltme çağıranın işi.
 
-Üç kontrol de `packages/validator/src/checks.ts` içinde, saf fonksiyon, model
-çağrısı yok. `review_pack` hepsini birden koşuyor; `packages/validator/test/`
-altındaki fixture'lar tek tek ölçüyor.
+Kontrollerin hepsi `packages/validator/src/checks.ts` içinde (Molang'ın
+gövdesi `packages/validator/src/molang.ts`), saf fonksiyon, model çağrısı yok.
+`review_pack` hepsini birden koşuyor; `packages/validator/test/` altındaki
+fixture'lar tek tek ölçüyor.
+
+> **F satırı diğerlerinden farklı okunmalı.** A–E "oyunda patladığı görüldü,
+> sonra kontrol yazıldı" sırasıyla geldi. F ters yönden geldi: kaynak makine
+> okunur olduğu için kontrol önce yazıldı, oyun ölçümü henüz yapılmadı. Bu
+> yüzden warning ve bu yüzden ayrı yazılıyor.
 
 İki sınır kayda geçmeli:
 

@@ -26,7 +26,6 @@
       "ref": "main"
     },
     "mojangSchemas": {
-      "path": "schemas",
       "index": "schemas-index.json",
       "files": 1313
     },
@@ -60,6 +59,12 @@
         "postfix_s",
         "postfix_t"
       ]
+    },
+    "molang": {
+      "file": "molang.json",
+      "queries": 315,
+      "math": 61,
+      "removed": 6
     },
     "blockception": {
       "repo": "Blockception/Minecraft-bedrock-json-schemas",

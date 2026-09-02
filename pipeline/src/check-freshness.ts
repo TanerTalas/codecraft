@@ -21,6 +21,7 @@ type IndexFile = {
   version?: string;
   sources?: {
     mojangSchemas?: { index?: string; files?: number };
+    molang?: { file?: string; queries?: number; math?: number };
     blockception?: {
       path?: string;
       files?: number;
@@ -61,7 +62,7 @@ export async function checkFreshness(): Promise<string[]> {
     problems.push(`data/${version}/index.json içindeki sürüm "${index.version}" — klasör adıyla uyuşmuyor`);
   }
 
-  const { mojangSchemas, blockception, scriptTypes } = index.sources ?? {};
+  const { mojangSchemas, molang, blockception, scriptTypes } = index.sources ?? {};
 
   if (blockception?.path === undefined || blockception.files === undefined) {
     problems.push("index.json içinde blockception kaydı eksik");
@@ -114,6 +115,17 @@ export async function checkFreshness(): Promise<string[]> {
       await access(join(dir, compiled.map));
     } catch {
       problems.push(`blockception tip haritası yok — ${join(dir, compiled.map)}`);
+    }
+  }
+
+  // Molang indeksi: yeni bir dogrulama ekseni, sessizce eksik kalmamali.
+  if (molang?.file === undefined || molang.queries === undefined) {
+    problems.push("index.json içinde molang kaydı eksik");
+  } else {
+    try {
+      await access(join(dir, molang.file));
+    } catch {
+      problems.push(`molang indeksi yok — ${join(dir, molang.file)}`);
     }
   }
 

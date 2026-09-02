@@ -15,6 +15,7 @@ export {
   blockStates,
   lookup,
   lookupAny,
+  molangIndex,
   normalizeId,
   textureKeys,
 } from "./lookup.ts";
@@ -26,5 +27,7 @@ export type {
   Kind,
   LookupOptions,
   LookupResult,
+  MolangEntry,
+  MolangIndex,
   TextureAtlas,
 } from "./lookup.ts";

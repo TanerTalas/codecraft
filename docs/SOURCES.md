@@ -14,9 +14,10 @@ Bir veriyi **yeniden yayınlamak** ile ondan **türetilmiş olgu üretmek** fark
 | Örnek | Mojang'ın şema dosyasının içeriği | `blocks.json` içindeki 1415 id |
 | Bizde | Mümkün olduğunca kaçınılır | Varsayılan |
 
-Pipeline mümkün olan her yerde kendi indeksini üretir. Birebir kopyalanan tek
-izinli küme Blockception'ın şemaları; Mojang'ınkiler `data/` içinde duruyor ama
-**dışarı hiç servis edilmiyor** (aşağıda, "Ne dışarı çıkıyor").
+Pipeline mümkün olan her yerde kendi indeksini üretir. Git'e giren tek birebir
+kopya kümesi Blockception'ın şemaları (BSD-3-Clause, atıfla). Mojang'ınkiler
+02-09-2026'dan beri `pipeline/raw/` altında ve git'e girmiyor — repo o gün
+public yapıldı (aşağıda, "Ne dışarı çıkıyor").
 
 ## Kaynaklar
 
@@ -25,6 +26,7 @@ izinli küme Blockception'ın şemaları; Mojang'ınkiler `data/` içinde duruyo
 | `Mojang/bedrock-samples` → `vanilladata_modules` | Blok, entity, item tanımları | Minecraft EULA, **tüm hakları saklı** | Türetilmiş indeks (id listeleri, blok durumları) |
 | `Mojang/bedrock-samples` → `metadata/json_schemas/` | Mojang'ın kendi JSON şemaları | Minecraft EULA | Birebir kopya **git dışında** (`pipeline/raw/`); `data/` içine yalnızca türetilmiş `schemas-index.json` |
 | `Mojang/bedrock-samples` → `metadata/command_modules/` | Komut grameri: 83 komut, 270 aşırı yükleme, 225 enum | Minecraft EULA | Türetilmiş indeks (açıklama metinleri atılır) |
+| `Mojang/bedrock-samples` → `metadata/molang_modules/` | Molang: 315 sorgu, 61 matematik fonksiyonu (02-09-2026) | Minecraft EULA | Türetilmiş indeks (açıklama metinleri atılır) |
 | `Mojang/bedrock-schemas` | Resmi şema deposu | — | **Bugün kullanılmıyor.** İncelenecek; lisansı ve içeriği henüz kaynağa karşı doğrulanmadı |
 | `Blockception/Minecraft-bedrock-json-schemas` | Doğrulamanın kullandığı şemalar | **BSD-3-Clause**, atıf zorunlu | Birebir kopya + `LICENSE` + türetilmiş `schema-map.json` |
 | `@minecraft/common`, `@minecraft/server`, `@minecraft/server-ui` (npm) | Script tip tanımları | **MIT** (`npm view @minecraft/server license` ile doğrulandı) | Birebir `index.d.ts` + `package.json` |

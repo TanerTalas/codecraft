@@ -1,0 +1,2874 @@
+{
+  "queries": {
+    "above_top_solid": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "world_gen"
+      ]
+    },
+    "actor_count": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "all": {
+      "min": 3,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "all_animations_finished": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "all_tags": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "tags"
+      ]
+    },
+    "anger_level": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "anim_time": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "any": {
+      "min": 3,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "any_animation_finished": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "any_tag": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "tags"
+      ]
+    },
+    "approx_eq": {
+      "min": 2,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "armor_color_slot": {
+      "min": 2,
+      "max": 2,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "armor_damage_slot": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "armor_material_slot": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "armor_texture_slot": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "average_frame_time": {
+      "min": 0,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "base_swing_duration": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "block_face": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "block_has_all_tags": {
+      "min": 4,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "block_has_any_tag": {
+      "min": 4,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "block_neighbor_has_all_tags": {
+      "min": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "block_neighbor_has_any_tag": {
+      "min": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "block_property": {
+      "min": 1,
+      "max": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "until": "1.20.10",
+      "sets": [
+        "default"
+      ]
+    },
+    "block_state": {
+      "min": 1,
+      "max": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "blocking": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "body_x_rotation": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "body_y_rotation": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "bone_aabb": {
+      "min": 1,
+      "max": 1,
+      "returns": "matrix",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "bone_orientation_matrix": {
+      "min": 1,
+      "max": 2,
+      "returns": "matrix",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "bone_orientation_trs": {
+      "min": 1,
+      "max": 2,
+      "returns": "matrix",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "bone_origin": {
+      "min": 1,
+      "max": 1,
+      "returns": "matrix",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "bone_rotation": {
+      "min": 1,
+      "max": 1,
+      "returns": "matrix",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "camera_distance_range_lerp": {
+      "min": 2,
+      "max": 2,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "camera_rotation": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "can_climb": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "can_damage_nearby_mobs": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "can_dash": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "can_fly": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "can_power_jump": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "can_swim": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "can_walk": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "cape_flap_amount": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "cardinal_block_face_placed_on": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "cardinal_facing": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "cardinal_facing_2d": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "cardinal_player_facing": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "client_max_render_distance": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "client_memory_tier": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "combine_entities": {
+      "min": 0,
+      "returns": "actor_array",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "cooldown_time": {
+      "min": 1,
+      "max": 2,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "cooldown_time_remaining": {
+      "min": 0,
+      "max": 2,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "count": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "current_squish_value": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "dash_cooldown_progress": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "until": "1.20.40",
+      "sets": [
+        "default"
+      ]
+    },
+    "day": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "death_ticks": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "debug_output": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "delta_time": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "distance_from_camera": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "effect_emitter_count": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "effect_particle_count": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "entity_biome_has_all_tags": {
+      "min": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "entity_biome_has_any_identifier": {
+      "min": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "entity_biome_has_any_tags": {
+      "min": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "equipment_count": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "equipped_item_all_tags": {
+      "min": 0,
+      "max": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "equipped_item_any_tag": {
+      "min": 0,
+      "max": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "equipped_item_is_attachable": {
+      "min": 1,
+      "max": 1,
+      "returns": "actor_single",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "eye_target_x_rotation": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "eye_target_y_rotation": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "facing_target_to_range_attack": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "frame_alpha": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "fuse_time": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "get_actor_info_id": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "get_animation_frame": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "get_default_bone_pivot": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "get_equipped_item_name": {
+      "min": 0,
+      "max": 2,
+      "returns": "hash_type_64",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "get_level_seed_based_fraction": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "get_locator_offset": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "get_name": {
+      "min": 0,
+      "max": 1,
+      "returns": "hash_type_64",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "get_pack_setting": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "get_root_locator_offset": {
+      "min": 2,
+      "max": 2,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "graphics_mode_is_any": {
+      "min": 1,
+      "max": 255,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "ground_speed": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "had_component_group": {
+      "min": 1,
+      "max": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "has_any_family": {
+      "min": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "has_any_leashed_entity_of_type": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "has_armor_slot": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "has_biome_tag": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "world_gen"
+      ]
+    },
+    "has_block_property": {
+      "min": 1,
+      "max": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "until": "1.20.10",
+      "sets": [
+        "default"
+      ]
+    },
+    "has_block_state": {
+      "min": 1,
+      "max": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "has_cape": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "has_collision": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "has_dash_cooldown": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "has_gravity": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "has_head_gear": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "has_owner": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "has_player_rider": {
+      "min": 0,
+      "max": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "has_property": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "has_rider": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "has_target": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "head_roll_angle": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "head_x_rotation": {
+      "min": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "head_y_rotation": {
+      "min": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "health": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "heartbeat_interval": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "heartbeat_phase": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "heightmap": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "world_gen"
+      ]
+    },
+    "hurt_direction": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "hurt_time": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "in_range": {
+      "min": 3,
+      "max": 3,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "invulnerable_ticks": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_admiring": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_alive": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_angry": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_attached": {
+      "min": 0,
+      "max": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_attached_to_entity": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_avoiding_block": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_avoiding_mobs": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_baby": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_breathing": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_bribed": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_carrying_block": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_casting": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_celebrating": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_celebrating_special": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_charged": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_charging": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_chested": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_cooldown_category": {
+      "min": 1,
+      "max": 2,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_crawling": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_critical": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_croaking": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_dancing": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_delayed_attacking": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_digging": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_eating": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_eating_mob": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_elder": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_emerging": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_emoting": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_enchanted": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_feeling_happy": {
+      "min": 0,
+      "max": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "until": "1.20.40",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_fire_immune": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_first_person": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_ghost": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_gliding": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_grazing": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_idling": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_ignited": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_illager_captain": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_in_contact_with_water": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_in_lava": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_in_love": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_in_ui": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_in_water": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_in_water_or_rain": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_interested": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_invisible": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_item_equipped": {
+      "min": 0,
+      "max": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_item_name_any": {
+      "min": 2,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_jump_goal_jumping": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_jumping": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_laying_down": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_laying_egg": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_leashed": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_levitating": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_lingering": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_local_player": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_moving": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_name_any": {
+      "min": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_on_fire": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_on_ground": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_onfire": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_orphaned": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_owner_identifier_any": {
+      "min": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_pack_setting_enabled": {
+      "min": 1,
+      "max": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_pack_setting_selected": {
+      "min": 2,
+      "max": 2,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_persona_or_premium_skin": {
+      "min": 0,
+      "max": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_playing_dead": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_powered": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_pregnant": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_ram_attacking": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_resting": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_riding": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_riding_any_entity_of_type": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_rising": {
+      "min": 0,
+      "max": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "until": "1.20.40",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_roaring": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_rolling": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_saddled": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_scared": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_scenting": {
+      "min": 0,
+      "max": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "until": "1.20.40",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_searching": {
+      "min": 0,
+      "max": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_selected_item": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_shaking": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_shaking_wetness": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_sheared": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_shield_powered": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_silent": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_sitting": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_sleeping": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_sneaking": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_sneezing": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_sniffing": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_sonic_boom": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_spectator": {
+      "min": 0,
+      "max": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_sprinting": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_stackable": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_stalking": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_standing": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_stunned": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_swimming": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_tamed": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_transforming": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_using_item": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "is_wall_climbing": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "item_in_use_duration": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "item_is_charged": {
+      "min": 0,
+      "max": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "item_max_use_duration": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "item_remaining_use_duration": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "item_slot_to_bone_name": {
+      "min": 1,
+      "max": 1,
+      "returns": "hash_type_64",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "key_frame_lerp_time": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "kinetic_weapon_damage_duration": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "kinetic_weapon_delay": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "kinetic_weapon_dismount_duration": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "kinetic_weapon_knockback_duration": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "last_frame_time": {
+      "min": 0,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "last_hit_by_player": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "last_input_mode_is_any": {
+      "min": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "leashed_entity_count": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "lie_amount": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "life_span": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "life_time": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "lod_index": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "log": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "main_hand_item_max_duration": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "main_hand_item_use_duration": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "mark_variant": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "max_durability": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "max_health": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "max_trade_tier": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "maximum_frame_time": {
+      "min": 0,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "minimum_frame_time": {
+      "min": 0,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "model_scale": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "modified_distance_moved": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "modified_move_speed": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "modified_swing_duration": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "moon_brightness": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "moon_phase": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "movement_direction": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "noise": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "world_gen"
+      ]
+    },
+    "on_fire_time": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "out_of_control": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "overlay_alpha": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "owner_identifier": {
+      "min": 0,
+      "max": 0,
+      "returns": "hash_type_64",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "player_level": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "position": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "position_delta": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "previous_squish_value": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "property": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "relative_block_has_all_tags": {
+      "min": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "relative_block_has_any_tag": {
+      "min": 1,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "remaining_durability": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "ride_body_x_rotation": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "ride_body_y_rotation": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "ride_head_x_rotation": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "ride_head_y_rotation": {
+      "min": 0,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "rider_body_x_rotation": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "rider_body_y_rotation": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "rider_head_x_rotation": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "rider_head_y_rotation": {
+      "min": 1,
+      "max": 2,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "roll_counter": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "rotation_to_camera": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "scoreboard": {
+      "min": 1,
+      "max": 1,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "server_memory_tier": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "shake_angle": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "shake_time": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "shield_blocking_bob": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "show_bottom": {
+      "min": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "sit_amount": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "skin_id": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "sleep_rotation": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "sneeze_counter": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "spellcolor": {
+      "min": 0,
+      "returns": "member_array",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "standing_scale": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "state_time": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "structural_integrity": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "surface_particle_color": {
+      "min": 0,
+      "max": 0,
+      "returns": "member_array",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "surface_particle_texture_coordinate": {
+      "min": 0,
+      "max": 0,
+      "returns": "member_array",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "surface_particle_texture_size": {
+      "min": 0,
+      "max": 0,
+      "returns": "member_array",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "swell_amount": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "swelling_dir": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "swim_amount": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "tail_angle": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "target_x_rotation": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "target_y_rotation": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "texture_frame_index": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "ticks_since_last_kinetic_weapon_hit": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "time_of_day": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "time_since_last_vibration_detection": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "time_stamp": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "timer_flag_1": {
+      "min": 0,
+      "max": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "timer_flag_2": {
+      "min": 0,
+      "max": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "timer_flag_3": {
+      "min": 0,
+      "max": 0,
+      "returns": "bool",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "total_emitter_count": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "total_particle_count": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "touch_only_affects_hotbar": {
+      "min": 0,
+      "max": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "trade_tier": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "unhappy_counter": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "variant": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "vertical_speed": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "walk_distance": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "wing_flap_position": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "wing_flap_speed": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    },
+    "yaw_speed": {
+      "min": 0,
+      "returns": "float",
+      "since": "0.0.0",
+      "sets": [
+        "default"
+      ]
+    }
+  },
+  "math": {
+    "abs": {
+      "min": 1,
+      "max": 1
+    },
+    "acos": {
+      "min": 1,
+      "max": 1
+    },
+    "asin": {
+      "min": 1,
+      "max": 1
+    },
+    "atan": {
+      "min": 1,
+      "max": 1
+    },
+    "atan2": {
+      "min": 2,
+      "max": 2
+    },
+    "ceil": {
+      "min": 1,
+      "max": 1
+    },
+    "clamp": {
+      "min": 3,
+      "max": 3
+    },
+    "copy_sign": {
+      "min": 2,
+      "max": 2
+    },
+    "cos": {
+      "min": 1,
+      "max": 1
+    },
+    "die_roll": {
+      "min": 3,
+      "max": 3
+    },
+    "die_roll_integer": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_back": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_bounce": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_circ": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_cubic": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_elastic": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_expo": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_out_back": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_out_bounce": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_out_circ": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_out_cubic": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_out_elastic": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_out_expo": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_out_quad": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_out_quart": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_out_quint": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_out_sine": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_quad": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_quart": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_quint": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_in_sine": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_out_back": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_out_bounce": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_out_circ": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_out_cubic": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_out_elastic": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_out_expo": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_out_quad": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_out_quart": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_out_quint": {
+      "min": 3,
+      "max": 3
+    },
+    "ease_out_sine": {
+      "min": 3,
+      "max": 3
+    },
+    "exp": {
+      "min": 1,
+      "max": 1
+    },
+    "floor": {
+      "min": 1,
+      "max": 1
+    },
+    "hermite_blend": {
+      "min": 1,
+      "max": 1
+    },
+    "inverse_lerp": {
+      "min": 3,
+      "max": 3
+    },
+    "lerp": {
+      "min": 3,
+      "max": 3
+    },
+    "lerprotate": {
+      "min": 3,
+      "max": 3
+    },
+    "ln": {
+      "min": 1,
+      "max": 1
+    },
+    "max": {
+      "min": 2,
+      "max": 2
+    },
+    "min": {
+      "min": 2,
+      "max": 2
+    },
+    "min_angle": {
+      "min": 1,
+      "max": 1
+    },
+    "mod": {
+      "min": 2,
+      "max": 2
+    },
+    "pi": {
+      "min": 0,
+      "max": 0
+    },
+    "pow": {
+      "min": 2,
+      "max": 2
+    },
+    "random": {
+      "min": 2,
+      "max": 2
+    },
+    "random_integer": {
+      "min": 2,
+      "max": 2
+    },
+    "round": {
+      "min": 1,
+      "max": 1
+    },
+    "sign": {
+      "min": 1,
+      "max": 1
+    },
+    "sin": {
+      "min": 1,
+      "max": 1
+    },
+    "sqrt": {
+      "min": 1,
+      "max": 1
+    },
+    "trunc": {
+      "min": 1,
+      "max": 1
+    }
+  }
+}

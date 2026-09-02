@@ -18,7 +18,9 @@
  */
 import { basename } from "node:path";
 
-import { lookup, lookupAny, normalizeId, textureKeys } from "@codecraft/knowledge";
+import { lookup, lookupAny, molangIndex, normalizeId, textureKeys } from "@codecraft/knowledge";
+
+import { validateMolang } from "./molang.ts";
 import type { TextureAtlas } from "@codecraft/knowledge";
 
 /** Üretilen paketin tek dosyası. path paket köküne göreli: "recipes/ruby.json". */
@@ -158,21 +160,28 @@ function collectRecipeRefs(body: JsonObject, root: string, path: string, out: Re
 }
 
 type ParsedFile = { file: PackFile; root: string; body: JsonObject };
+type ParsedDocument = { file: PackFile; value: unknown };
 
-/** JSON dosyalarını ayrıştırır. Ayrıştırılamayan sessizce atlanmaz, uyarı üretir. */
-function parseJsonFiles(files: readonly PackFile[]): {
-  parsed: ParsedFile[];
+/**
+ * JSON dosyalarını ayrıştırır ve dosyanın TAMAMINI verir.
+ *
+ * `parseJsonFiles` bunun üstüne kök anahtarlara bölüyor; kimlik ve doku
+ * kontrolleri öyle çalışıyor. Molang kontrolü ise bölünmemiş belgeye ihtiyaç
+ * duyuyor: bir Molang ifadesi kökte duran bir string olabilir ve kök
+ * anahtarlara bölme onu düşürürdü (02-09-2026'da test yakaladı).
+ */
+function parseJsonDocuments(files: readonly PackFile[]): {
+  documents: ParsedDocument[];
   findings: Finding[];
 } {
-  const parsed: ParsedFile[] = [];
+  const documents: ParsedDocument[] = [];
   const findings: Finding[] = [];
 
   for (const file of files) {
     if (!file.path.endsWith(".json")) continue;
 
-    let value: unknown;
     try {
-      value = JSON.parse(file.content);
+      documents.push({ file, value: JSON.parse(file.content) });
     } catch {
       findings.push({
         check: "identity",
@@ -181,9 +190,21 @@ function parseJsonFiles(files: readonly PackFile[]): {
         message: "JSON ayrıştırılamadı, kontrol bu dosyada koşmadı",
         evidence: "validateJson aynı hatayı ayrıntısıyla raporluyor",
       });
-      continue;
     }
+  }
 
+  return { documents, findings };
+}
+
+/** JSON dosyalarını kök anahtarlarına böler. Ayrıştırılamayan uyarı üretir. */
+function parseJsonFiles(files: readonly PackFile[]): {
+  parsed: ParsedFile[];
+  findings: Finding[];
+} {
+  const { documents, findings } = parseJsonDocuments(files);
+  const parsed: ParsedFile[] = [];
+
+  for (const { file, value } of documents) {
     const object = asObject(value);
     if (object === null) continue;
 
@@ -906,6 +927,79 @@ export function checkPatterns(code: string, options: PatternOptions = {}): Check
       message,
       evidence: pattern.evidence,
     });
+  }
+
+  return toResult(findings);
+}
+
+// --------------------------------------------------------------------------
+// F · Molang ifadeleri
+// --------------------------------------------------------------------------
+
+/**
+ * JSON gövdesindeki bütün string değerleri, JSON pointer yoluyla birlikte.
+ *
+ * Molang'ın hangi alanlarda geçtiğini bilmeye gerek yok ve bilmek de
+ * istenmiyor: alan listesi yazsaydık listede olmayan bir alandaki ifade
+ * sessizce atlanırdı. Bunun yerine bütün stringlere bakılıyor ve Molang'a
+ * benzemeyenler `scanMolang` tarafından zaten sıfır çağrı döndürüyor.
+ */
+function collectStrings(value: unknown, path: string, out: { path: string; text: string }[]): void {
+  if (typeof value === "string") {
+    out.push({ path, text: value });
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const [i, item] of value.entries()) collectStrings(item, `${path}/${i}`, out);
+    return;
+  }
+  if (typeof value === "object" && value !== null) {
+    for (const [key, item] of Object.entries(value)) {
+      collectStrings(item, `${path}/${key.replace(/~/g, "~0").replace(/\//g, "~1")}`, out);
+    }
+  }
+}
+
+export type MolangCheckOptions = { version?: string };
+
+/**
+ * Molang sorgu ve fonksiyon adlarını bu sürümün kümesine karşı ölçer.
+ *
+ * NEDEN WARNING, ERROR DEĞİL: bu sınıf henüz gerçek oyunda ölçülmedi. A-E
+ * sınıflarının hepsinin ContentLog kanıtı var, bunun yok. Ayrıca veri sürümü
+ * kurulu oyunun gerisinde kalabiliyor, yani yeni eklenmiş bir sorguya "yok"
+ * demek yanlış pozitif olurdu — ve yanlış pozitif bu depoda pahalı
+ * (docs/VALIDATION-LIMITS.md C, 01-09-2026). Gerekçenin tamamı
+ * `packages/validator/src/molang.ts` başlığında.
+ */
+export async function checkMolang(
+  files: readonly PackFile[],
+  options: MolangCheckOptions = {},
+): Promise<CheckResult> {
+  const { documents, findings } = parseJsonDocuments(files);
+  if (documents.length === 0) return toResult(findings);
+
+  // İndeks bir kez okunur: dosya başına yüzlerce string taranıyor.
+  const index = await molangIndex({ version: options.version });
+
+  for (const { file, value } of documents) {
+    const strings: { path: string; text: string }[] = [];
+    collectStrings(value, "", strings);
+
+    for (const { path, text } of strings) {
+      const result = await validateMolang(text, { index });
+      for (const finding of result.findings) {
+        findings.push({
+          check: `molang:${finding.kind}`,
+          severity: "warning",
+          path: file.path,
+          message: `${path || "/"} :: ${finding.message}`,
+          evidence:
+            "data/<sürüm>/molang.json (bedrock-samples metadata/molang_modules)" +
+            ` · ${LIMITS} · F — oyunda henüz ölçülmedi, o yüzden warning`,
+        });
+      }
+    }
   }
 
   return toResult(findings);

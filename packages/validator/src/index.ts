@@ -59,6 +59,7 @@ export {
   checkFileNames,
   checkManifest,
   checkIdentities,
+  checkMolang,
   checkPatterns,
   patternGuide,
   patternNames,
@@ -69,7 +70,18 @@ export type {
   CommandIdentityOptions,
   Finding,
   IdentityOptions,
+  MolangCheckOptions,
   PackFile,
   PatternGuide,
   PatternOptions,
 } from "./checks.ts";
+
+// Molang: sema stringin ICINE bakmiyor, tsc de gormuyor.
+// Gerekce ve olcum: packages/validator/src/molang.ts basligi.
+export { scanMolang, validateMolang } from "./molang.ts";
+export type {
+  MolangCall,
+  MolangFinding,
+  MolangOptions,
+  MolangResult,
+} from "./molang.ts";

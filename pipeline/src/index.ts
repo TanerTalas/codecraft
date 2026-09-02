@@ -13,6 +13,7 @@ import { join } from "node:path";
 
 import { collectVanillaData } from "./bedrock-samples.ts";
 import { COMMANDS_FILE, collectCommands } from "./commands.ts";
+import { MOLANG_FILE, collectMolang } from "./molang.ts";
 import { collectMojangSchemas } from "./schemas-mojang.ts";
 import {
   BLOCKCEPTION_DIR,
@@ -48,6 +49,12 @@ export async function runPipeline(): Promise<void> {
   console.log(
     `  komutlar         ${commands.commands} komut, ${commands.overloads} aşırı yükleme, ` +
       `${commands.enums} enum`,
+  );
+
+  const molang = await collectMolang(version);
+  console.log(
+    `  molang           ${molang.queries} sorgu (${molang.removed} kaldırılmış), ` +
+      `${molang.math} matematik fonksiyonu`,
   );
 
   const mojang = await collectMojangSchemas(version);
@@ -91,6 +98,14 @@ export async function runPipeline(): Promise<void> {
         // Enum tablosunda karşılığı olmayan tipler. Doğrulayıcının elle
         // ayrıştırdığı küme bu; Mojang yeni bir tip eklerse burada görünür.
         structuralTypes: commands.structuralTypes,
+      },
+      // Molang JSON stringlerinin icinde duruyor; ne sema ne tsc oraya bakiyor.
+      molang: {
+        file: MOLANG_FILE,
+        queries: molang.queries,
+        math: molang.math,
+        // Kaldirilmis sorgular: kullanildiklarinda uyari uretiliyor.
+        removed: molang.removed,
       },
       blockception: {
         repo: BLOCKCEPTION_REPO,
