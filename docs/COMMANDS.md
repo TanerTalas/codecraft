@@ -280,10 +280,16 @@ Bu dosya eski hâlinde o satırı **doğru davranış** diye gösteriyordu. Veri
 aksini söylüyor: 18. aşırı yüklemede `command` zorunlu, yani `run`dan sonra
 hiçbir şey gelmemesi geçerli değil.
 
-> **Oyunda ölçülmedi.** Depo kuralı "ölçülmeden kural yazılmaz" diyor ve bu
-> satır bir davranış tersine dönüşü. Veriye dayanıyor (zorunlu parametre), ama
-> sohbet kanalında denenmedi. Denenirse sonucu buraya yazılır; oyun kabul
-> ediyorsa karar geri alınır.
+> **Oyunda ölçüldü ve doğrulandı, 02-09-2026.** Sohbet kanalına yazıldı:
+>
+> ```
+> /execute as @a run        Syntax error
+> ```
+>
+> Yani oyun da reddediyor. Veriden çıkarılan sonuç (18. aşırı yüklemede
+> `command` zorunlu) sohbet kanalıyla uyuşuyor; davranış tersine dönüşü doğru
+> yönde. `ws:probe` değil **sohbet** kullanıldı — iki ayrıştırıcı aynı değil
+> (`docs/WEBSOCKET.md`).
 
 ### Yan etki: yanlış pozitif riski yer değiştirdi
 

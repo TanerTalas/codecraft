@@ -983,9 +983,10 @@ biri ertelenmişe taşındı. Ölçümler aşağıdaki blokquote'ta.
   tamamen `minecraft:` önekli. Ters yön eklenmedi — oyunun çıplak biçimi kabul
   edip etmediği ölçülmedi ve tek yönlülük bilinçli yazılmış bir karardı.
   **Sohbet kanalında ölçülmeli** (`docs/COMMANDS.md`)
-- [ ] **`/execute as @a run` (run sonrası boş) oyunda ölçülmedi.** Düzeltmeyle
-  `ok=true` → `ok=false` oldu; veriye dayanıyor (18. aşırı yüklemede `command`
-  zorunlu) ama sohbette denenmedi
+- [x] **`/execute as @a run` (run sonrası boş) oyunda ölçüldü, 02-09-2026.**
+  Sohbet kanalı `Syntax error` veriyor, yani oyun da reddediyor. Düzeltmenin
+  `ok=true` → `ok=false` tersine dönüşü doğru yönde. Veriden çıkarılan sonuç
+  (18. aşırı yüklemede `command` zorunlu) oyunla uyuştu
 
 > **Ölçüm, 02-09-2026.** `npm run typecheck` exit 0, `npm test` **237/237**
 > (M6'da 227'ydi, on yeni test). Her yeni test enjekte edilen kırıkla kırmızıya
