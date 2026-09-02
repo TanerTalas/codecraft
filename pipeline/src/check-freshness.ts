@@ -20,7 +20,7 @@ import { resolveVersion } from "./lib/version.ts";
 type IndexFile = {
   version?: string;
   sources?: {
-    mojangSchemas?: { path?: string; files?: number };
+    mojangSchemas?: { index?: string; files?: number };
     blockception?: {
       path?: string;
       files?: number;
@@ -63,23 +63,34 @@ export async function checkFreshness(): Promise<string[]> {
 
   const { mojangSchemas, blockception, scriptTypes } = index.sources ?? {};
 
-  for (const [label, source] of [
-    ["mojang şemaları", mojangSchemas],
-    ["blockception", blockception],
-  ] as const) {
-    if (source?.path === undefined || source.files === undefined) {
-      problems.push(`index.json içinde ${label} kaydı eksik`);
-      continue;
-    }
-    const path = join(dir, source.path);
+  if (blockception?.path === undefined || blockception.files === undefined) {
+    problems.push("index.json içinde blockception kaydı eksik");
+  } else {
+    const path = join(dir, blockception.path);
     try {
       const actual = await countFiles(path);
       // Blockception klasöründe LICENSE de var, sayım ondan bir fazla olabilir.
-      if (actual < source.files) {
-        problems.push(`${label}: ${source.files} dosya bekleniyordu, ${actual} bulundu (${path})`);
+      if (actual < blockception.files) {
+        problems.push(
+          `blockception: ${blockception.files} dosya bekleniyordu, ${actual} bulundu (${path})`,
+        );
       }
     } catch {
-      problems.push(`${label}: klasör yok — ${path}`);
+      problems.push(`blockception: klasör yok — ${path}`);
+    }
+  }
+
+  // Mojang şemalarının KENDİSİ artık data/ altında değil (pipeline/raw/,
+  // .gitignore — repo public, EULA). Doğrulanabilen tek şey ondan türetilen
+  // indeks; klasör sayımı yapılamaz çünkü CI'da temiz bir checkout'ta ham
+  // klasör hiç yoktur.
+  if (mojangSchemas?.index === undefined || mojangSchemas.files === undefined) {
+    problems.push("index.json içinde mojang şemaları kaydı eksik");
+  } else {
+    try {
+      await access(join(dir, mojangSchemas.index));
+    } catch {
+      problems.push(`mojang şema indeksi yok — ${join(dir, mojangSchemas.index)}`);
     }
   }
 

@@ -1,5 +1,5 @@
 /**
- * Mojang'ın kendi JSON şemaları -> data/<sürüm>/schemas/
+ * Mojang'ın kendi JSON şemaları -> pipeline/raw/bedrock-samples/<sürüm>/json_schemas/
  *
  * Kaynak: bedrock-samples/metadata/json_schemas/. Bu şemalar oyunla birlikte
  * yayınlanıyor, yani gerçekten sürüme kilitli — Blockception'dan farkı bu
@@ -7,6 +7,15 @@
  *
  * Klasör yapısı <kapsam>/<tip>/<format_version>/ biçiminde ve aynen korunuyor:
  * şemalar birbirine göreli $ref veriyor, ağaç bozulursa ajv referansları çözemez.
+ *
+ * ÇIKTI 02-09-2026'da data/ ALTINDAN RAW'A TAŞINDI. Önce
+ * `data/<sürüm>/schemas/` altına yazıyor ve git'te duruyorlardı; gerekçe
+ * "hiçbir uçtan dışarı çıkmıyorlar" idi ve repo private iken doğruydu. Repo o
+ * gün public yapıldı — public bir repoda git'in kendisi dağıtım kanalıdır ve
+ * bu dosyalar Minecraft EULA'ya tabi birebir kopyalar. Değişmez #5.
+ *
+ * Türetilmiş indeks `schemas-index.json` data/ içinde KALIYOR: o bir olgu
+ * listesi (dosya tipi -> format_version), ham metin değil.
  *
  * Hangi kaynağın kullanılacağı (Mojang mı Blockception mı) ölçülerek karara
  * bağlandı,
@@ -16,7 +25,7 @@ import { join } from "node:path";
 
 import { runIfMain } from "./lib/cli.ts";
 import { downloadPaths, fetchTree } from "./lib/github.ts";
-import { DATA_DIR } from "./lib/paths.ts";
+import { DATA_DIR, RAW_DIR } from "./lib/paths.ts";
 import { toJson, writeIfChanged, writeTree } from "./lib/fs.ts";
 import { BEDROCK_SAMPLES_REF, BEDROCK_SAMPLES_REPO, resolveVersion } from "./lib/version.ts";
 
@@ -50,16 +59,24 @@ Deponun \`LICENSE.md\` dosyasının metni (doğrulandı 30-08-2026, HTTP 200):
 > By downloading the files in this repository, you agree to the Minecraft End
 > User License Agreement and that these files are subject to its terms.
 
+## Bu klasör git'e girmez
+
+\`pipeline/raw/\` \`.gitignore\` içinde. Depo 02-09-2026'da public yapıldı ve
+public bir repoda git'in kendisi bir dağıtım kanalıdır; EULA'ya tabi birebir
+kopyalar orada duramaz (\`CLAUDE.md\` Değişmez #5).
+
+Klasör yalnızca YERELDE duruyor: sürüm farklarını okumak, ikinci bir kontrol
+yapmak ve \`npm run validator:compare\` ölçümünü koşturmak için. Yoksa
+\`npm run pipeline:schemas\` ile yeniden üretilir.
+
 ## Bunlar doğrulamada kullanılmıyor
 
 CodeCraft'ın JSON doğrulaması **Blockception'ın derlenmiş şemalarını**
-kullanıyor (\`data/blockception/compiled/\`, BSD-3-Clause). Bu klasör sürüm
-farklarını okumak ve ikinci bir kontrol için duruyor.
+kullanıyor (\`data/blockception/compiled/\`, BSD-3-Clause).
 
 Ölçüldü 02-09-2026: \`packages/*/src\` ve \`app/src\` içinde bu klasöre
-**sıfır** referans var. Bu yüzden dosyalar Vercel fonksiyon paketine de
-girmiyor (\`app/next.config.ts\`, \`DATA_FILES\`) — okunmayan içerik üçüncü bir
-tarafa yüklenmiyor.
+**sıfır** referans var. Vercel fonksiyon paketine de girmiyor
+(\`app/next.config.ts\`, \`DATA_FILES\`).
 
 Karar ve gerekçesi: \`docs/SOURCES.md\`.
 `;
@@ -112,7 +129,7 @@ export async function collectMojangSchemas(version: string): Promise<MojangSchem
   const files = new Map<string, string>();
   for (const [path, content] of downloaded) files.set(path.slice(PREFIX.length), content);
 
-  const outDir = join(DATA_DIR, version, "schemas");
+  const outDir = join(RAW_DIR, "bedrock-samples", version, "json_schemas");
   // İndeks künyeden ÖNCE çıkarılıyor: NOTICE.md bir şema değil ve
   // indexFormatVersions'a girerse schemas-index.json'a sahte bir tip düşerdi.
   const schemaPaths = [...files.keys()];
@@ -132,7 +149,7 @@ runIfMain(import.meta.url, async () => {
   const { version } = await resolveVersion();
   const result = await collectMojangSchemas(version);
   console.log(
-    `mojang şemaları -> data/${version}/schemas/ — ${result.files} dosya, ` +
-      `${result.written.length} yazıldı, ${result.deleted.length} silindi`,
+    `mojang şemaları -> pipeline/raw/bedrock-samples/${version}/json_schemas/ — ` +
+      `${result.files} dosya, ${result.written.length} yazıldı, ${result.deleted.length} silindi`,
   );
 });

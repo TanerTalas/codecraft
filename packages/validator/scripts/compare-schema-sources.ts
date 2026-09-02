@@ -19,7 +19,7 @@
  *    şemalarını yazma" diyor. Bu yüzden karşılaştırma iç nesne üzerinden yapılır
  *    ve aşağıdaki eşleme tablosu script içinde kalır, ürün yoluna girmez.
  */
-import { readFile, readdir } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 
@@ -30,6 +30,11 @@ import { resolveVersion } from "@codecraft/knowledge";
 import { validateJson } from "../src/index.ts";
 
 const FIXTURES = fileURLToPath(new URL("../test/fixtures/", import.meta.url));
+
+/** packages/validator/scripts/ -> repo kökü -> ham bedrock-samples kopyası. */
+const RAW_SAMPLES = fileURLToPath(
+  new URL("../../../pipeline/raw/bedrock-samples/", import.meta.url),
+);
 
 type Case = {
   id: string;
@@ -131,8 +136,22 @@ async function mojangOutcome(
 }
 
 async function main(): Promise<void> {
-  const { dir, version } = await resolveVersion();
-  const schemasRoot = join(dir, "schemas");
+  const { version } = await resolveVersion();
+  // Ham Mojang şemaları 02-09-2026'da data/ altından pipeline/raw/ altına
+  // taşındı (repo public yapıldı, EULA — docs/SOURCES.md). Burası bir ölçüm
+  // script'i, CI'da koşmuyor; yerelde ham veri varken çalışması yeterli.
+  const schemasRoot = join(RAW_SAMPLES, version, "json_schemas");
+  try {
+    await access(schemasRoot);
+  } catch {
+    console.error(
+      `Ham Mojang şemaları yok — ${schemasRoot}\n` +
+        "Bu klasör git'e girmiyor (.gitignore, Minecraft EULA). Önce üret:\n" +
+        "  npm run pipeline:schemas",
+    );
+    process.exitCode = 1;
+    return;
+  }
   await loadMojangSchemas(schemasRoot);
 
   const cases = JSON.parse(await readFile(join(FIXTURES, "cases.json"), "utf8")) as {

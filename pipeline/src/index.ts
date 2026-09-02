@@ -79,7 +79,10 @@ export async function runPipeline(): Promise<void> {
     counts: vanilla.counts,
     sources: {
       bedrockSamples: { repo: BEDROCK_SAMPLES_REPO, ref: BEDROCK_SAMPLES_REF },
-      mojangSchemas: { path: "schemas", index: "schemas-index.json", files: mojang.files },
+      // `path` yok: ham şemalar artık git'e girmiyor, pipeline/raw/ altında
+      // duruyorlar (02-09-2026, repo public yapıldı). data/ içinde kalan tek
+      // şey türetilmiş indeks, ve bayatlama kontrolü onu doğruluyor.
+      mojangSchemas: { index: "schemas-index.json", files: mojang.files },
       commands: {
         file: COMMANDS_FILE,
         commands: commands.commands,

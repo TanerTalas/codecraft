@@ -30,6 +30,16 @@ yarn-error.log*
 pipeline/cache/
 pipeline/raw/
 
+# Mojang'in birebir JSON semalari. 02-09-2026'da git'ten cikarildi: repo o gun
+# public yapildi ve public bir repoda git'in kendisi bir dagitim kanalidir.
+# Turetilen data/<surum>/schemas-index.json commit edilmeye devam ediyor.
+data/*/schemas/
+
+# --- Kisisel notlar ---
+# Is kararlari, saglayici maliyet plani ve altyapi yapilacaklari. Gizli bilgi
+# icermiyor ama public repoda duracak bir dosya degil (02-09-2026).
+notlar/
+
 # --- Yerel test dosyalari ---
 test-worlds/
 *.mcpack

@@ -32,7 +32,12 @@ export type DataIndex = {
       path: string;
       modules: Record<string, { stable: string | null; beta: string | null }>;
     };
-    mojangSchemas: { path: string; index: string; files: number };
+    /**
+     * Ham şemalar git'te DEĞİL — pipeline/raw/ altında, .gitignore içinde
+     * (02-09-2026, repo public yapıldı; EULA). Burada duran tek şey ondan
+     * türetilen indeksin adı ve kaç dosyadan türetildiği.
+     */
+    mojangSchemas: { index: string; files: number };
     /**
      * Mojang'ın makine okunur komut tanımından türetilen indeks.
      *
