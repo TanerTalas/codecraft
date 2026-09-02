@@ -339,10 +339,11 @@ Challenge Mode ve kullanım uyarısı.
 Windows'un iki `tsc` ikilisini birden paketlemesinden geliyor. "Linux'ta yakın
 kalır" hâlâ tahmin.
 
-**Namespace toleransı tek yönlü.** `matchesEnum` değerden `minecraft:`
-soyuyor ama eklemiyor; tamamı önekli tutulan altı enumda çıplak değer
-reddediliyor (`/locate biome plains`). Oyunun çıplak biçimi kabul edip
-etmediği ölçülmediği için değiştirilmedi — `docs/COMMANDS.md`.
+**Beş önekli enum oyunda denenmedi.** Tamamı `minecraft:` önekli tutulan altı
+enumdan yalnızca `biome` ölçüldü (02-09-2026: oyun çıplak biçimi reddediyor,
+doğrulayıcı doğru davranıyor). `features`, `featurerules`, `structurefeature`,
+`jigsawstructure` ve `camerapresets` aynı kuraldan geçiyor ama aynı davranışı
+gösterdikleri varsayılmıyor — `docs/COMMANDS.md`.
 
 **Sunucu tarafında log yok.** Sunucu durumsuz ve her istekte yok ediliyor;
 Vercel'in rota bazlı logu hangi ARACIN çağrıldığını göstermiyor. Yani araç

@@ -85,11 +85,10 @@ kırmızıya döner ve karar zorlanır — sessizce kabul edilmez.
 
 - **Seçici filtre anahtarları doğrulanmıyor** (`type=`, `r=`, `scores=`).
   Mojang'ın tanımında yoklar.
-- **Namespace toleransı tek yönlü.** `matchesEnum` değerden `minecraft:`
-  soyuyor ama eklemiyor, yani tamamı önekli tutulan altı enumda çıplak değer
-  reddediliyor (`/locate biome plains` → `ok=false`). Ölçüldü 02-09-2026;
-  oyunun çıplak biçimi kabul edip etmediği ölçülmediği için değiştirilmedi.
-  Ayrıntı "Kapatılan boşluk: `execute ... run`" bölümünün sonunda.
+- ~~**Namespace toleransı tek yönlü.**~~ **Boşluk değilmiş, 02-09-2026'da
+  oyunda ölçüldü:** `/locate biome plains` sohbette de reddediliyor,
+  `minecraft:plains` çalışıyor. Doğrulayıcı doğru davranıyor. Ayrıntı
+  "Kapatılan boşluk: `execute ... run`" bölümünün sonunda.
 
 ## Kapatılan boşluk: seçici harfleri
 
@@ -291,10 +290,10 @@ hiçbir şey gelmemesi geçerli değil.
 > yönde. `ws:probe` değil **sohbet** kullanıldı — iki ayrıştırıcı aynı değil
 > (`docs/WEBSOCKET.md`).
 
-### Yan etki: yanlış pozitif riski yer değiştirdi
+### Yan etki sanılan şey ölçüldü ve yanlış alarm çıktı
 
-Zincir gövdesi artık doğrulandığı için, gövdedeki **her** doğrulayıcı boşluğu
-`execute` satırlarına da bulaşıyor. Ölçülmüş somut örnek:
+Zincir gövdesi artık doğrulandığı için, gövdedeki her doğrulayıcı boşluğunun
+`execute` satırlarına bulaşacağı düşünüldü. Somut aday şuydu:
 
 ```
 /locate biome plains    ok=false   "plains" biome için geçerli değil
@@ -303,12 +302,29 @@ Zincir gövdesi artık doğrulandığı için, gövdedeki **her** doğrulayıcı
 `matchesEnum` namespace toleransı tek yönlü: değerden `minecraft:` **soyuyor**
 ama **eklemiyor**. Altı enum tamamen önekli — `biome` (88), `features` (286),
 `featurerules` (170), `structurefeature` (35), `jigsawstructure` (20),
-`camerapresets` (7). Yani çıplak `plains` reddediliyor, ve artık
-`/execute … run locate biome plains` de reddedilecek.
+`camerapresets` (7). Bu bir yanlış pozitif gibi duruyordu ve `matchesEnum`'a
+ters yön eklenmesi planlanmıştı.
 
-**Açık madde:** ters yön eklenmedi, çünkü oyunun çıplak `plains`'i kabul edip
-etmediği ölçülmedi. Tek yönlülük bilinçli yazılmış bir karardı; ölçmeden
-değiştirilmiyor.
+**Ölçüldü 02-09-2026, sohbet kanalı, kontrol grubuyla:**
+
+| Komut | Oyun |
+|---|---|
+| `/locate biome plains` | **Syntax error** |
+| `/locate biome minecraft:plains` | **çalıştı** |
+
+Yani oyun çıplak biçimi kabul etmiyor ve **doğrulayıcı zaten doğru
+davranıyor.** Tek yönlü tolerans bilinçli yazılmış bir karardı ve ölçüm onu
+doğruladı; kod değişmedi.
+
+**Kayda değer olan:** ölçüm yapılmasaydı olmayan bir hata için `matchesEnum`
+gevşetilecekti ve altı enumda gerçek hatalar sessizce geçmeye başlayacaktı.
+M5'in "yanlış alarm çıkmadı" vakasının aynısı — "garip görünüyor" ile "bozuk"
+arasındaki fark yine ölçümle ayrıldı.
+
+**Ölçülen yalnızca `biome`.** Diğer beş önekli enum (`features`,
+`featurerules`, `structurefeature`, `jigsawstructure`, `camerapresets`) aynı
+veri biçiminde ama oyunda denenmedi. Aynı davranışı gösterdikleri
+**varsayılmıyor**, yalnızca bugün aynı kuraldan geçiyorlar.
 
 ## Kapatılan boşluk: boş enum her değeri reddediyordu
 

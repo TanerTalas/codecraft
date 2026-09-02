@@ -978,11 +978,12 @@ biri ertelenmişe taşındı. Ölçümler aşağıdaki blokquote'ta.
   atılabilir bir dalda bir adımı bilerek kırıp `workflow_dispatch` ile koşmak
   ve issue listesine bakmak gerekiyor — **kullanıcı adımı**, `gh` CLI bu
   makinede kurulu değil
-- [ ] **`matchesEnum` namespace toleransı tek yönlü.** `execute` düzeltmesi
-  bunu görünür kıldı: `/locate biome plains` reddediliyor çünkü altı enum
-  tamamen `minecraft:` önekli. Ters yön eklenmedi — oyunun çıplak biçimi kabul
-  edip etmediği ölçülmedi ve tek yönlülük bilinçli yazılmış bir karardı.
-  **Sohbet kanalında ölçülmeli** (`docs/COMMANDS.md`)
+- [x] **`matchesEnum` namespace toleransı — ölçüldü, değişiklik gerekmedi.**
+  `execute` düzeltmesi bunu bir yanlış pozitif gibi gösterdi ve `matchesEnum`
+  gevşetilecekti. Sohbet kanalında kontrol grubuyla ölçüldü (02-09-2026):
+  `/locate biome plains` **Syntax error**, `/locate biome minecraft:plains`
+  **çalıştı**. Oyun çıplak biçimi kabul etmiyor, doğrulayıcı zaten doğru.
+  Ölçüm olmasaydı olmayan bir hata için altı enum gevşetilecekti
 - [x] **`/execute as @a run` (run sonrası boş) oyunda ölçüldü, 02-09-2026.**
   Sohbet kanalı `Syntax error` veriyor, yani oyun da reddediyor. Düzeltmenin
   `ok=true` → `ok=false` tersine dönüşü doğru yönde. Veriden çıkarılan sonuç
