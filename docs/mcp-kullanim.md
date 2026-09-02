@@ -946,7 +946,10 @@ npm run mcp:probe -- https://codecraft-ashy-seven.vercel.app/mcp
 ```
 
 Sonra Claude'da **Customize > Connectors** (Settings değil) → özel bağlayıcı →
-yukarıdaki adres. Sekiz araç listelenmeli, hepsi salt okunur.
+yukarıdaki adres. Bugün **dokuz** araç listelenmeli, hepsi salt okunur —
+bu dosyadaki ölçümler sekiz araçlıyken alındı, dokuzuncusu
+(`validate_python`) 02-09-2026'da eklendi ve **gerçek kullanımda henüz
+çağrılmadı.**
 
 Beklenen ve hata olmayan üç şey: `GET /mcp` **405** döner (spec, SSE sunmayan
 sunucunun 405 dönmesine izin veriyor); OAuth keşif uçları yok, uç kimlik
