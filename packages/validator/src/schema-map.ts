@@ -79,6 +79,25 @@ export async function loadCatalog(version?: string): Promise<Catalog> {
   return catalog;
 }
 
+/**
+ * Paket KÖKÜNDEN yazılmış yollar için sentetik önek.
+ *
+ * ÖLÇÜLDÜ 03-09-2026, gerçek kullanımda (`docs/mcp-kullanim.md`, ikinci ölçüm
+ * kümesi): `review_pack` "spawn_rules/guard.json" yolunu çözemiyordu ama
+ * "BP/spawn_rules/guard.json" çözüyordu — aynı içerik, biri şema hatasını
+ * buluyor, diğeri bulmuyordu.
+ *
+ * Sebep Blockception'ın `fileMatch` kalıpları: hepsi klasörden ÖNCE bir paket
+ * segmenti istiyor: `*BP*`, `*bp*`, `behavior_packs` ve `*Behavior*Pack*`
+ * ile başlayan kalıplar.
+ * Kök göreli yol için kalıp yok. Aşağıdaki sonek döngüsü baştan segment
+ * ATABİLİYOR ama EKLEYEMİYOR, o yüzden kendi başına yetmiyor.
+ *
+ * Modelin doğal yazımı kök göreli — `build-test-pack.ts` de paketi diske
+ * öyle yazıyor. Yani kaçırılan hâl istisna değil, varsayılan hâl.
+ */
+const ROOT_PREFIXES = ["BP", "RP"];
+
 /** Girdi bir dosya yoluysa sondan başlayarak her son eki dener (VS Code fileMatch gibi). */
 function matchByGlob(catalog: Catalog, input: string): SchemaMapEntry | null {
   const normalized = input.split(/[\/]/).filter((part) => part !== "").join(posix.sep);
@@ -89,6 +108,32 @@ function matchByGlob(catalog: Catalog, input: string): SchemaMapEntry | null {
     for (const entry of catalog.entries) {
       if (entry.fileMatch.some((pattern) => matchesGlob(suffix, pattern))) return entry;
     }
+  }
+
+  // Kök göreli yol: önek ekleyerek tekrar dene. İkisi de farklı bir tipe
+  // uyuyorsa (blocks/, items/ gibi hem BP hem RP'de olan klasörler) tahmin
+  // YAPILMAZ — "yakın bir şemaya düşmek yok" kuralı burada da geçerli.
+  const matched = new Map<string, SchemaMapEntry>();
+  for (const prefix of ROOT_PREFIXES) {
+    const prefixed = `${prefix}${posix.sep}${normalized}`;
+    for (const entry of catalog.entries) {
+      if (entry.fileMatch.some((pattern) => matchesGlob(prefixed, pattern))) {
+        matched.set(entry.type, entry);
+        break;
+      }
+    }
+  }
+
+  if (matched.size === 1) {
+    const [only] = [...matched.values()];
+    return only ?? null;
+  }
+  if (matched.size > 1) {
+    throw new Error(
+      `Path "${input}" matches more than one document type at the pack root ` +
+        `(${[...matched.keys()].join(", ")}). Prefix it with BP/ or RP/, ` +
+        "or pass the document type explicitly.",
+    );
   }
   return null;
 }

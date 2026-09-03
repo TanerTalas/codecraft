@@ -103,6 +103,45 @@ test("tip çözümleme: kanonik ad, kısaltma ve dosya yolu aynı şemaya gider"
   assert.equal(byPath.entry.type, canonical.entry.type);
 });
 
+/**
+ * Paket kökünden yazılmış yollar.
+ *
+ * 03-09-2026'da gerçek kullanımda ölçüldü: review_pack "spawn_rules/guard.json"
+ * yolunu çözemiyordu, aynı içerik "BP/" önekiyle çözülüyordu — yani şema ayağı
+ * paketin tamamı için atlanıyordu. Blockception kalıpları klasörden önce bir
+ * paket segmenti istiyor, kök göreli yol için kalıp yok.
+ */
+test("tip çözümleme: kök göreli yol da çözülür", async () => {
+  const cases: [string, string][] = [
+    ["spawn_rules/guard.json", "behavior/spawn_rules/spawn_rules"],
+    ["blocks/ruby.json", "behavior/blocks/blocks"],
+    ["entities/guard.json", "behavior/entities/entities"],
+    ["recipes/ruby_block.json", "behavior/recipes/recipes"],
+    ["feature_rules/ruby_ore.json", "behavior/feature_rules/feature_rules"],
+    ["textures/item_texture.json", "resource/textures/item_texture"],
+  ];
+
+  for (const [path, expected] of cases) {
+    const resolved = await resolveType(path);
+    assert.equal(resolved.entry.type, expected, `${path} yanlış tipe çözüldü`);
+  }
+});
+
+/**
+ * Hem BP hem RP altında aynı adla duran klasörler (items, animation_controllers)
+ * kök göreli yazıldığında gerçekten belirsiz. Tahmin edilmiyor: hangi tipler
+ * eşleştiği söyleniyor ve önek isteniyor. "Yakın bir şemaya düşmek yok" kuralı.
+ */
+test("tip çözümleme: belirsiz kök göreli yol tahmin edilmez", async () => {
+  await assert.rejects(
+    () => resolveType("items/ruby.json"),
+    /matches more than one document type/,
+  );
+  // Önek verilince belirsizlik kalkıyor.
+  const prefixed = await resolveType("BP/items/ruby.json");
+  assert.equal(prefixed.entry.type, "behavior/items/items");
+});
+
 test("tip çözümleme: bilinmeyen tip sessizce bir şemaya düşmez", async () => {
   await assert.rejects(() => resolveType("behavior/uydurma"), /could not be resolved/);
 });
