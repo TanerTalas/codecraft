@@ -971,8 +971,191 @@ yarıyor" ayrı şeyler ve ikincisi gerçek bir oturum gerektiriyor. Bağlayıc�
 açılıp aşağıdaki senaryolar yeniden koşturulduğunda bu dosyaya **ikinci bir
 ölçüm kümesi** yazılacak; eskiler silinmeyecek, yan yana duracak.
 
-`validate_python` de aynı sepette: 02-09-2026'da eklendi ve **gerçek
-kullanımda henüz hiç çağrılmadı.**
+~~`validate_python` de aynı sepette: 02-09-2026'da eklendi ve **gerçek
+kullanımda henüz hiç çağrılmadı.**~~ İlk gerçek çağrısı 03-09-2026'da
+yapıldı, sonucu aşağıda.
+
+> **Kısmen kapandı 03-09-2026.** Dört senaryo yeniden koşuldu ve iki gerçek
+> kırık çıktı — biri tam olarak "Türkçe kalmadı" satırının sınırıydı. Ayrıntı
+> aşağıda, "İkinci ölçüm kümesi". İki senaryo (S5, S6) hâlâ koşulmadı.
+
+## İkinci ölçüm kümesi — 03-09-2026
+
+Yukarıdaki altı senaryo **sekiz araçla ve Türkçe açıklamalarla** ölçülmüştü.
+Bu küme dokuz araç ve İngilizce açıklamalarla alındı. Eskiler yerinde duruyor,
+bu yeni bir sütun.
+
+### Yöntem ve onun sınırı
+
+| | Birinci küme (01-09) | İkinci küme (03-09) |
+|---|---|---|
+| İstemci | Claude Pro masaüstü, Customize > Connectors | **Claude Code'un kendi MCP istemcisi** |
+| Uç | `codecraft-ashy-seven.vercel.app/mcp` | aynı |
+| Araç | 8, Türkçe açıklama | **9, İngilizce açıklama** |
+| Operatör | depoyu bilmeyen oturum | **depoyu bilen oturum** |
+
+**Son satır bu kümenin en zayıf yeri ve olduğu gibi yazılıyor.** M5'in asıl
+sorusu — "açıklama metni modeli doğru yönlendiriyor mu" — depoyu tanıyan bir
+operatörle ölçülemez; ölçülen şey açıklama değil hafıza olur. Bu yüzden
+aşağıdaki araç sırası **birinci kümeyle karşılaştırılabilir sayılmıyor.**
+
+Yanlılığı azaltmak için tek bir kural konuldu ve uygulandı: **senaryo
+günlükleri koşudan önce okunmadı.** İstek cümleleri başlıklardan alındı,
+hangi aracın ne sırayla çağrıldığı ancak koşu bittikten sonra açıldı.
+
+Geriye ölçülebilen ne kaldı: araçların gerçek bir istemciden çağrıldığında ne
+döndürdüğü. Ve orada iki gerçek kırık çıktı.
+
+### Koşulan
+
+Dört senaryo koşuldu, ikisi koşulmadı (S5 `ore-gen-01`, S6 `custom-entity-01`).
+
+| | İstek | Çağrılan araçlar (sırayla) | Sonuç |
+|---|---|---|---|
+| S1 | Muhafız gece yüzeyde doğsun | `get_version_info` → `get_schema` ×3 → `validate_json` → `review_pack` | dosya geçerli, `review_pack` iki bulgu verdi |
+| S2 | Kırdığım bloğun komşuları da kırılsın | `check_feasibility` → `validate_script` ×2 | ilk script **düştü**, düzeltilip geçti |
+| S3 | On çarpı on camdan kutu | `lookup_id` → `validate_command` | `ok:true`, `requiresCheats:true` |
+| S4 | Klavyeye dokunmadan balık tutsun | `check_feasibility` → `validate_python` | istek **bloklandı**, Python yolu doğrulandı |
+
+İki şey kayda değer:
+
+**`validate_script` gerçek bir hata yakaladı.** Zincirleme kazma script'i
+`queue.shift()` sonucunu doğrudan kullanıyordu; `tsc` üç satırda
+`TS18048 'origin' is possibly 'undefined'` verdi. Elle yazılmış, gözden
+kaçabilecek bir hata.
+
+**`check_feasibility` S4'ü doğru bloklandı** ve Türkçe istekte tetikleyici
+eşleşti (`matched: "klavyeye dokunma"`), cevap İngilizce döndü. Girdi dil
+bağımsız, çıktı İngilizce kuralı gerçek kullanımda doğrulandı.
+
+### Bulgu 1 — modele giden metinde Türkçe kaldı
+
+`get_version_info`'nun çıktısındaki `patterns[].guidance` **yarım çevrilmişti**:
+
+```
+...there is no player in the world to receive it.
+world.afterEvents.playerSpawn kullan ve event.player.sendMessage ile instead;
+if the message is only meant for the first join, filter with event.initialSpawn.
+```
+
+Yukarıdaki tabloda "`tools/list` yükünde Türkçe kalmadı ✅" satırı **doğruydu
+ama yetmiyordu** — sızıntı araç açıklamasında değil, aracın döndürdüğü yükte.
+
+`english-surface.test.ts` bunu **iki ayrı sebeple birden** kaçırdı:
+
+1. `get_version_info` yalnızca **hata yoluyla** çağrılıyordu (`version: "26.40"`).
+   Aracın başarılı çıktısı — sürüm tablosu ve `patterns` — hiç taranmamıştı.
+2. "kullan", "ve", "ile" kelimelerinde Türkçeye özgü harf yok; kelime listesi
+   de onları taşımıyordu.
+
+İkincisi 02-09'daki "sorgu" kaçırmasının **birebir tekrarı**. O gün testin
+kendi sınırı ölçülüp kapatılmıştı; aynı sınır başka bir kelimeyle geri geldi.
+
+Düzeltildi (`7301514`): metin İngilizceye çevrildi, başarılı çıktıları tarayan
+yeni bir test eklendi, kelime listesi genişletildi.
+
+**Kontrol koşusu yapıldı:** metin bilerek Türkçeye geri çevrildi, eski dört
+test **yeşil** kaldı, yalnızca yeni test kırmızı verdi. Yani boşluk gerçekten
+oradaydı ve tam olarak orada kapandı. 234/234 test, typecheck temiz.
+
+### Bulgu 2 — `review_pack` paket kökünden yazılan yolları çözemiyordu
+
+S1'in paketi `manifest.json` + `spawn_rules/guard.json` olarak verildi. Cevap:
+
+```
+spawn_rules/guard.json (json, document type could not be resolved)
+```
+
+Oysa aynı içerik `validate_json`'dan `behavior/spawn_rules` tipiyle geçmişti.
+Sınır ölçülerek çıkarıldı — **aynı içerik, farklı yol**:
+
+| Yol | Sonuç |
+|---|---|
+| `BP/spawn_rules/guard.json` | çözüldü, **gerçek şema hatasını buldu** (`population_control` eksik) |
+| `behavior_packs/guard/spawn_rules/guard.json` | çözüldü, aynı hatayı buldu |
+| `spawn_rules/guard.json` | **çözülemedi**, hata görülmedi |
+| `blocks/ruby.json`, `entities/guard.json` | **çözülemedi** |
+
+Kök neden Blockception'ın `fileMatch` kalıplarında: hepsi klasörden **önce**
+bir paket segmenti istiyor. Kök göreli yol için kalıp yok. `matchByGlob`'un
+sonek döngüsü baştan segment **atabiliyor ama ekleyemiyordu.**
+
+Bu bir istisna değil varsayılan hâl: modelin doğal yazımı kök göreli ve
+`build-test-pack.ts` de paketi diske öyle yazıyor.
+
+İki yönlü zarar, ikisi de bu depoda pahalı sayılan sınıflardan: geçerli bir
+pakete **yanlış alarm** (C sınıfının bedeli), bozuk bir dosyanın gerçek şema
+hatasının ise **hiç görünmemesi**.
+
+Düzeltildi (`bd00c92`): sonek döngüsü boşa düşerse `BP/` ve `RP/` önekleri
+deneniyor. Hem BP hem RP'de aynı adla duran klasörler (`items`,
+`animation_controllers`) için **tahmin yok** — hangi tiplere uyduğu söylenip
+önek isteniyor. İki test eklendi, 236/236.
+
+> `review_pack`'in kimlik kontrolü bu sırada **doğru** çalıştı: pakette
+> tanımlanmayan `codecraft:guard` kimliği A sınıfı bulgusu olarak yakalandı.
+> Yani kırık şema ayağındaydı, kontrollerde değil.
+
+### Gözlem 1 — iki araç aynı soruya iki farklı cevap veriyor
+
+Aynı doküman tipi için `format_version`:
+
+| Araç | spawn_rules için dönen |
+|---|---|
+| `get_version_info` | `["1.8.0"]` |
+| `get_schema` | `["1.8.0", "1.10.0", "1.12.0"]` |
+
+**Bug değil, bilerek yapılmış:** `get_version_info` şemadan gelen kümeyi
+ölçülmüş değerlerle daraltıyor (`packages/mcp/src/bedrock/context.ts`,
+`MEASURED_FORMAT_VERSIONS`) — ölçüm şemayı daraltabilir, genişletemez.
+
+Ama **yükün hiçbir yerinde bunun daraltılmış bir liste olduğu yazmıyor.** İki
+aracı da çağıran bir model iki farklı doğru görüyor ve hangisinin neden dar
+olduğunu bilmiyor. Davranış değiştirilmedi; bu bir tasarım kararı, ölçümle
+değil tercihle çözülür.
+
+### Gözlem 2 — üretimde Python yorumlayıcısı yok
+
+`validate_python`'ın ilk gerçek çağrısı. Dağıtılmış uçtan dönen:
+
+```json
+{"ok":true,"syntaxChecked":false,
+ "syntaxSkipped":"No Python interpreter was found (tried python3, python, py). Syntax was NOT checked; the other axes did run.",
+ "commandsChecked":3,"findings":[]}
+```
+
+Yani Vercel Node runtime'ında Python yok ve **sözdizimi ayağı üretimde her
+zaman atlanıyor.** Üç eksenden ikisi koşuyor: gömülü komutlar ve `/connect`
+zarfı.
+
+Bu tam olarak tasarlanan davranış — `packages/validator/src/python.ts` sessizce
+"ok" dönmüyor, atladığını söylüyor ve araç açıklaması da uyarıyor ("ok:true
+alone does not mean the syntax is valid"). **Ölçülmemiş olan, üretimde bunun
+istisna değil kural olduğuydu.** Yorumlayıcısı olan bir makinede üç eksen de
+koşar; barındırılan uçta hiçbir zaman koşmaz.
+
+### Gözlem 3 — geçici transport hataları
+
+Üç çağrı `The socket connection was closed unexpectedly` ile düştü:
+`validate_python` (iki kez, aynı yük) ve `check_feasibility` (bir kez).
+
+Sunucu tarafında karşılığı yok, ölçüldü:
+
+- Aynı yük `curl` ile doğrudan uca gönderildi → **HTTP 200, 0,70 sn**
+- Aynı yük bağlayıcıdan tekrar denendi → üçüncüde **geçti**
+- Yükün iki yarısı ayrı ayrı gönderildi → **ikisi de geçti**
+- 1.050 baytlık başka bir script → **geçti**, yani boyut sınırı değil
+
+İki farklı aracı vurduğu için araca özgü de değil. Kalan açıklama istemci ile
+uç arasındaki yol. **Sebep bulunmadı, tekrarlanabilir değil** — burada bir
+"düzeltildi" satırı yok, sadece kaydı var.
+
+### Dağıtım şerhi
+
+Bulgu 1 ve 2 `dev` dalında düzeltildi. **Üretimdeki uç hâlâ eski kodu
+sunuyor** — dağıtım yapılana kadar `get_version_info` yarım çevrilmiş metni
+döndürmeye, `review_pack` kök göreli yolları reddetmeye devam eder.
+
 
 ## Tekrar üretmek için
 
