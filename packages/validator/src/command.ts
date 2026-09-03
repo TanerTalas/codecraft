@@ -632,7 +632,13 @@ async function chainIntoCommand(
     // dışarıdaki kaydırma onu doğru jetona oturtsun.
     return {
       consumed: 0,
-      errors: [{ kind: "unknown-command", message: `"${name}" diye bir komut yok`, index: 1 }],
+      errors: [
+        {
+          kind: "unknown-command",
+          message: `there is no command named "${name}" in this version`,
+          index: 1,
+        },
+      ],
     };
   }
 
@@ -836,7 +842,7 @@ export async function validateCommand(
       errors: [
         {
           kind: "unknown-command",
-          message: `"${name}" diye bir komut yok`,
+          message: `there is no command named "${name}" in this version`,
           index: 0,
         },
       ],

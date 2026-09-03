@@ -55,7 +55,7 @@ const TURKISH = /[şŞğĞıİçÇöÖüÜ]/;
  * bir teste.
  */
 const TURKISH_WORDS =
-  /\b(sorgu|matematik|fonksiyonu?|dosya|surum|blok|deger|komut|kural|kullan[a-z]*|yerine|ve|ile)\b/i;
+  /\b(sorgu|matematik|fonksiyonu?|dosya|surum|blok|deger|komut|kural|kullan[a-z]*|yerine|ve|ile|tablo[a-z]*|diye)\b/i;
 
 /** İkisinden biri eşleşirse metin Türkçe sayılır. */
 const hasTurkish = (text: string): boolean => TURKISH.test(text) || TURKISH_WORDS.test(text);
@@ -158,6 +158,19 @@ const BROKEN_PACK = [
       'world.afterEvents.worldLoad.subscribe(() => world.sendMessage("hi"));\n',
   },
   {
+    path: "entities/probe.json",
+    content: JSON.stringify({
+      format_version: "1.21.100",
+      "minecraft:entity": {
+        description: { identifier: "codecraft:probe", is_spawnable: true, is_summonable: true },
+        components: {
+          // A' sınıfı: ne vanilla'da ne pakette olan bir tablo yolu.
+          "minecraft:loot": { table: "loot_tables/entities/yok_boyle_tablo.json" },
+        },
+      },
+    }),
+  },
+  {
     path: "commands.txt",
     // A sınıfı: uydurulmuş kimlik. Ayrıca tanımsız ses olayı.
     content: "give @p minecraft:uydurma_item 1\nplaysound mob.cow.sayy @a\n",
@@ -233,6 +246,10 @@ test("araçların hata metinleri İngilizce", async () => {
       ["get_version_info", { version: "26.40" }],
       ["get_schema", { type: "behavior/blocks", path: "minecraft:block/yokboylealan" }],
       ["validate_command", { line: "give @p" }],
+      // Bilinmeyen komut AYRI bir yol: "give @p" tanınan bir komutun yanlış
+      // argümanı, bu ise komutun hiç bulunmadığı dal. 03-09-2026'da o dalın
+      // mesajı Türkçeydi ve bu test onu göremiyordu.
+      ["validate_command", { line: "yokboylekomut @p" }],
       ["validate_script", { code: 'import { world } from "@minecraft/server";\nworld.yokBoyleBirSey();' }],
       ["check_feasibility", { request: "make it auto-click while I am AFK" }],
       ["lookup_id", { id: "minecraft:uydurma_blok" }],

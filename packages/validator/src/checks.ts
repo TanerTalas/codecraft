@@ -1108,7 +1108,7 @@ export async function checkReferences(
     if (own.has(table)) continue;
     if (sets.get(kind)?.has(table) === true) continue;
 
-    const label = kind === "lootTables" ? "loot tablosu" : "takas tablosu";
+    const label = kind === "lootTables" ? "loot table" : "trade table";
     findings.push({
       check: "reference",
       severity: "warning",
