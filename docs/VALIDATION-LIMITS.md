@@ -101,10 +101,30 @@ test olarak sabitlendi).
 > okunuyor. Doku atlasındaki %13/%40 bulgusuyla aynı ders: ad türetme kuralı
 > yazmak, kuralı uydurtmak demek.
 
-`checkReferences` ve `checkSounds` bulguları **warning**: eksik bir loot
-tablosunun oyunda ne yaptığı henüz ölçülmedi. Parçacık düzeltmesi ise bir
+`checkReferences` ve `checkSounds` bulguları **warning**: ~~eksik bir loot
+tablosunun oyunda ne yaptığı henüz ölçülmedi.~~ Parçacık düzeltmesi ise bir
 ölçüme dayanıyor ve error tarafında duruyor — çünkü orada ölçülen şey aracın
 kendi hatasıydı.
+
+**Ölçüldü 03-09-2026 ve gerekçe değişti.** `codecraft:probe_loot`, olmayan bir
+tabloya (`loot_tables/entities/codecraft_probe_missing.json`) işaret ederek
+oyuna sokuldu; `/summon` ile doğuruldu, `/kill` ile öldürüldü (ölüm dumanı
+görüldü, yani ölüm gerçekten oldu). `ContentLog`'un **tamamı** tarandı:
+
+| Arama | Sonuç |
+|---|---|
+| `loot\|table` | yalnızca **yanlış eşleşme** — "destruc**table**" kelimesi |
+| `error\|warning` (Sound gürültüsü hariç) | 12 satır: F, G, feature, recipe, icon ve script — **loot yok** |
+
+Yani oyun eksik loot tablosuna **hiçbir seviyede tek satır yazmıyor.** Entity
+yükleniyor, doğuyor, ölüyor; sadece hiçbir şey düşmüyor.
+
+**Bu, F ve G'nin tersi bir sınıf.** Orada oyun reddediyordu ve severity
+yükseldi. Burada oyun susuyor — ve susması "sorun yok" demek değil, bu deponun
+var olma sebebi zaten sessiz başarısızlık. Warning kalıyor ama artık *başka*
+bir sebeple: error'a yükseltmenin şartı, G'de olduğu gibi, **indeksin
+eksiksizliğinin ölçülmesi**. 207 vanilla tablosunun tam olduğu doğrulanmadı;
+eksikse her bulgu yanlış pozitif olur.
 
 ### İkinci kanıt (03-09-2026): feature rule → `places_feature`
 
@@ -256,6 +276,25 @@ bir hatayı da yok saydırır. Yanlış pozitifin pahalı olmasının sebebi bu.
 üretimi" diyor ama model kendiliğinden kaynak paketi de üretiyor ve sonuç
 doğrulamadan geçiyor. Kapsam cümlesi gerçeğe göre güncellenecek mi, karar
 verilmedi.
+
+### Üçüncü kanıt (03-09-2026): oyun `error` diyor, biz de
+
+Probe oturumunun günlüğünde bu sınıftan bir satır daha çıktı — yine probe
+değil, fixture:
+
+```
+[Json][error]- -> components -> minecraft:icon:  Missing referenced asset ruby
+```
+
+`items/ruby.json` içindeki `minecraft:icon` `"ruby"` doku anahtarına işaret
+ediyor ve o anahtar ne vanilla atlasında ne de pakette var. `checkAssets`
+aynı dosyaya **error** veriyor (`texture key "ruby" is defined neither in the
+vanilla atlas nor in this pack's own ...`).
+
+Kayda değer olan eşleşme: bu sınıfta bizim severity'miz **error** ve oyunun
+severity'si de `[Json][error]`. F'te aynı şey oldu. A'da ise oyun hiç
+konuşmuyor ve biz warning'de duruyoruz. Üç sınıfın üçünde de bizim seviyemiz
+oyunun davranışıyla aynı yönde — bu tesadüf değil, ölçülerek kuruldu.
 
 ## D. Geçerli ama amaçlanmayan — en tehlikeli sınıf
 
@@ -530,7 +569,7 @@ artık hatırlanmıyor, okunuyor.
 | Sınıf | Şema yakalar mı | Ne ölçüyor | Durum |
 |---|---|---|---|
 | A · kimlik referansı | Hayır, ama çözülebilir | `checkIdentities`, `checkCommandIdentities` | **Bulunuyor** — `review_pack` koşuyor, bulgu eyleme dönüştürülebilir metne giriyor |
-| A' · yol / ses referansı | Hayır | `checkReferences`, `checkSounds` | **Bulunuyor, warning** — oyunda henüz ölçülmedi |
+| A' · yol / ses referansı | Hayır | `checkReferences`, `checkSounds` | **Bulunuyor, warning** — 03-09-2026'da ölçüldü: oyun hiçbir şey yazmıyor, sessiz başarısızlık |
 | B · dosya adı kuralı | **Yapısal olarak hayır** | `checkFileNames` | **Bulunuyor** — doğru ad raporda söyleniyor |
 | C · asset referansı | Hayır | `checkAssets` | **Bulunuyor** — vanilla doku indeksine karşı |
 | D · geçerli ama yanlış | **Yapısal olarak hayır** | `checkPatterns` | **Bulunuyor + önceden anlatılıyor** — `patternGuide()` aynı tablodan besliyor |
@@ -560,23 +599,23 @@ fixture'lar tek tek ölçüyor.
 > "oyun ne yapıyor" değil, "bizim listemiz ne kadar eksiksiz" — ikisi ayrı
 > sorular ve ikisi de ölçülmeden karar verilmiyor.
 
-### Ölçüm — üç sınıftan ikisi koşuldu
+### Ölçüm — üç sınıfın üçü de koşuldu (03-09-2026)
 
-> **Koşuldu 03-09-2026, Bedrock, probe paketiyle.** Sonuçlar:
+> **Koşuldu, Bedrock, probe paketiyle.** Sonuçlar:
 >
 > | Sınıf | Oyun ne yaptı | Karar |
 > |---|---|---|
 > | **F · Molang** | Blok tanımının tamamını düşürdü, dört `error` satırı | **error'a yükseltildi** |
 > | **G · Bileşen adı** | Blok tanımının tamamını düşürdü, iki `error` satırı | **warning kaldı** — indekste 126 adlık ölçülmüş boşluk var |
-> | **A' · Yol referansı** | Günlükte satır bulunamadı | **açık** — aramanın kapsamı dar olabilir, aşağıya bak |
+> | **A' · Yol referansı** | **Hiçbir şey yazmadı** — günlüğün tamamında loot'a dair tek satır yok | **warning kaldı, gerekçesi değişti** — oyun susuyor, sessiz başarısızlık |
 >
-> Ayrıntı: F ve G bölümlerindeki "Ölçüldü 03-09-2026" başlıkları.
+> Ayrıntı: A, F ve G bölümlerindeki "Ölçüldü 03-09-2026" başlıkları.
 >
-> **A' neden kapanmadı:** `codecraft:probe_loot` doğduğu ve öldüğü doğrulandı
-> (`/summon` "Object successfully summoned", `/kill` ölüm dumanı üretti), ama
-> günlükte `probe|babyy|destructable|codecraft` kalıbıyla loot'a dair satır
-> çıkmadı. Oyunun mesajı bu kelimelerden hiçbirini taşımıyor olabilir; kapsamı
-> genişletilmiş bir arama yapılmadan "oyun şikâyet etmedi" YAZILMAZ.
+> **Üçünden çıkan asıl ders severity'nin neye bağlı olduğu.** "Oyun ne yapıyor"
+> tek başına yetmedi: F ve G'ye oyun aynı cevabı verdi ama biri yükseldi diğeri
+> yükselmedi, çünkü ikincisinin KAYNAĞINDA ölçülmüş bir boşluk vardı. A' ise
+> oyun hiç konuşmadığı hâlde silinmedi. Karar iki ayrı ölçümün kesişimi:
+> oyunun davranışı **ve** bizim listemizin eksiksizliği.
 
 **A', F ve G warning seviyesinde ve orada kalmalarının tek sebebi ölçüm
 eksikliği.** Üçünün de kaynağı makine okunur ve kontrolleri testle sabitlendi,
