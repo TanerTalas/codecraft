@@ -1182,12 +1182,15 @@ export async function checkSounds(
  * Events" yazılamaz — o yüzden entityEvents bu birleşime GİRMİYOR.
  */
 const COMPONENT_SETS: Readonly<Record<string, readonly (keyof ComponentIndex)[]>> = {
-  "minecraft:block": ["blockComponents", "blockTriggers"],
+  "minecraft:block": ["blockComponents", "blockTriggers", "blockSchemaComponents"],
   "minecraft:entity": [
     "entityComponents",
     "entityGoals",
     "entityAttributes",
     "entityProperties",
+    // İkinci kaynak, 03-09-2026'da ölçülerek eklendi: doküman modülleri eksik
+    // ve tek başına 126 geçerli ada "yok" diyordu (minecraft:health dahil).
+    "entitySchemaComponents",
   ],
 };
 
@@ -1275,7 +1278,8 @@ export async function checkComponents(
     if (!name.startsWith("minecraft:")) continue;
 
     const keys = COMPONENT_SETS[root] ?? [];
-    const valid = new Set(keys.flatMap((key) => index[key]));
+    // ?? [] : entitySchemaComponents opsiyonel, eski bir components.json çökmesin.
+    const valid = new Set(keys.flatMap((key) => index[key] ?? []));
     if (valid.has(name)) continue;
 
     const bare = name.replace("minecraft:", "");
@@ -1294,7 +1298,7 @@ export async function checkComponents(
       message:
         `${where} :: "${name}" is not a ${root} component defined in this version` +
         (near.length === 0 ? "" : `. Nearest names: ${near.map((n) => `minecraft:${n}`).join(", ")}`),
-      evidence: `${LIMITS} · G · data/<version>/components.json (metadata/doc_modules)`,
+      evidence: `${LIMITS} · G · data/<version>/components.json (doc_modules + Mojang entity schema)`,
     });
   }
 

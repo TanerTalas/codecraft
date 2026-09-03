@@ -40,7 +40,7 @@ import { join } from "node:path";
 
 import { runIfMain } from "./lib/cli.ts";
 import { fetchText } from "./lib/fetch.ts";
-import { downloadPaths } from "./lib/github.ts";
+import { downloadPaths, fetchTree } from "./lib/github.ts";
 import { DATA_DIR, RAW_DIR } from "./lib/paths.ts";
 import { toJson, writeIfChanged } from "./lib/fs.ts";
 import {
@@ -96,7 +96,97 @@ const SECTIONS = [
 ] as const;
 
 export type ComponentKey = (typeof SECTIONS)[number]["key"];
-export type ComponentIndex = Record<ComponentKey, string[]>;
+export type SchemaKey = (typeof SCHEMA_SOURCES)[number]["key"];
+export type ComponentIndex = Record<ComponentKey, string[]> & Record<SchemaKey, string[]>;
+
+/**
+ * İKİNCİ KAYNAK: Mojang'ın kendi entity şeması.
+ *
+ * ÖLÇÜLDÜ 03-09-2026 ve bu alanın var olma sebebi o ölçüm. `doc_modules`
+ * eksik: `minecraft:health` HİÇBİR doküman modülünde geçmiyor, ama her vanilla
+ * mob'da var. Sayı ile: şemada 401 bileşen adı, doküman modüllerinden türeyen
+ * indekste 347, aradaki fark **126 ad** — hepsi geçerli ve hepsi yanlış
+ * pozitif üretiyordu (`docs/VALIDATION-LIMITS.md` · G).
+ *
+ * Dokümantasyonun "geride kalması" değil, eksik olması. O yüzden ikinci kaynak
+ * ekleniyor, birincisi değiştirilmiyor: bölümler ayrı kalsın ki AI hedefi /
+ * olay / öznitelik ayrımı kaybolmasın.
+ *
+ * Şema klasörü format sürümüne göre ayrılmış (`1.21.100`, `1.26.40`, `beta`).
+ * En yeni KARARLI olanı alınıyor; `beta` bilerek dışarıda, oyunun kararlı
+ * kanalıyla eşleşsin diye.
+ */
+const SCHEMA_SOURCES = [
+  {
+    key: "entitySchemaComponents",
+    dir: "metadata/json_schemas/server/entity/",
+    file: "Entity component definitions.json",
+    // Kontrol grubu: bu kaynağın var olma sebebi tam olarak bu adın eksik
+    // olmasıydı. Şema onu taşımıyorsa biçim değişmiştir.
+    canary: "minecraft:health",
+  },
+  {
+    key: "blockSchemaComponents",
+    dir: "metadata/json_schemas/server/block_components/",
+    file: "Block Components.json",
+    // Blok tarafında da 10 adlık boşluk ölçüldü (şemada 48, doküman
+    // modüllerinden 39). Bu ad o farkın içindeydi.
+    canary: "minecraft:tick",
+  },
+] as const;
+
+/** "1.26.40" > "1.21.100": sözlük sırası değil, sayısal parça karşılaştırması. */
+function compareVersions(a: string, b: string): number {
+  const left = a.split(".").map(Number);
+  const right = b.split(".").map(Number);
+  for (let i = 0; i < Math.max(left.length, right.length); i += 1) {
+    const diff = (left[i] ?? 0) - (right[i] ?? 0);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+}
+
+async function collectSchemaComponents(
+  tree: readonly { path: string }[],
+  source: (typeof SCHEMA_SOURCES)[number],
+): Promise<string[]> {
+  const folders: string[] = [];
+  for (const entry of tree) {
+    if (!entry.path.startsWith(source.dir)) continue;
+    if (!entry.path.endsWith(`/${source.file}`)) continue;
+    const folder = entry.path.slice(source.dir.length).split("/")[0];
+    // Yalnızca sayısal sürüm klasörleri; "beta" burada eleniyor.
+    if (folder !== undefined && /^\d+(\.\d+)*$/.test(folder)) folders.push(folder);
+  }
+
+  if (folders.length === 0) {
+    throw new Error(
+      `${source.dir}: "${source.file}" taşıyan sayısal sürüm klasörü yok — upstream ` +
+        "düzeni değişmiş olabilir. Sessizce şemasız devam etmek, ölçülen yanlış " +
+        "pozitifleri geri getirmek olurdu.",
+    );
+  }
+
+  folders.sort(compareVersions);
+  const folder = folders[folders.length - 1] as string;
+  const path = `${source.dir}${folder}/${source.file}`;
+
+  const downloaded = await downloadPaths(BEDROCK_SAMPLES_REPO, BEDROCK_SAMPLES_REF, [path]);
+  const content = downloaded.get(path);
+  if (content === undefined) throw new Error(`${path} indirilemedi`);
+
+  const schema = JSON.parse(content) as { properties?: Record<string, unknown> };
+  const names = Object.keys(schema.properties ?? {})
+    .filter((name) => name.startsWith("minecraft:"))
+    .sort();
+
+  if (names.length === 0) throw new Error(`${path}: minecraft: önekli bileşen adı yok`);
+  if (!names.includes(source.canary)) {
+    throw new Error(`${path}: ${source.canary} yok — şema biçimi değişmiş olabilir`);
+  }
+
+  return names;
+}
 
 /** Başlık zincirini izleyerek düğümü bulur. Bulunamazsa null. */
 function findSection(nodes: readonly DocNode[], chain: readonly string[]): DocNode | null {
@@ -170,6 +260,13 @@ export async function collectComponents(version: string): Promise<ComponentsResu
     }
     index[key] = names;
     counts[key] = names.length;
+  }
+
+  const tree = await fetchTree(BEDROCK_SAMPLES_REPO, BEDROCK_SAMPLES_REF);
+  for (const source of SCHEMA_SOURCES) {
+    const names = await collectSchemaComponents(tree, source);
+    index[source.key] = names;
+    counts[source.key] = names.length;
   }
 
   if (await writeIfChanged(join(outDir, COMPONENTS_FILE), toJson(index))) {

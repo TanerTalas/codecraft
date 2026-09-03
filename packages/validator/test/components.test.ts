@@ -105,6 +105,54 @@ test("dahili olay adı bileşen olarak kabul EDİLMİYOR", async () => {
   assert.equal(result.findings.length, 1);
 });
 
+/**
+ * ÖLÇÜLMÜŞ YANLIŞ POZİTİF — 03-09-2026.
+ *
+ * Oyun ölçümü için üretilen paketin KENDİ sağlam fixture'ı uyarı aldı:
+ * `minecraft:health` "böyle bir bileşen yok" diye raporlandı. Sebep
+ * `doc_modules`'ün eksikliğiydi — `minecraft:health` hiçbir doküman
+ * modülünde geçmiyor. Şemadan gelen ikinci kaynak eklendi (401 ad).
+ *
+ * Bu test o günün kaydı: aşağıdaki dördü de her vanilla mob'da geçen,
+ * tartışmasız geçerli adlar.
+ */
+test("doküman modüllerinde olmayan gerçek bileşenler uyarı üretmiyor", async () => {
+  const result = await checkComponents([
+    file("entities/guard.json", {
+      format_version: "1.21.100",
+      "minecraft:entity": {
+        description: { identifier: "codecraft:guard" },
+        components: {
+          "minecraft:health": { value: 20 },
+          "minecraft:absorption": {},
+          "minecraft:follow_range": { value: 16 },
+          "minecraft:knockback_resistance": { value: 0.5 },
+        },
+      },
+    }),
+  ]);
+  assert.deepEqual(result.findings, []);
+});
+
+/**
+ * Kontrol grubu: ikinci kaynak kümeyi genişletti, ama kapıyı açmadı.
+ * Uydurma bir ad hâlâ yakalanmalı — yoksa yukarıdaki test sadece
+ * "kontrol kapandı" demenin süslü hâli olurdu.
+ */
+test("ikinci kaynak eklendikten sonra da uydurma ad yakalanıyor", async () => {
+  const result = await checkComponents([
+    file("entities/guard.json", {
+      format_version: "1.21.100",
+      "minecraft:entity": {
+        description: { identifier: "codecraft:guard" },
+        components: { "minecraft:healht": { value: 20 } },
+      },
+    }),
+  ]);
+  assert.equal(result.findings.length, 1);
+  assert.match(result.findings[0]?.message ?? "", /minecraft:healht/);
+});
+
 test("hepsi warning — dokümantasyon oyunun gerisinde kalabiliyor", async () => {
   const result = await checkComponents([block({ "minecraft:yok_boyle_bir_sey": {} })]);
   assert.equal(result.ok, true);

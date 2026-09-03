@@ -319,6 +319,19 @@ export type ComponentIndex = {
   entityAttributes: string[];
   entityProperties: string[];
   entityEvents: string[];
+  /**
+   * Mojang'ın kendi entity şemasındaki bileşen adları — ikinci kaynak.
+   *
+   * `doc_modules` eksik olduğu ölçüldü (03-09-2026): 401 şema adına karşı 347,
+   * fark 126 ve `minecraft:health` bunların içinde. Ayrıntı
+   * `docs/VALIDATION-LIMITS.md` · G.
+   *
+   * Opsiyonel, çünkü bu alan eklenmeden üretilmiş bir `components.json` hâlâ
+   * okunabilmeli — eksikse boş küme gibi davranır, çökmez.
+   */
+  entitySchemaComponents?: string[];
+  /** Aynı gerekçe, blok tarafı: şemada 48 ad, doküman modüllerinden 39. */
+  blockSchemaComponents?: string[];
   featureTypes: string[];
   biomeComponents: string[];
   clientBiomeComponents: string[];
