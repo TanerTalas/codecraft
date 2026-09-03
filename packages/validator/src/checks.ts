@@ -1001,14 +1001,24 @@ export async function checkMolang(
     for (const { path, text } of strings) {
       const result = await validateMolang(text, { index });
       for (const finding of result.findings) {
+        // ÖLÇÜLDÜ 03-09-2026, Bedrock 1.26.45, ContentLog: bilinmeyen bir
+        // sorgu bloğun TAMAMINI düşürüyor ("Failed to resolve query
+        // query.is_babyy" → "permutation condition failed to parse" →
+        // "Block definition parsing failed"). O yüzden unknown-query artık
+        // error. Diğer üç tür (unknown-math, removed-query, arity) AYNI
+        // ölçümden geçmedi ve warning kalıyor — ölçülmemiş kural
+        // kodlanmıyor.
+        const measured = finding.kind === "unknown-query";
         findings.push({
           check: `molang:${finding.kind}`,
-          severity: "warning",
+          severity: measured ? "error" : "warning",
           path: file.path,
           message: `${path || "/"} :: ${finding.message}`,
-          evidence:
-            "data/<version>/molang.json (bedrock-samples metadata/molang_modules)" +
-            ` · ${LIMITS} · F — not yet measured in game, hence a warning`,
+          evidence: measured
+            ? "data/<version>/molang.json (bedrock-samples metadata/molang_modules)" +
+              ` · ${LIMITS} · F — measured in game 03-09-2026: the whole block definition fails to parse`
+            : "data/<version>/molang.json (bedrock-samples metadata/molang_modules)" +
+              ` · ${LIMITS} · F — this kind has not been measured in game, hence a warning`,
         });
       }
     }

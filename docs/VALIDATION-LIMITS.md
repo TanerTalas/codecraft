@@ -106,6 +106,40 @@ tablosunun oyunda ne yaptığı henüz ölçülmedi. Parçacık düzeltmesi ise 
 ölçüme dayanıyor ve error tarafında duruyor — çünkü orada ölçülen şey aracın
 kendi hatasıydı.
 
+### İkinci kanıt (03-09-2026): feature rule → `places_feature`
+
+Probe paketi oyuna yüklendiğinde `ContentLog` bu sınıftan **iki** hata daha
+yazdı ve ikisi de probe değil, paketin kendi fixture'larıydı:
+
+```
+[FeatureRegistry][error]-My World | No definition found for feature
+    'codecraft:ruby_ore_scatter'
+[Recipes][error]-recipes/ruby_block.json | codecraft:ruby_block |
+    The Item: codecraft:ruby_block is missing or invalid, can't make the recipe
+```
+
+İkincisi bu bölümün zaten kayıtlı kanıtı. **Birincisi yeni:** bir feature
+rule'un işaret ettiği feature pakette tanımlı değilse oyun onu `error` olarak
+yazıyor — yani `places_feature` de A sınıfının içinde ve sessiz değil.
+
+Doğrulayıcı ikisini de **zaten yakalıyor** (03-09-2026'da paketin tamamı
+`review`den geçirilerek ölçüldü):
+
+```
+ERROR [identity] feature_rules/ruby_ore_feature.json
+  /minecraft:feature_rules/description/places_feature:
+  "codecraft:ruby_ore_scatter" is not defined in any feature file
+ERROR [identity] recipes/ruby_block.json
+  /minecraft:recipe_shaped/result/item: "codecraft:ruby_block" is not defined in this pack
+```
+
+Yani kontrol doğru; **eksik olan üreteçte:** `build-test-pack.ts` yalnızca şema
+ve `tsc` koşuyor, dosyalar arası kontrolleri koşmuyor. Bu yüzden bilinen iki
+A sınıfı hatası paketle birlikte oyuna gitti ve günlüğe gürültü olarak düştü.
+Ölçüm sırasında "bu satır probe'a mı ait, fixture'a mı" sorusu bu yüzden
+soruldu. Üretecin bu kontrolleri koşup **beklenen gürültüyü önceden yazdırması**
+gerekiyor — açık madde.
+
 ## B. Dosya adı ile içerik arasındaki kurallar — hiçbir şema yakalayamaz
 
 ```
@@ -347,6 +381,10 @@ saklanıyor ve kullanıldıklarında sürüm numarasıyla birlikte raporlanıyor
 
 ### Neden hepsi warning
 
+> **Bu başlık 03-09-2026'da kısmen geçersizleşti.** Aşağıdaki ölçüme bak:
+> `unknown-query` artık **error**, diğer üç tür warning kaldı. Aşağıdaki iki
+> gerekçe o ölçümden önce yazıldı ve kaydı olarak duruyor.
+
 `checkMolang`'ın ürettiği bulguların hepsi **warning**, hiçbiri error. İki
 sebep, ikisi de bu depoda yazılı:
 
@@ -361,6 +399,41 @@ sebep, ikisi de bu depoda yazılı:
 **Error'a yükseltmek için gereken şey belli ve tek:** bilerek bozulmuş bir
 Molang ifadesi taşıyan bir paketi oyuna yükleyip `ContentLog`'a bakmak.
 Ölçülene kadar warning kalacak.
+
+### Ölçüldü 03-09-2026 — oyun reddediyor, sınıf error'a yükseldi
+
+Probe paketi oyuna yüklendi (`blocks/probe_molang.json`, tek kasıtlı hata:
+`query.is_babyy`). `ContentLog` dört satır birden yazdı:
+
+```
+[Molang][error] ... codecraft:probe_molang | components | query.is_babyy |
+    Failed to resolve query query.is_babyy.  Either the query does not exist
+    or it is not supported in this context.
+[Molang][error] ... unrecognized token: query.is_babyy
+[Blocks][error] ... permutation condition failed to parse
+[Blocks][error] ... blocks/probe_molang.json | Block definition parsing failed
+```
+
+Sonuç tek bir satırdan ibaret değil: **blok tanımının tamamı düştü.** Bağımsız
+doğrulaması da var — `/setblock ~ ~1 ~ codecraft:probe_molang` komutu
+`Syntax error: Unexpected "codecraft:probe_molang"` verdi, yani blok oyunun
+kayıt defterine hiç girmemiş. Kontrol grubu aynı oturumda koşuldu:
+`/setblock ~ ~1 ~ stone` ve `/setblock ~ ~1 ~ codecraft:ruby_ore` **çalıştı**,
+yani sorun paketin kendisinde ya da komut biçiminde değil, o dosyada.
+
+**`molang:unknown-query` artık error.** Bu bölümün yukarıda yazdığı kriter
+buydu ve karşılandı.
+
+**Diğer üç tür warning kalıyor:** `unknown-math`, `removed-query`, `arity`.
+Aynı arıza gibi duruyorlar ama aynı ölçümden geçmediler ve bu depoda "gibi
+duruyor" bir gerekçe değil. Sonraki probe turunda ölçülebilirler.
+
+> **Ölçüm bir sınır da gösterdi.** Oyunun mesajı "Either the query does not
+> exist **or it is not supported in this context**" diyor. Yani var olan bir
+> sorgu yanlış bağlamda yazıldığında da aynı hatayı veriyor; bizim kontrolümüz
+> yalnızca VARLIĞA bakıyor, bağlama bakmıyor. Bu ikinci yarı ölçülmedi ve
+> kapsam dışında — hangi sorgunun hangi bağlamda geçerli olduğunu söyleyen
+> makine okunur bir kaynak bilinmiyor.
 
 ### Ne ölçülmüyor
 
@@ -405,6 +478,46 @@ test olarak sabitlendi.
 eklenmiş bir bileşene "yok" demek yanlış pozitif olurdu. Bu sınıf da oyunda
 ölçülmedi.
 
+### Ölçüldü 03-09-2026 — oyun reddediyor, ama sınıf warning KALIYOR
+
+Probe paketi oyuna yüklendi (`blocks/probe_component.json`, tek kasıtlı hata:
+`minecraft:destructable`). `ContentLog`:
+
+```
+[Blocks][inform] ... codecraft:probe_component | components |
+    minecraft:destructable | {}
+[Blocks][error]  ... child 'minecraft:destructable' not valid here.
+[Blocks][error]  ... blocks/probe_component.json | Block definition parsing failed
+```
+
+F ile aynı sonuç: **blok tanımının tamamı düşüyor**, blok kayıt defterine
+girmiyor (`/setblock` sözdizimi hatası veriyor, kontrol blokları çalışıyor).
+
+**Buna rağmen error'a yükseltilmedi.** Sebep aynı gün ölçüldü ve sayısı belli:
+
+| | Sayı |
+|---|---|
+| Mojang'ın kendi şemasındaki entity bileşeni (`json_schemas/server/entity/1.26.40/Entity component definitions.json`) | **401** |
+| Bizim `components.json` indeksimizde toplam (bileşen + AI hedefi + öznitelik + özellik) | 347 |
+| **Şemada var, indekste YOK** | **126** |
+
+`minecraft:health` bu 126'nın içinde — yani her vanilla mob'da geçen bir
+bileşen. Bulunduğu yer de kayda değer: **hiçbir `doc_modules` dosyasında
+geçmiyor.** İndeksin kaynağı olan dokümantasyon eksik, "geride kalmış" değil.
+
+Ölçümün nasıl bulunduğu ayrıca anlamlı: bu yanlış pozitif, oyun ölçümü için
+üretilen paketin kendi fixture'ında çıktı — `entities/guard.json` içindeki
+`minecraft:health` uyarı olarak raporlandı.
+
+**Sonuç:** oyun tarafı kanıtlandı ama kaynak tarafı kanıtlanmadı. Bugün error
+yapmak 126 geçerli adı hataya çevirirdi ve C bölümünde ölçülen bedel tam
+olarak budur — aracın kendi hataları modele "bu aracın hatalarını yok say"
+öğretiyor.
+
+**Yükseltmenin şartı artık ölçüm değil, veri:** `components.json` Mojang'ın
+şemasındaki adlarla birleştirilsin, fark sıfıra insin. O olduğunda bu sınıf
+error olur ve bu satır güncellenir.
+
 Yan ürün: `metadata/engine_modules/engine-after-events-ordering.json` da
 indeksleniyor (`data/<sürüm>/event-order.json`, 31 modül sürümü). D sınıfının
 veri ayağı — hangi `afterEvent`'in var olduğu ve hangi sırada tetiklendiği
@@ -422,8 +535,8 @@ artık hatırlanmıyor, okunuyor.
 | C · asset referansı | Hayır | `checkAssets` | **Bulunuyor** — vanilla doku indeksine karşı |
 | D · geçerli ama yanlış | **Yapısal olarak hayır** | `checkPatterns` | **Bulunuyor + önceden anlatılıyor** — `patternGuide()` aynı tablodan besliyor |
 | E · yüklenmeyen manifest | Hayır — eski tip listede | `checkManifest` | **Bulunuyor** — yanlış modül tipi rapor ediliyor |
-| F · Molang | Hayır — string'in içine bakmıyor | `checkMolang` | **Bulunuyor, warning** — oyunda henüz ölçülmedi |
-| G · bileşen adı | Hayır — iki kaynak da geçiriyor | `checkComponents` | **Bulunuyor, warning** — oyunda henüz ölçülmedi |
+| F · Molang | Hayır — string'in içine bakmıyor | `checkMolang` | **Bulunuyor** — `unknown-query` 03-09-2026'da oyunda ölçüldü ve **error**; diğer üç tür warning |
+| G · bileşen adı | Hayır — iki kaynak da geçiriyor | `checkComponents` | **Bulunuyor, warning** — oyun 03-09-2026'da reddetti ama indekste 126 adlık ölçülmüş boşluk var |
 
 > **Dördüncü sütun 02-09-2026'da düzeltildi.** Önce B ve E için "düzeltiliyor"
 > yazıyordu ve doğruydu: bir `normalize()` fonksiyonu dosya adını ve manifest
@@ -437,16 +550,38 @@ gövdesi `packages/validator/src/molang.ts`), saf fonksiyon, model çağrısı y
 fixture'lar tek tek ölçüyor.
 
 > **F ve G satırları diğerlerinden farklı okunmalı.** A–E "oyunda patladığı görüldü,
-> sonra kontrol yazıldı" sırasıyla geldi. F ters yönden geldi: kaynak makine
-> okunur olduğu için kontrol önce yazıldı, oyun ölçümü henüz yapılmadı. Bu
-> yüzden warning ve bu yüzden ayrı yazılıyor. G aynı yoldan geldi; farkı,
-> boşluğun `cases.json` içinde zaten kayıtlı olması.
+> sonra kontrol yazıldı" sırasıyla geldi. F ve G ters yönden geldi: kaynak makine
+> okunur olduğu için kontrol önce yazıldı, oyun ölçümü sonra yapıldı (03-09-2026).
+>
+> **Ölçüm ikisini ayırdı.** Oyun ikisini de aynı sertlikte reddetti — blok
+> tanımının tamamı düşüyor. Ama F yükseldi, G yükselmedi: F'in kaynağı
+> (`molang_modules`) bütün görünüyor, G'nin kaynağında (`doc_modules`) **126
+> adlık ölçülmüş bir boşluk** var. Yani severity'yi belirleyen şey yalnızca
+> "oyun ne yapıyor" değil, "bizim listemiz ne kadar eksiksiz" — ikisi ayrı
+> sorular ve ikisi de ölçülmeden karar verilmiyor.
 
-### Sıradaki ölçüm — üç sınıf oyunda denenmedi
+### Ölçüm — üç sınıftan ikisi koşuldu
+
+> **Koşuldu 03-09-2026, Bedrock, probe paketiyle.** Sonuçlar:
+>
+> | Sınıf | Oyun ne yaptı | Karar |
+> |---|---|---|
+> | **F · Molang** | Blok tanımının tamamını düşürdü, dört `error` satırı | **error'a yükseltildi** |
+> | **G · Bileşen adı** | Blok tanımının tamamını düşürdü, iki `error` satırı | **warning kaldı** — indekste 126 adlık ölçülmüş boşluk var |
+> | **A' · Yol referansı** | Günlükte satır bulunamadı | **açık** — aramanın kapsamı dar olabilir, aşağıya bak |
+>
+> Ayrıntı: F ve G bölümlerindeki "Ölçüldü 03-09-2026" başlıkları.
+>
+> **A' neden kapanmadı:** `codecraft:probe_loot` doğduğu ve öldüğü doğrulandı
+> (`/summon` "Object successfully summoned", `/kill` ölüm dumanı üretti), ama
+> günlükte `probe|babyy|destructable|codecraft` kalıbıyla loot'a dair satır
+> çıkmadı. Oyunun mesajı bu kelimelerden hiçbirini taşımıyor olabilir; kapsamı
+> genişletilmiş bir arama yapılmadan "oyun şikâyet etmedi" YAZILMAZ.
 
 **A', F ve G warning seviyesinde ve orada kalmalarının tek sebebi ölçüm
 eksikliği.** Üçünün de kaynağı makine okunur ve kontrolleri testle sabitlendi,
-ama hiçbirinin `ContentLog` kanıtı yok.
+ama hiçbirinin `ContentLog` kanıtı yok. *(Bu paragraf ölçümden önce yazıldı;
+F ve G için artık geçerli değil, kaydı olarak duruyor.)*
 
 **Hazırlık yapıldı 03-09-2026.** O güne kadar bu bölüm "fixture üreteci üç
 vakayı taşımalı" diyordu; **taşımıyordu.** Yani belgelenen komut koşulsaydı
