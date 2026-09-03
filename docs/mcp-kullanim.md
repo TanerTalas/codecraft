@@ -1096,6 +1096,46 @@ deneniyor. Hem BP hem RP'de aynı adla duran klasörler (`items`,
 > tanımlanmayan `codecraft:guard` kimliği A sınıfı bulgusu olarak yakalandı.
 > Yani kırık şema ayağındaydı, kontrollerde değil.
 
+### Bulgu 3 — aynı sınıf, iki örnek daha (ve biri üretimde canlıydı)
+
+Bu ikisi senaryolardan değil, **oyun ölçümü hazırlığının kontrol koşusundan**
+çıktı: probe dosyalarının kendi kontrollerini tetiklediği doğrulanırken bulgu
+metinleri ekrana düştü ve içlerinde Türkçe vardı.
+
+| Nerede | Metin | Nasıl görülüyordu |
+|---|---|---|
+| `validate_command`, bilinmeyen komut dalı | `"uydurmakomut" diye bir komut yok` | **üretimde canlı**, dağıtılmış uçtan doğrulandı |
+| `checkReferences` bulgusu | `... :: loot tablosu "..." exists neither in vanilla nor...` | İngilizce cümlenin ortasında Türkçe etiket |
+
+İkisi de `english-surface.test.ts`'ten aynı sebeple kaçmıştı — **o kod yolları
+hiç sürülmüyordu**:
+
+- Testteki `validate_command` çağrısı `"give @p"` idi: bu **tanınan** bir
+  komutun yanlış argümanı. Komutun hiç bulunmadığı dal başka bir dal ve o dal
+  hiç çağrılmamıştı.
+- `BROKEN_PACK` içinde loot/takas tablosu referansı yoktu, yani o mesaj hiç
+  üretilmiyordu.
+
+Kelime listesi de yetmezdi: "diye", "yok", "tablosu" — hiçbirinde Türkçeye
+özgü harf yok.
+
+Düzeltildi (`241a6c9`): iki metin İngilizceye çevrildi, iki kod yolu da teste
+eklendi (bilinmeyen komut çağrısı ve `BROKEN_PACK`'e bir loot referansı),
+kelime listesine `tablo*` ve `diye` girdi. **Kontrol koşusu:** ikisi geri
+Türkçeye çevrilince iki ayrı test kırmızı veriyor.
+
+**Günün dersi bu üç bulgunun toplamında:** bir günde üç ayrı Türkçe sızıntısı
+çıktı ve üçü de aynı yapıdaydı — metin İngilizceye çevrilmişti ama **onu
+üreten kod yolu taranmıyordu.** Kelime listesini uzatmak bunu kapatmıyor,
+yalnızca son bulunanı kapatıyor. Kalıcı olan şey listede değil kapsamda:
+testin sürdüğü kod yolu sayısı. Bugün üç yol eklendi (başarılı çıktılar,
+bilinmeyen komut, yol referansı bulgusu).
+
+> Kalan bir tane var ve bilerek dokunulmadı: `scriptRuntimeReport` içindeki
+> `var`/`YOK` metinleri. Bugün **hiçbir çağıranı yok** — MCP katmanından
+> erişilmiyor, yalnızca dışa aktarılmış duruyor. Modele giden bir yüzey
+> olmadığı için kural kapsamında değil; bir gün çağrılırsa olacak.
+
 ### Gözlem 1 — iki araç aynı soruya iki farklı cevap veriyor
 
 Aynı doküman tipi için `format_version`:
@@ -1165,6 +1205,10 @@ Bulgu 1 ve 2 `dev`'de düzeltildi, `main`'e alındı ve dağıtıldı.
 Kayda değer olan üçüncü satır değil ikincisi: aynı çağrı dağıtımdan önce
 "document type could not be resolved" diyordu. Düzeltmenin çalıştığı testte
 değil **dağıtılmış uçta** doğrulandı.
+
+**Bulgu 3 henüz dağıtılmadı.** `241a6c9` `dev`'de duruyor; üretimdeki uç
+bilinmeyen bir komuta hâlâ `"..." diye bir komut yok` diye cevap veriyor.
+Bu satır dağıtımdan sonra ölçülüp güncellenecek.
 
 
 ## Tekrar üretmek için
