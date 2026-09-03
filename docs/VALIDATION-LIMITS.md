@@ -448,21 +448,55 @@ fixture'lar tek tek ölçüyor.
 eksikliği.** Üçünün de kaynağı makine okunur ve kontrolleri testle sabitlendi,
 ama hiçbirinin `ContentLog` kanıtı yok.
 
-Yapılacak tek şey, A–E için yapılanın aynısı:
+**Hazırlık yapıldı 03-09-2026.** O güne kadar bu bölüm "fixture üreteci üç
+vakayı taşımalı" diyordu; **taşımıyordu.** Yani belgelenen komut koşulsaydı
+oyun oturumu hiçbir şey ölçmeden geçerdi. Üç probe artık üreteçte:
+
+| Sınıf | Dosya | İçindeki kasıtlı hata |
+|---|---|---|
+| F · Molang | `blocks/probe_molang.json` | `query.is_babyy` (doğrusu `query.is_baby`) |
+| G · Bileşen adı | `blocks/probe_component.json` | `minecraft:destructable` |
+| A' · Yol referansı | `entities/probe_loot.json` | `loot_tables/entities/codecraft_probe_missing.json` |
+
+Üçü **ayrı dosya ve ayrı kimlik**: tek dosyada toplansalardı günlükteki satırın
+hangi sınıfa ait olduğu bilinemezdi. Üçü de **gerçekten yüklenen içerik** — iki
+blok tanımı ve bir entity. Yüklenmeyen bir dosyada "oyun şikâyet etmedi" ile
+"dosya hiç okunmadı" ayırt edilemez ve ölçüm boşa giderdi.
+
+Üreteç iki şeyi birden ölçüyor ve ikisi de tutmazsa **hiçbir şey yazmıyor**:
+probe şemadan geçmeli (yoksa oyuna hiç gitmez) ve kendi kontrolünü gerçekten
+tetiklemeli (yoksa paket sessizce ölçmeyen bir pakete döner). Kontrol koşusu
+03-09-2026'da yapıldı: üçü de bozukken 1 bulgu, düzeltilmiş hâlleriyle 0.
+
+#### Koşmak için
 
 ```
 npm run fixtures:pack -- --install
 ```
 
-Sonra oyunda dünyayı aç ve
-`%APPDATA%\Minecraft Bedrock\logs\ContentLog*.txt` dosyasına bak
-(Ayarlar → Yaratıcı → "Content Log File" açık olmalı). Fixture üreteci
-bilerek bozulmuş bir Molang sorgusu, uydurulmuş bir bileşen adı ve olmayan
-bir loot tablosu yolu taşımalı — üçü ayrı satır üretiyorsa sınıflar **error**'a
-yükseltilir.
+Probe'lar **varsayılan olarak açık**; temiz kontrol paketi için `--no-probe`.
+Komut, kurulumdan sonra ne aranacağını da yazdırıyor.
 
-**İki sonuç da kazanç:** oyun şikâyet ederse kontrol güçlenir; etmezse
-"warning kalması doğruymuş" diye buraya yazılır. Ölçülmeden ikisi de
+Sonra oyunda dünyayı aç (Ayarlar → Yaratıcı → "Content Log File" açık olmalı)
+ve `%APPDATA%\Minecraft Bedrock\logs\ContentLog*.txt` dosyasına bak:
+
+| Sınıf | Aranan |
+|---|---|
+| F | `codecraft:probe_molang` veya `is_babyy` geçen satır |
+| G | `codecraft:probe_component` veya `destructable` geçen satır |
+| A' | `codecraft_probe_missing` geçen satır |
+
+**A' için dünyada bir adım daha gerekiyor:** loot tablosu ölüm anında
+çözülüyor, dosya yüklenirken değil.
+
+```
+/summon codecraft:probe_loot
+```
+
+sonra öldür.
+
+**İki sonuç da kazanç:** oyun şikâyet ederse sınıf **error**'a yükseltilir;
+etmezse "warning kalması doğruymuş" diye buraya yazılır. Ölçülmeden ikisi de
 bilinmiyor.
 
 İki sınır kayda geçmeli:
