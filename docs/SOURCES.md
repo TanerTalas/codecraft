@@ -442,16 +442,50 @@ kalitesini değiştirmiyor ve karar ölçümle veriliyor.
   depo public yapılınca `README.md` görünen yüzey oldu, feragat oraya ve
   `NOTICE` dosyasına girdi. Kullanım sitesi yapıldığında altbilgiye de
   konacak — o zaman README yeniden ele alınacak.
-- **Yeni toplayıcılar CI'da hiç koşmadı.** `molang`, `references` ve
-  `components` 02-09-2026'da eklendi ve yalnızca **yerelde** koşturuldu. O gün
-  `main` dalı geride olduğu için günlük cron eski pipeline'ı çalıştırdı;
-  dallar 03-09-2026'da birleştirildi, yani ilk CI koşusu bundan sonraki
-  05:00 UTC'de olacak.
+- ~~**Yeni toplayıcılar CI'da hiç koşmadı.**~~ Kapatıldı 03-09-2026: ilk CI
+  koşusu yeşil. `molang`, `references` ve `components` 02-09-2026'da eklendi ve
+  yalnızca yerelde koşturulmuştu; o gün `main` geride olduğu için cron eski
+  pipeline'ı çalıştırıyordu. Dallar 03-09-2026'da birleşti, aynı günün cron'u
+  yeni pipeline'ı çalıştırdı.
 
-  İzlenecek şey `references.ts`: günde **189 ayrı dosya** çekiyor
-  (parçacık kimliği dosya adından türetilemediği için hepsi tek tek
-  okunuyor). Yerelde sorun çıkarmadı ama CI'da GitHub API kotası farklı
-  davranabilir — iş akışı `GITHUB_TOKEN` kullanıyor, yine de ölçülmedi.
+  **Ölçüm, 03-09-2026.** Koşu 7 (`schedule`), dal `main`, `head_sha` 2b29417,
+  sonuç `success`. Adım süreleri iş akışı API'sinden okundu
+  (`/actions/runs/33739588319/jobs`):
 
-  Başarısız olursa sessiz kalmaz: `data.yml` bildirim issue'su açıyor.
-  Bir kez yeşil koştuğu görüldüğünde bu madde kapanır ve sayı buraya yazılır.
+  | Adım | Süre |
+  |---|---|
+  | `npm ci` | 9 sn |
+  | **Pipeline** — 189 dosya dahil bütün toplayıcılar | **30 sn** |
+  | Değişiklik varsa commit et | <1 sn, `data/` değişmedi, commit yok |
+  | Bayatlama kontrolü | <1 sn, geçti |
+  | İş toplam | 45 sn |
+
+  İzlenecek şey `references.ts` idi: günde 189 ayrı dosya çekiyor ve kota
+  ölçülmemişti. Kotayı zorlamadı. Bu 189 istek CI'da gerçekten yapılıyor —
+  `pipeline/cache/` gitignore'da, koşucu her seferinde boş başlıyor.
+
+  Commit atılmaması da beklenen davranış: pipeline deterministik yazıyor,
+  upstream değişmediği için `data/` bit bit aynı çıktı. Yani "cron koştu mu"
+  sorusunun cevabı **commit geçmişinden okunamaz**, koşu listesinden okunur.
+
+- **Cron 05:00 UTC'de koşmuyor, ~5 saat geç koşuyor.** Ölçüm 03-09-2026,
+  `data.yml`'nin bütün zamanlanmış koşuları (`/actions/workflows/data.yml/runs`,
+  `run_started_at`):
+
+  | Koşu | Başlangıç (UTC) | Gecikme |
+  |---|---|---|
+  | 3 | 30-08 10:25 | +5s 25d |
+  | 4 | 31-08 11:29 | +6s 29d |
+  | 5 | 01-09 09:52 | +4s 52d |
+  | 6 | 02-09 09:24 | +4s 24d |
+  | 7 | 03-09 09:34 | +4s 34d |
+
+  Beşte beş, hiçbiri zamanında değil, en erkeni +4s 24d. Bu bir arıza değil:
+  GitHub zamanlanmış işleri paylaşımlı kuyruğa alıyor ve yoğunluk saatlerinde
+  geciktiriyor, hatta atlayabiliyor. Sonuç olarak `data/` en fazla
+  **1 gün + ~5 saat** bayat olabiliyor.
+
+  Bugün bir şeyi bozmuyor çünkü hiçbir yerde "05:00'te taze" varsayımı yok,
+  ama `data.yml`'deki "sabah koşusu" yorumu bu gecikmeyi bilmeden okunuyordu.
+  Kesin saat gerekirse çözüm cron'u öne almak değil (kuyruk aynı kuyruk),
+  koşuyu dışarıdan tetiklemek.

@@ -9,6 +9,11 @@ on:
   schedule:
     # 05:00 UTC. Mojang yayınları gün içinde düşüyor, sabah koşusu bir sonraki
     # güne yetişir.
+    #
+    # Ölçüldü 03-09-2026: bu saat bir istek, garanti değil. Zamanlanmış beş
+    # koşunun beşi de geç başladı, en erkeni +4s 24d, ortalama ~+5 saat
+    # (docs/SOURCES.md, "Cron 05:00 UTC'de koşmuyor"). GitHub zamanlanmış
+    # işleri paylaşımlı kuyruğa alıyor; saati öne almak kuyruğu değiştirmiyor.
     - cron: "0 5 * * *"
   workflow_dispatch:
 
