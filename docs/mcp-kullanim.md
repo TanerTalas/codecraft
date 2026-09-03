@@ -1150,11 +1150,21 @@ Sunucu tarafında karşılığı yok, ölçüldü:
 uç arasındaki yol. **Sebep bulunmadı, tekrarlanabilir değil** — burada bir
 "düzeltildi" satırı yok, sadece kaydı var.
 
-### Dağıtım şerhi
+### Dağıtım ve doğrulaması
 
-Bulgu 1 ve 2 `dev` dalında düzeltildi. **Üretimdeki uç hâlâ eski kodu
-sunuyor** — dağıtım yapılana kadar `get_version_info` yarım çevrilmiş metni
-döndürmeye, `review_pack` kök göreli yolları reddetmeye devam eder.
+Bulgu 1 ve 2 `dev`'de düzeltildi, `main`'e alındı ve dağıtıldı.
+**Üretimde ölçüldü, 03-09-2026, dağıtımdan sonra:**
+
+| Ne | Uçtan dönen |
+|---|---|
+| `get_version_info` → `patterns[].guidance` | `...playerSpawn and event.player.sendMessage instead...` — Türkçe yok |
+| `review_pack` → `spawn_rules/guard.json` | `behavior/spawn_rules/spawn_rules` diye çözüldü ve **gerçek şema hatasını buldu** (`population_control` eksik) |
+| `npm run mcp:probe` | dokuz kontrolün dokuzu **yeşil** |
+| `tools/list` yükü | 10.297 bayt — **değişmedi**, açıklama metinlerine dokunulmadı |
+
+Kayda değer olan üçüncü satır değil ikincisi: aynı çağrı dağıtımdan önce
+"document type could not be resolved" diyordu. Düzeltmenin çalıştığı testte
+değil **dağıtılmış uçta** doğrulandı.
 
 
 ## Tekrar üretmek için
