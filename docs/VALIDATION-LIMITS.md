@@ -622,6 +622,50 @@ denemez.** Hatalar birbirini gizliyor ve ancak üsttekiler temizlendikçe alttak
 görünüyor. Paketin temiz yüklenmesi bu yüzden yalnızca kozmetik değil, ölçüm
 şartı.
 
+## Paket temiz yükleniyor — ölçüldü 03-09-2026
+
+Aynı günün üçüncü oyun turu. Fixture paketi (13 dosya, probe'suz) kuruldu,
+dünya açıldı, `ContentLog` `error` için tarandı:
+
+```
+Get-Content <en yeni ContentLog> | Select-String "error"
+→ (boş)
+```
+
+**Sıfır `[error]` satırı.** Aynı gün sabah aynı paket beş ayrı hata yazıyordu
+(iki A sınıfı, bir C, bir H, artı iki probe). Hepsi kapandı.
+
+### Bu ölçüm neyi söylüyor
+
+Doğrulayıcının **error** seviyesindeki bulguları ile oyunun `error` satırları
+bu paket için **aynı kümede birleşti**: ikisi de boş. Bu, severity kararlarının
+bugüne kadarki en doğrudan doğrulaması.
+
+Kapsanan doküman tipleri: manifest, blok, item (×2), entity, tarif, spawn rule,
+animasyon denetleyici, dialogue, feature rule, feature (×2) ve script.
+
+### Bu ölçüm neyi SÖYLEMİYOR
+
+Bunlar tek tek yazılıyor çünkü "temiz yüklendi" cümlesi kolayca "sorun kalmadı"
+diye okunuyor:
+
+| Kapsam dışı | Neden |
+|---|---|
+| 60 doküman tipinin ~48'i | Pakette yoklar. Denenmemiş tip hakkında hiçbir şey bilinmiyor |
+| Kaynak paketi tarafının tamamı | Paket bir davranış paketi; RP hiç yüklenmedi |
+| **warning** seviyesindeki her şey | G ve A' bilerek warning; oyun onlara ya susuyor (A') ya da indeks eksikliği yüzünden yükseltilmedi (G) |
+| D sınıfı | Tanımı gereği günlüğe satır yazmaz: dosya geçerli, davranış amaçlanandan farklı |
+| Molang'ın diğer üç türü | `unknown-math`, `removed-query`, `arity` — probe taşımıyorlar |
+| Tek sürüm, tek dünya | Ölçüm bir oyun sürümünde ve bir dünyada yapıldı |
+
+Yani doğru cümle şu: **bu paket, bu sürümde, oyunun günlüğe yazdığı hataların
+hiçbirini üretmiyor.** "Doğrulayıcı eksiksiz" demek değil ve "üretilen her
+paket temiz yüklenir" hiç demek değil.
+
+`ContentLog`'un kendisi de bir sınır: yalnızca Mojang'ın loglamayı seçtiği
+şeyler görünüyor. Sessiz kalan bir hata bu yöntemle hiç bulunamaz — A' sınıfı
+tam olarak böyle ölçüldü.
+
 ## Özet
 
 | Sınıf | Şema yakalar mı | Ne ölçüyor | Durum |
