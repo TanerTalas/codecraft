@@ -45,9 +45,17 @@ const TURKISH = /[şŞğĞıİçÇöÖüÜ]/;
  *
  * Liste kapsamlı değil ve olamaz; yalnızca bu depoda gerçekten kullanılmış
  * kelimeler. Yeni bir sızıntı bulunursa buraya EKLENİR, ölçüm genişler.
+ *
+ * İkinci kaçırma 03-09-2026'da GERÇEK KULLANIMDA bulundu: `get_version_info`
+ * çıktısındaki `patterns[].guidance` yarım çevrilmişti
+ * ("...playerSpawn kullan ve event.player.sendMessage ile instead").
+ * "kullan", "ve" ve "ile" kelimelerinde Türkçeye özgü harf yok, üstelik bu
+ * aracın BAŞARILI çıktısı hiç taranmıyordu — yalnızca hata yolu taranıyordu.
+ * İki delik de aynı anda kapatıldı: kelimeler aşağıya, başarılı çıktı ayrı
+ * bir teste.
  */
 const TURKISH_WORDS =
-  /\b(sorgu|matematik|fonksiyonu?|dosya|surum|blok|deger|komut|kural)\b/i;
+  /\b(sorgu|matematik|fonksiyonu?|dosya|surum|blok|deger|komut|kural|kullan[a-z]*|yerine|ve|ile)\b/i;
 
 /** İkisinden biri eşleşirse metin Türkçe sayılır. */
 const hasTurkish = (text: string): boolean => TURKISH.test(text) || TURKISH_WORDS.test(text);
@@ -179,6 +187,38 @@ test("review_pack çıktısının tamamı İngilizce", async () => {
     assert.ok(parsed.report.length > 0, "rapor boş");
 
     assert.ok(!hasTurkish(text), `review_pack çıktısında Türkçe metin var → ${excerpt(text)}`);
+  } finally {
+    await client.close();
+  }
+});
+
+/**
+ * Araçların BAŞARILI çıktısı — hata yolu değil.
+ *
+ * Bu test 03-09-2026'da bir sızıntı ölçüldükten sonra eklendi. O güne kadar
+ * `get_version_info` yalnızca geçersiz sürümle çağrılıyordu, yani modele asıl
+ * giden yük — sürüm tablosu ve `patterns[].guidance` — hiç görülmüyordu.
+ */
+test("araçların başarılı çıktıları İngilizce", async () => {
+  const client = await connect();
+  try {
+    const calls: [string, Record<string, unknown>][] = [
+      // patterns[].guidance buradan geliyor; sızıntı tam olarak oradaydı.
+      ["get_version_info", {}],
+      ["get_schema", { type: "behavior/blocks" }],
+      ["lookup_id", { id: "minecraft:glass" }],
+      ["validate_command", { line: "/give @p diamond 1" }],
+      ["check_feasibility", { request: "add a block that glows" }],
+      ["validate_python", { code: 'CMD = "/give @p diamond 1"' }],
+    ];
+
+    for (const [name, args] of calls) {
+      const result = await client.callTool({ name, arguments: args });
+      const content = result.content as { type: string; text: string }[];
+      const text = content[0]?.text ?? "";
+      assert.ok(text.length > 0, `${name}: boş cevap`);
+      assert.ok(!hasTurkish(text), `${name}: çıktıda Türkçe metin var → ${excerpt(text)}`);
+    }
   } finally {
     await client.close();
   }

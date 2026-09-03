@@ -860,7 +860,7 @@ const PATTERNS: Pattern[] = [
       "Do not put a message meant for players inside a worldLoad subscription: " +
       "the event does fire, but at that moment there is no player in the world " +
       "to receive it. " +
-      "world.afterEvents.playerSpawn kullan ve event.player.sendMessage ile " +
+      "Use world.afterEvents.playerSpawn and event.player.sendMessage " +
       "instead; if the message is only meant for the first join, filter with " +
       "event.initialSpawn.",
     find: (code) => {
