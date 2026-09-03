@@ -645,11 +645,20 @@ tetiklemeli (yoksa paket sessizce ölçmeyen bir pakete döner). Kontrol koşusu
 #### Koşmak için
 
 ```
-npm run fixtures:pack -- --install
+npm run fixtures:pack -- --install --probe
 ```
 
-Probe'lar **varsayılan olarak açık**; temiz kontrol paketi için `--no-probe`.
-Komut, kurulumdan sonra ne aranacağını da yazdırıyor.
+**`--probe` gerekiyor ve bu 03-09-2026'da değişti.** Ölçüm yapılmadan önce
+probe'lar varsayılan olarak açıktı; ölçüm yapıldıktan sonra varsayılan paketin
+oyuna hata yazdırması için sebep kalmadı. Bayraksız koşu **temiz** paket verir,
+`--probe` ölçümü yeniden üretir. Komut, kurulumdan sonra ne aranacağını da
+yazdırıyor.
+
+> **Üreteç artık dosyalar arası kontrolleri de koşuyor** (03-09-2026). Ölçüm
+> sırasında paket iki bilinen A sınıfı hatasıyla oyuna gitti ve günlüğe gürültü
+> düştü; "bu satır probe'a mı ait, fixture'a mı" sorusu bu yüzden soruldu.
+> Artık beklenmeyen tek bir bulgu bile paketi **yazdırmıyor**, ve beklenenlerin
+> sayısı kurulum çıktısında yazıyor.
 
 Sonra oyunda dünyayı aç (Ayarlar → Yaratıcı → "Content Log File" açık olmalı)
 ve `%APPDATA%\Minecraft Bedrock\logs\ContentLog*.txt` dosyasına bak:

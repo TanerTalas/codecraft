@@ -22,8 +22,13 @@ import { dirname, join } from "node:path";
 import { findDevPacksDir, resolveVersion } from "@codecraft/knowledge";
 
 import {
+  checkAssets,
   checkComponents,
+  checkFileNames,
+  checkIdentities,
+  checkManifest,
   checkMolang,
+  checkPatterns,
   checkReferences,
   validateJson,
   validateScript,
@@ -47,6 +52,22 @@ const OUT_DIR = join(ROOT, "test-worlds", PACK_DIR);
 const FILES: { fixture: string; target: string; type: string }[] = [
   { fixture: "block-ruby-ore.json", target: "blocks/ruby_ore.json", type: "behavior/blocks" },
   { fixture: "item-ruby.json", target: "items/ruby.json", type: "behavior/items" },
+  // Tarifin sonucu. 03-09-2026'ya kadar YOKTU ve oyun her yüklemede
+  // "The Item: codecraft:ruby_block is missing or invalid" yazıyordu.
+  { fixture: "item-ruby-block.json", target: "items/ruby_block.json", type: "behavior/items" },
+  // Feature rule'un işaret ettiği zincir. Bunlar da 03-09-2026'da eklendi:
+  // "No definition found for feature 'codecraft:ruby_ore_scatter'" satırı
+  // her koşuda günlüğe düşüyordu ve ölçüm gürültüsüydü.
+  {
+    fixture: "feature-ruby-ore-scatter.json",
+    target: "features/ruby_ore_scatter.json",
+    type: "behavior/features",
+  },
+  {
+    fixture: "feature-ruby-ore-body.json",
+    target: "features/ruby_ore_body.json",
+    type: "behavior/features",
+  },
   { fixture: "entity-guard.json", target: "entities/guard.json", type: "behavior/entities" },
   { fixture: "recipe-ruby-block.json", target: "recipes/ruby_block.json", type: "behavior/recipes" },
   {
@@ -232,9 +253,13 @@ async function buildManifest(serverVersion: string): Promise<Manifest> {
 
 async function main(): Promise<void> {
   const install = process.argv.includes("--install");
-  // Probe'lar varsayılan olarak AÇIK: belgelenen komut ölçüm üretmezse oyun
-  // oturumu boşa gider. --no-probe temiz kontrol paketini verir.
-  const probe = !process.argv.includes("--no-probe");
+  // Probe'lar varsayılan olarak KAPALI.
+  //
+  // 03-09-2026'da açıktılar ve olmaları gerekiyordu: üç sınıf ölçülmemişti.
+  // Ölçüm yapıldı (F error'a yükseldi, G ve A' gerekçeleriyle warning kaldı),
+  // yani varsayılan paketin artık oyuna hata yazdırması için sebep yok.
+  // Temiz paket varsayılan; --probe ölçümü tekrar üretmek isteyen için.
+  const probe = process.argv.includes("--probe");
   const { version, index } = await resolveVersion();
 
   const serverVersion = index.sources.scriptTypes.modules["@minecraft/server"]?.stable;
@@ -309,10 +334,53 @@ async function main(): Promise<void> {
   }
   output.set(ENTRY, SCRIPT);
 
+  // --- Dosyalar arası kontroller ---
+  //
+  // ÖLÇÜLDÜ 03-09-2026 ve bu blok o ölçümün ürünü. O güne kadar üreteç yalnızca
+  // ŞEMA ve `tsc` koşuyordu; dosyalar arası kontroller koşmuyordu. Sonuç: paket
+  // iki bilinen A sınıfı hatasıyla oyuna gitti ("The Item: codecraft:ruby_block
+  // is missing or invalid", "No definition found for feature
+  // 'codecraft:ruby_ore_scatter'") ve `ContentLog`'a gürültü olarak düştü.
+  // Ölçüm sırasında "bu satır probe'a mı ait, fixture'a mı" diye sormak
+  // gerekti — ölçüm aracının yapmaması gereken tam olarak bu.
+  //
+  // Artık BEKLENMEYEN her bulgu paketi yazdırmıyor. Beklenenler ikiye ayrılıyor
+  // ve ikisi de burada, tek yerde:
+  const packFiles = [...output].map(([path, content]) => ({ path, content }));
+  const crossChecks = [
+    (await checkIdentities(packFiles, { version })).findings,
+    checkFileNames(packFiles).findings,
+    checkManifest(packFiles).findings,
+    (await checkAssets(packFiles, { version })).findings,
+    (await checkMolang(packFiles, { version })).findings,
+    (await checkReferences(packFiles, { version })).findings,
+    (await checkComponents(packFiles, { version })).findings,
+    checkPatterns(SCRIPT, { path: ENTRY }).findings,
+  ].flat();
+
+  const probePaths = new Set(PROBES.map((item) => item.target));
+  const expected = crossChecks.filter(
+    (finding) =>
+      // 1. Probe'ların kendi bulguları — paketin var olma sebebi.
+      (finding.path !== undefined && probePaths.has(finding.path)) ||
+      // 2. Script'teki worldLoad/sendMessage. Bilerek duruyor: D sınıfının
+      //    ölçümü tam olarak o çağrının kime ulaştığıydı (30-08-2026) ve üç
+      //    kanal karşılaştırması için hâlâ gerekli. Oyun buna hata yazmıyor.
+      finding.check === "pattern:welcome-on-player-spawn",
+  );
+  const unexpected = crossChecks.filter((finding) => !expected.includes(finding));
+
+  for (const finding of unexpected) {
+    failed += 1;
+    console.log(`  - ${(finding.path ?? "?").padEnd(36)} ${finding.severity} [${finding.check}]`);
+    console.log(`      ${finding.message}`);
+  }
+
   if (failed > 0) {
     throw new Error(
-      `${failed} dosya doğrulamadan geçemedi — hiçbir şey yazılmadı. ` +
-        "Oyuna sadece doğrulanmış içerik gider.",
+      `${failed} sorun bulundu — hiçbir şey yazılmadı. ` +
+        "Oyuna sadece doğrulanmış içerik gider: şema, tsc ve dosyalar arası " +
+        "kontrollerin üçü de temiz olmalı.",
     );
   }
 
@@ -345,7 +413,11 @@ async function main(): Promise<void> {
   console.log(
     [
       "",
-      "ÖLÇÜM — üç sınıf oyunda hiç denenmedi (docs/VALIDATION-LIMITS.md).",
+      `Beklenen bulgu: ${expected.length} (probe + bilerek duran worldLoad kalıbı).`,
+      "Bunların dışında bir ContentLog satırı görürsen o YENİ bir şeydir.",
+      "",
+      "ÖLÇÜM TEKRARI — üç sınıf 03-09-2026'da ölçüldü, bu koşu onu yeniden",
+      "üretir (docs/VALIDATION-LIMITS.md · A', F, G).",
       "Ayarlar > Yaratıcı > 'Content Log File' AÇIK olmalı, sonra:",
       "  %APPDATA%\\Minecraft Bedrock\\logs\\ContentLog*.txt",
       "",
@@ -354,8 +426,8 @@ async function main(): Promise<void> {
       "A' için dünyada bir adım daha gerekiyor: tablo ölüm anında çözülüyor.",
       "  /summon codecraft:probe_loot   sonra öldür",
       "",
-      "Satır çıkarsa sınıf error'a yükselir, çıkmazsa 'warning doğruymuş'",
-      "diye yazılır. İkisi de sonuç; yazılmayan tek şey ölçülmemiş olan.",
+      "Beklenen: F ve G için satır ÇIKAR (blok tanımı düşer), A' için",
+      "ÇIKMAZ (oyun sessiz kalıyor). Farklı bir sonuç yeni bir ölçümdür.",
     ].join("\n"),
   );
 }

@@ -54,10 +54,55 @@ export type FileResult = {
  * Tip çözümlenemeyen bir JSON sessizce atlanmaz: dosya paket içinde tanınmayan
  * bir yerde duruyor demektir ve bu da bir üretim hatasıdır.
  */
-export async function validateFile(file: PackFile, version: string): Promise<FileResult> {
+/**
+ * Paket davranış paketi mi kaynak paketi mi — MANİFESTTEN okunuyor.
+ *
+ * ÖLÇÜLDÜ 03-09-2026: `items/`, `animation_controllers/` gibi klasörler hem
+ * BP hem RP altında aynı adla duruyor. Paket kökünden yazılmış bir yol tek
+ * başına belirsiz ve `resolveType` haklı olarak tahmin etmiyor — sonuç, o
+ * dosyaların ŞEMA AYAĞININ HİÇ KOŞMAMASI oluyordu.
+ *
+ * Manifest belirsizliği kaldırıyor: `data`/`script` modülü taşıyan paket
+ * davranış paketi, `resources` taşıyan kaynak paketi. Bu bir tahmin değil,
+ * paketin kendi beyanı.
+ *
+ * Manifest yoksa ya da tip okunamıyorsa null döner ve eski davranış sürer —
+ * uydurma bir varsayım yerine "çözülemedi" demek doğru taraf.
+ */
+function packPrefix(files: readonly PackFile[]): string | null {
+  const manifest = files.find((file) => file.path.replace(/^.*\//, "") === "manifest.json");
+  if (manifest === undefined) return null;
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(manifest.content);
+  } catch {
+    return null; // validateJson bunu zaten raporluyor
+  }
+
+  const modules = (parsed as { modules?: unknown })?.modules;
+  if (!Array.isArray(modules)) return null;
+
+  const types = modules.flatMap((module) => {
+    const type = (module as { type?: unknown })?.type;
+    return typeof type === "string" ? [type] : [];
+  });
+
+  if (types.includes("resources")) return "RP";
+  if (types.includes("data") || types.includes("script")) return "BP";
+  return null;
+}
+
+export async function validateFile(
+  file: PackFile,
+  version: string,
+  prefix: string | null = null,
+): Promise<FileResult> {
   if (file.path.endsWith(".json")) {
     try {
-      const result = await validateJson(file.content, file.path, version);
+      // Tip çözümü için önekli yol, raporlama için dosyanın kendi yolu.
+      const lookup = prefix === null ? file.path : `${prefix}/${file.path}`;
+      const result = await validateJson(file.content, lookup, version);
       return {
         path: file.path,
         validator: "json",
@@ -103,8 +148,9 @@ export async function validateFiles(
   files: readonly PackFile[],
   version: string,
 ): Promise<FileResult[]> {
+  const prefix = packPrefix(files);
   const results: FileResult[] = [];
-  for (const file of files) results.push(await validateFile(file, version));
+  for (const file of files) results.push(await validateFile(file, version, prefix));
   return results;
 }
 
