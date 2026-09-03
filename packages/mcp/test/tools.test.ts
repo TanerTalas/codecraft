@@ -327,6 +327,53 @@ test("review_pack bütün dosyaları tek çağrıda doğruluyor", async () => {
   }
 });
 
+/**
+ * Paket kökünden yazılmış yollar — ve hem BP hem RP'de bulunan klasörler.
+ *
+ * ÖLÇÜLDÜ 03-09-2026: modelin doğal yazımı kök göreli ("items/ruby.json") ve
+ * `items/` hem davranış hem kaynak paketinde var. Tek başına yol belirsiz,
+ * `resolveType` haklı olarak tahmin etmiyordu — sonuç o dosyaların ŞEMA
+ * AYAĞININ HİÇ KOŞMAMASIYDI, üstelik sessizce değil ama "çözülemedi" diyerek.
+ *
+ * Manifest belirsizliği kaldırıyor: `data` modülü taşıyan paket davranış
+ * paketidir. Bu bir tahmin değil, paketin kendi beyanı.
+ */
+test("review_pack kök göreli yolları manifestten çözüyor", async () => {
+  const client = await connect();
+  try {
+    const files = [
+      { path: "manifest.json", content: await fixture("valid/manifest-behavior-pack.json") },
+      // Belirsiz klasörler: ikisi de RP altında da aynı adla duruyor.
+      { path: "items/ruby.json", content: await fixture("valid/item-ruby.json") },
+      {
+        path: "animation_controllers/guard.json",
+        content: await fixture("valid/animation-controller-guard.json"),
+      },
+      // Belirsiz olmayan bir tane de dursun: kontrol.
+      { path: "blocks/ruby_ore.json", content: await fixture("valid/block-ruby-ore.json") },
+    ];
+    const result = JSON.parse((await call(client, "review_pack", { files })).text) as {
+      files: { path: string; validator: string; ok: boolean; detail: string }[];
+    };
+
+    assert.equal(result.files.length, 4);
+    for (const file of result.files) {
+      assert.notEqual(
+        file.detail,
+        "document type could not be resolved",
+        `${file.path}: tip çözülemedi, şema ayağı koşmadı`,
+      );
+      assert.equal(file.ok, true, `${file.path}: geçerli fixture reddedildi`);
+    }
+
+    // Davranış paketi tarafına çözülmeli, kaynak paketine değil.
+    const item = result.files.find((file) => file.path === "items/ruby.json");
+    assert.equal(item?.detail, "behavior/items/items");
+  } finally {
+    await client.close();
+  }
+});
+
 test("hiçbir aracın çıktısı bayt tavanını aşmıyor", async () => {
   const client = await connect();
   try {

@@ -209,6 +209,14 @@ veri indeksleri geride kalır. Çakışma beklenmez, `data/` elle düzenlenmiyor
 > EULA'ya tabi Mojang şemasını ve kişisel not dosyasını taşıyordu — public'te
 > görünen oydu. Ayrıca çalışma dalının `index.json`'ı, cron main'e yazdığı için
 > iki toplayıcı kadar eksikti.
+>
+> **İkinci kez 03-09-2026'da patladı, küçük ama öğretici.** Dağıtım komut
+> zinciri (`git checkout main && git merge dev && git push && npx vercel
+> --prod`) çalışma ağacını `main`'de bıraktı; sonraki üç commit farkında
+> olmadan `main`'e düştü, sonraki `git checkout dev` de onları geride
+> bıraktı. Kayıp yok — commit'ler `main`'deydi ve `git merge main` ile
+> geri alındı — ama bir düzeltme "kayboldu" sanılıp yeniden aranırken
+> zaman gitti. **Dağıtım zinciri her zaman `git checkout dev` ile bitmeli.**
 
 ### Dil
 
