@@ -29,6 +29,7 @@ import {
   checkManifest,
   checkMolang,
   checkPatterns,
+  checkRecipes,
   checkReferences,
   validateJson,
   validateScript,
@@ -351,6 +352,9 @@ async function main(): Promise<void> {
     (await checkIdentities(packFiles, { version })).findings,
     checkFileNames(packFiles).findings,
     checkManifest(packFiles).findings,
+    // H sınıfı: 1.20+ crafting table tarifi unlock olmadan yüklenmiyor.
+    // Bu satır 03-09-2026'da oyunun bulduğu hatadan sonra eklendi.
+    checkRecipes(packFiles).findings,
     (await checkAssets(packFiles, { version })).findings,
     (await checkMolang(packFiles, { version })).findings,
     (await checkReferences(packFiles, { version })).findings,

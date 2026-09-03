@@ -564,6 +564,64 @@ artık hatırlanmıyor, okunuyor.
 
 ---
 
+## H · Sürüme bağlı zorunlu alan — şema geçiriyor, oyun yüklemiyor
+
+**Bu sınıf 03-09-2026'da OYUN TARAFINDAN bulundu.** Ölçüm paketi temizlendikten
+sonra kullanıcı günlüğü yeniden taradı ve tek bir satır kaldığını gördü:
+
+```
+[Recipes][error]-recipes/ruby_block.json | codecraft:ruby_block |
+    1.20+ Recipes require unlock data
+```
+
+Tarif şemadan **temiz** geçmişti. Blockception `unlock`'u tanıyor — altı tarif
+tipinin altısında da tanımlı — ama hiçbirinde **zorunlu** tutmuyor. Yani bu,
+şemanın yapısal olarak yakalayamayacağı bir kural: zorunluluk dosya tipine
+değil, dosyanın `format_version`'ına bağlı.
+
+### Kapsam ölçüldü, tahmin edilmedi
+
+Kuralı "her tarif unlock ister" diye yazmak kolaydı ve yanlış olurdu.
+`Mojang/bedrock-samples`'tan 90 vanilla tarifi örneklendi (03-09-2026):
+
+| Tip | `format_version` | `unlock` var / yok |
+|---|---|---|
+| shaped + shapeless | 1.12 ve 1.16 | **0 / 11** |
+| shaped + shapeless | 1.20.10 ve üstü | **48 / 0** |
+| brewing_mix | 1.20.10 | **0 / 4** |
+| smithing_transform | 1.20.10 | **0 / 1** |
+| furnace | her sürüm | hepsinde var |
+
+İlk iki satır istisnasız: eşik gerçekten 1.20 ve oyunun mesajı da bunu
+söylüyor. Üçüncü ve dördüncü satır kapsamı daraltıyor — brewing ve smithing
+**modern formatta bile** `unlock` taşımıyor, onları kapsama almak her modern
+brewing tarifine uydurma hata üretirdi. Furnace her sürümde taşıyor, yani
+eksikliği sürümle açıklanamaz; ölçülmediği için kapsam dışında.
+
+### Kontrol
+
+`checkRecipes`, `packages/validator/src/checks.ts`. Yalnızca
+`minecraft:recipe_shaped` ve `minecraft:recipe_shapeless`, yalnızca
+`format_version >= 1.20`. Severity **error**: kanıt doğrudan oyundan ve sonucu
+kesin — tarif hiç yüklenmiyor.
+
+Mesaj çözümü de söylüyor, çünkü "eksik" demek tek başına ne yazılacağını
+söylemiyor: `"unlock": [{ "item": "<id>" }]` ya da
+`"unlock": { "context": "AlwaysUnlocked" }`.
+
+### Nasıl bulundu — ve bu neden ayrıca kayda değer
+
+Bu hata, **başka bir hata düzeltilene kadar görünmüyordu.** Tarif dosyası
+30-08-2026'dan beri oyuna gidiyordu ama günlükte üstteki satır
+`The Item: codecraft:ruby_block is missing or invalid` idi — sonucun item'ı
+tanımlı olmadığı için oyun tarifi zaten reddediyordu. Eksik item eklenince
+(03-09-2026) altındaki kural ortaya çıktı.
+
+Ders ölçüm yöntemine ait: **bir günlükte hata kalmışken "başka hata yok"
+denemez.** Hatalar birbirini gizliyor ve ancak üsttekiler temizlendikçe alttaki
+görünüyor. Paketin temiz yüklenmesi bu yüzden yalnızca kozmetik değil, ölçüm
+şartı.
+
 ## Özet
 
 | Sınıf | Şema yakalar mı | Ne ölçüyor | Durum |
@@ -576,6 +634,7 @@ artık hatırlanmıyor, okunuyor.
 | E · yüklenmeyen manifest | Hayır — eski tip listede | `checkManifest` | **Bulunuyor** — yanlış modül tipi rapor ediliyor |
 | F · Molang | Hayır — string'in içine bakmıyor | `checkMolang` | **Bulunuyor** — `unknown-query` 03-09-2026'da oyunda ölçüldü ve **error**; diğer üç tür warning |
 | G · bileşen adı | Hayır — iki kaynak da geçiriyor | `checkComponents` | **Bulunuyor, warning** — oyun 03-09-2026'da reddetti ama indekste 126 adlık ölçülmüş boşluk var |
+| H · sürüme bağlı zorunlu alan | **Yapısal olarak hayır** — zorunluluk `format_version`'a bağlı | `checkRecipes` | **Bulunuyor, error** — 03-09-2026'da oyunda ölçüldü, tarif hiç yüklenmiyor |
 
 > **Dördüncü sütun 02-09-2026'da düzeltildi.** Önce B ve E için "düzeltiliyor"
 > yazıyordu ve doğruydu: bir `normalize()` fonksiyonu dosya adını ve manifest

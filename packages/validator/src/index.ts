@@ -62,6 +62,7 @@ export {
   checkIdentities,
   checkMolang,
   checkPatterns,
+  checkRecipes,
   checkReferences,
   checkSounds,
   patternGuide,

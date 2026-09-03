@@ -11,6 +11,11 @@
         "item": "codecraft:ruby"
       }
     },
+    "unlock": [
+      {
+        "item": "codecraft:ruby"
+      }
+    ],
     "result": {
       "item": "codecraft:ruby_block"
     }

@@ -1080,6 +1080,79 @@ function packTablePaths(files: readonly PackFile[]): ReadonlySet<string> {
   return out;
 }
 
+/**
+ * H sınıfı: sürüme bağlı zorunlu alan — şema geçiriyor, oyun yüklemiyor.
+ *
+ * ÖLÇÜLDÜ 03-09-2026, gerçek oyunda. Ölçüm paketindeki tarif dosyası şemadan
+ * temiz geçti ve `ContentLog` şunu yazdı:
+ *
+ *   [Recipes][error] recipes/ruby_block.json | codecraft:ruby_block |
+ *       1.20+ Recipes require unlock data
+ *
+ * Yani tarif hiç yüklenmedi. Blockception şeması `unlock`'u TANIYOR ama hiçbir
+ * tarif tipinde ZORUNLU tutmuyor (altı tanımın altısında da opsiyonel), o
+ * yüzden şema ayağı bunu yapısal olarak yakalayamaz.
+ *
+ * KAPSAM ÖLÇÜLDÜ, tahmin edilmedi. Vanilla'dan 90 tarif örneklendi
+ * (`Mojang/bedrock-samples`, 03-09-2026) ve korelasyon istisnasız çıktı:
+ *
+ * | Tip | format_version | unlock var / yok |
+ * |---|---|---|
+ * | shaped + shapeless | 1.12 ve 1.16 | 0 / 11 |
+ * | shaped + shapeless | 1.20.10 ve üstü | 48 / 0 |
+ * | brewing_mix | 1.20.10 | 0 / 4 |
+ * | smithing_transform | 1.20.10 | 0 / 1 |
+ * | furnace | her sürüm | hepsinde var |
+ *
+ * Sonuç: kural **crafting table tarifleri** için ve **1.20+** için. Brewing ve
+ * smithing modern formatta bile `unlock` taşımıyor — onlara "eksik" demek
+ * uydurma hata olurdu. Furnace her sürümde taşıyor, yani eksikliği sürümle
+ * açıklanamaz ve ölçülmedi; o da kapsam dışında.
+ */
+const UNLOCK_ROOTS = new Set(["minecraft:recipe_shaped", "minecraft:recipe_shapeless"]);
+
+/** "1.21.100" >= 1.20 mi. Üçüncü hane ilgisiz, kural iki haneyle ölçüldü. */
+function atLeast(version: string, major: number, minor: number): boolean {
+  const [first, second] = version.split(".").map((part) => Number.parseInt(part, 10));
+  if (first === undefined || Number.isNaN(first)) return false;
+  const minorValue = second === undefined || Number.isNaN(second) ? 0 : second;
+  return first > major || (first === major && minorValue >= minor);
+}
+
+export function checkRecipes(files: readonly PackFile[]): CheckResult {
+  const { documents, findings } = parseJsonDocuments(files);
+
+  for (const { file, value } of documents) {
+    const object = asObject(value);
+    if (object === null) continue;
+
+    const formatVersion = asString(object["format_version"]);
+    if (formatVersion === null || !atLeast(formatVersion, 1, 20)) continue;
+
+    for (const [root, body] of Object.entries(object)) {
+      if (!UNLOCK_ROOTS.has(root)) continue;
+      const recipe = asObject(body);
+      if (recipe === null || recipe["unlock"] !== undefined) continue;
+
+      findings.push({
+        check: "recipe-unlock",
+        severity: "error",
+        path: file.path,
+        message:
+          `/${root} :: a recipe with format_version ${formatVersion} must carry "unlock". ` +
+          "Without it the game refuses to load the recipe " +
+          '("1.20+ Recipes require unlock data"). Use "unlock": [{ "item": "<id>" }] ' +
+          'for the items that reveal it, or "unlock": { "context": "AlwaysUnlocked" }',
+        evidence:
+          `${LIMITS} · H (measured in game 03-09-2026) · ` +
+          "vanilla sample: 48/48 crafting-table recipes at format_version 1.20+ carry unlock, 0/11 below it",
+      });
+    }
+  }
+
+  return toResult(findings);
+}
+
 export type ReferenceOptions = { version?: string };
 
 /**

@@ -13,6 +13,7 @@ import {
   checkFileNames,
   checkIdentities,
   checkManifest,
+  checkRecipes,
   checkMolang,
   checkPatterns,
   checkReferences,
@@ -241,6 +242,8 @@ export async function review(files: readonly PackFile[], version: string): Promi
   findings.push(...(await checkIdentities(files, { version })).findings);
   findings.push(...checkFileNames(files).findings);
   findings.push(...checkManifest(files).findings);
+  // H sinifi: 1.20+ crafting table tarifi unlock alani olmadan yuklenmiyor.
+  findings.push(...checkRecipes(files).findings);
   findings.push(...(await checkAssets(files, { version })).findings);
   // Molang JSON stringlerinin icinde duruyor; ne sema ne tsc oraya bakiyor.
   findings.push(...(await checkMolang(files, { version })).findings);
