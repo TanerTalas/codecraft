@@ -152,15 +152,27 @@ test("JSON string içindeki bozuk Molang yakalanır", async () => {
   assert.match(result.findings[0]?.message ?? "", /transitions/);
 });
 
-test("hepsi warning — ok'u düşürmüyor", async () => {
-  // Bilinçli: bu sınıf gerçek oyunda henüz ölçülmedi ve veri sürümü kurulu
-  // oyunun gerisinde kalabiliyor. Error'a yükseltmek bir ölçüm gerektirir.
+test("bilinmeyen sorgu error, diğer türler warning", async () => {
+  // 03-09-2026'da OYUNDA ölçüldü (docs/VALIDATION-LIMITS.md · F): bilinmeyen
+  // bir sorgu bloğun tamamını düşürüyor, ContentLog "Block definition parsing
+  // failed" yazıyor. O yüzden unknown-query error.
+  //
+  // unknown-math AYNI ölçümden geçmedi. Aynı arıza gibi duruyor ama bu depoda
+  // "gibi duruyor" bir gerekçe değil — ölçülene kadar warning.
   const result = await checkMolang([
     file("entities/x.json", { a: "query.is_babyy", b: "math.absolute(1)" }),
   ]);
-  assert.equal(result.ok, true);
   assert.equal(result.findings.length, 2);
-  assert.ok(result.findings.every((finding) => finding.severity === "warning"));
+
+  const query = result.findings.find((finding) => finding.check === "molang:unknown-query");
+  const math = result.findings.find((finding) => finding.check === "molang:unknown-math");
+  assert.equal(query?.severity, "error");
+  assert.equal(math?.severity, "warning");
+
+  // Error olduğu için sonucu düşürmeli.
+  assert.equal(result.ok, false);
+  // Kanıt satırı ölçümü söylemeli, yoksa neden error olduğu kaybolur.
+  assert.match(query?.evidence ?? "", /measured in game/);
 });
 
 test("kontrol grubu: doğru yazılmış aynı paket temiz", async () => {
