@@ -1206,9 +1206,9 @@ Kayda değer olan üçüncü satır değil ikincisi: aynı çağrı dağıtımda
 "document type could not be resolved" diyordu. Düzeltmenin çalıştığı testte
 değil **dağıtılmış uçta** doğrulandı.
 
-**Bulgu 3 henüz dağıtılmadı.** `241a6c9` `dev`'de duruyor; üretimdeki uç
-bilinmeyen bir komuta hâlâ `"..." diye bir komut yok` diye cevap veriyor.
-Bu satır dağıtımdan sonra ölçülüp güncellenecek.
+**Bulgu 3 de dağıtıldı ve ölçüldü, 03-09-2026.** Aynı çağrı üretimden artık
+`there is no command named "uydurmakomut" in this version` döndürüyor —
+dağıtımdan önce Türkçeydi.
 
 
 ## Tekrar üretmek için
