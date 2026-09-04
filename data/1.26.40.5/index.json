@@ -89,7 +89,9 @@
         "entityEvents": 4,
         "featureTypes": 28,
         "biomeComponents": 27,
-        "clientBiomeComponents": 14
+        "clientBiomeComponents": 14,
+        "entitySchemaComponents": 401,
+        "blockSchemaComponents": 48
       }
     },
     "eventOrder": {
