@@ -1,4 +1,4 @@
-/** Kurulum sayfası. Karşılığı `docs/CodeCraft Site.dc.html`, satır 173-245. */
+/** Kurulum sayfası. İçerik kaynağı `docs/site-icerik.md`, "Sayfa 2 — Kurulum". */
 
 import type { Metadata } from "next";
 

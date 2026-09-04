@@ -3,8 +3,8 @@
 /**
  * Uç adresini panoya kopyalayan düğme.
  *
- * Tasarımdaki `copy()` metodunun karşılığı (`docs/CodeCraft Site.dc.html`,
- * satır 418-424): 1600 ms boyunca "Copied" yazıp geri dönüyor.
+ * Tasarımdaki `copy()` metodunun karşılığı (tasarım kanvası, silindi
+ * 04-09-2026): 1600 ms boyunca "Copied" yazıp geri dönüyor.
  *
  * Sitedeki iki istemci adasından biri. Metin taşımıyor — JavaScript
  * çalışmasa da yanındaki adres okunur durumda kalıyor.

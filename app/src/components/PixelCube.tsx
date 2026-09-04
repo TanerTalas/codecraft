@@ -1,8 +1,8 @@
 /**
  * Üstbilgideki izometrik küp.
  *
- * Tasarımdaki `cube(size)` metodunun birebir karşılığı
- * (`docs/CodeCraft Site.dc.html`, satır 428-478): üç yüz, her yüzde köşe
+ * Tasarımdaki `cube(size)` metodunun birebir karşılığı (tasarım kanvası,
+ * silindi 04-09-2026): üç yüz, her yüzde köşe
  * çentikleri ve ortada 3x3 hücreli plaka. Ölçüler `size`'dan türetiliyor,
  * sabit yazılmıyor — tasarımda da öyleydi.
  *

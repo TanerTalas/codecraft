@@ -417,8 +417,13 @@ Bunlar içerik kuralı, tasarım kuralı değil:
 # Uygulama ve ölçüm günlüğü
 
 Site 04-09-2026'da üretildi. Tasarım kaynağı `docs/CodeCraft Site.dc.html`
-(Claude Design canvas), kod `app/src/`. Bu bölüm neyin ölçüldüğünü ve neyin
-ÖLÇÜLMEDİĞİNİ yazıyor.
+(Claude Design canvas) idi, kod `app/src/`. Bu bölüm neyin ölçüldüğünü ve
+neyin ÖLÇÜLMEDİĞİNİ yazıyor.
+
+> Tasarım kanvası ve yüklediği üretilmiş runtime (`docs/support.js`)
+> 04-09-2026'da, site üretime alındıktan sonra silindi: işi bitmişti ve
+> kanvası açan `dc-runtime/` bu depoda hiç yoktu. Aşağıdaki ölçümler o
+> dosyalar dururken alındı; kayıt silinmiyor, kaynak dosya artık yok.
 
 ## Ölçüldü (04-09-2026)
 
@@ -504,8 +509,9 @@ satıra sarıyor; nav sekmeleri iki sıraya iniyor.
 
 ### Tasarımla yan yana karşılaştırma
 
-Tasarım dosyası (`docs/CodeCraft Site.dc.html`) ve uygulanan site aynı anda,
-ikisi de 1120px viewport'lu iframe'lerde açılıp karşılaştırıldı. Bölüm bölüm
+Tasarım dosyası (`docs/CodeCraft Site.dc.html`, o gün sonra silindi) ve
+uygulanan site aynı anda, ikisi de 1120px viewport'lu iframe'lerde açılıp
+karşılaştırıldı. Bölüm bölüm
 örtüşüyor: kahraman ızgarası, dört stat kutusu, iki kod paneli ve dikey
 `VALIDATE` rozeti, dört satırlık hata tablosu, üç adım kartı, `note` şeridi,
 iki kart, dokuz araç satırı.

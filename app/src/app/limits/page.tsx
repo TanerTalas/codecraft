@@ -1,4 +1,7 @@
-/** Sınırlar ve veri sayfası. Karşılığı `docs/CodeCraft Site.dc.html`, satır 306-378. */
+/**
+ * Sınırlar ve veri sayfası. İçerik kaynağı `docs/site-icerik.md`,
+ * "Sayfa 4 — Sınırlar ve veri".
+ */
 
 import type { Metadata } from "next";
 

@@ -2,7 +2,7 @@
  * Açılır araç kartı.
  *
  * Tasarımda gövde React durumunda saklıydı (`sc-if value="{{ t.open }}"`,
- * `docs/CodeCraft Site.dc.html` satır 293), yani dokuz aracın `when` ve `note`
+ * tasarım kanvası silindi 04-09-2026), yani dokuz aracın `when` ve `note`
  * metni kart açılmadıkça DOM'da YOKTU — sitenin en yoğun bilgi taşıyan bölümü
  * hiç indekslenmiyordu.
  *

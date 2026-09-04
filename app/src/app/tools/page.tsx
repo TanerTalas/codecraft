@@ -1,4 +1,4 @@
-/** Araçlar sayfası. Karşılığı `docs/CodeCraft Site.dc.html`, satır 247-304. */
+/** Araçlar sayfası. İçerik kaynağı `docs/site-icerik.md`, "Sayfa 3 — Araçlar". */
 
 import type { Metadata } from "next";
 

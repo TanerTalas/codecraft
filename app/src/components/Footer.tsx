@@ -1,6 +1,6 @@
 /**
  * Altbilgi: marka feragati, atıflar, bağlantılar, uç adresi.
- * Karşılığı `docs/CodeCraft Site.dc.html`, satır 382-410.
+ * İçerik kaynağı `docs/site-icerik.md`, "Altbilgi (her sayfada)".
  *
  * Feragat metni İngilizce aslıyla duruyor ve öyle kalmak zorunda
  * (`docs/site-icerik.md`, "Marka feragati — zorunlu").

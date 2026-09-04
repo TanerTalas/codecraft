@@ -8,8 +8,8 @@ import { SITE_URL } from "@/content/site";
 import "./globals.css";
 
 /**
- * Tasarım fontları Google Fonts'tan `<link>` ile çekiyordu
- * (`docs/CodeCraft Site.dc.html`, satır 11-13). `next/font` derleme anında
+ * Tasarım kanvası fontları Google Fonts'tan `<link>` ile çekiyordu
+ * (kanvas silindi 04-09-2026). `next/font` derleme anında
  * indirip kendi kendine barındırıyor: ziyaretçiden üçüncü tarafa hiç istek
  * gitmiyor. Sitenin kendi gizlilik iddiasıyla tutarlı olan taraf bu.
  */

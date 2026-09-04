@@ -1,9 +1,9 @@
 /**
  * Sitenin bütün metni. Tek kaynak.
  *
- * Karşılığı tasarımdaki `renderVals()` bloğu
- * (`docs/CodeCraft Site.dc.html`, satır 480-584). Orası neyi üretiyorsa
- * burası onu taşıyor; sayfalar bu diziler üzerinde dönüyor.
+ * Karşılığı tasarım kanvasındaki `renderVals()` bloğuydu; kanvas silindi
+ * 04-09-2026, içerik kaynağı `docs/site-icerik.md` olarak duruyor.
+ * Sayfalar bu diziler üzerinde dönüyor.
  *
  * Dil kuralı (CLAUDE.md, "Dil"): ziyaretçinin gördüğü her metin İngilizce.
  * Bu dosyadaki YORUMLAR Türkçe, DEĞERLER İngilizce.

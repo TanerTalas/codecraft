@@ -4,7 +4,7 @@
  * Üstbilgi sekmeleri.
  *
  * Tasarımda dört `<button>` idi ve sayfa değişimi React durumuyla yapılıyordu
- * (`docs/CodeCraft Site.dc.html`, satır 43-48). Dört gerçek rotaya geçildiği
+ * (tasarım kanvası, silindi 04-09-2026). Dört gerçek rotaya geçildiği
  * için `<Link>` oldu: tarayıcı geçmişi, orta tık ve tarayıcı robotu artık
  * çalışıyor.
  *

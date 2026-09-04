@@ -24,8 +24,8 @@ boşluğu kapatıyor: değerler sürüme kilitli veriden okunuyor, çıktı resm
 1. **MCP sunucusu.** Dokuz salt okunur araç.
 2. **Kullanım sitesi.** MCP'nin nasıl kurulup kullanılacağını anlatan dört
    sayfa: `/`, `/setup`, `/tools`, `/limits`. 04-09-2026'da üretildi.
-   Tasarım kaynağı `docs/CodeCraft Site.dc.html`, içerik kaynağı
-   `docs/site-icerik.md`. Metin İngilizce, dördü de statik HTML'e
+   İçerik kaynağı `docs/site-icerik.md`. Tasarım kanvası aynı gün, site
+   yayına alındıktan sonra silindi. Metin İngilizce, dördü de statik HTML'e
    önceden render ediliyor.
 
 ## Katmanlar

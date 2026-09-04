@@ -1,4 +1,4 @@
-/** Ana sayfa. Karşılığı `docs/CodeCraft Site.dc.html`, satır 54-171. */
+/** Ana sayfa. İçerik kaynağı `docs/site-icerik.md`, "Sayfa 1 — Ana sayfa". */
 
 import type { Metadata } from "next";
 import Link from "next/link";

@@ -1,6 +1,6 @@
 /**
  * Üstbilgi: logo, ad, uç adresi kutusu ve sekmeler.
- * Karşılığı `docs/CodeCraft Site.dc.html`, satır 27-50.
+ * Karşılığı tasarım kanvasının üstbilgi bandıydı (kanvas silindi 04-09-2026).
  */
 
 import Link from "next/link";

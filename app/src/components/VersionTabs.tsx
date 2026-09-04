@@ -4,7 +4,7 @@
  * Beş sürüm numarasının sekmeleri.
  *
  * Tasarımda yalnızca ETKİN panel render ediliyordu (`activeVersion`,
- * `docs/CodeCraft Site.dc.html` satır 269-276), yani beş sürüm numarasının
+ * tasarım kanvası silindi 04-09-2026), yani beş sürüm numarasının
  * dördü HTML'de hiç yoktu — üstelik `CLAUDE.md`'ye göre bu, projenin en çok
  * can yakan konusu. Burada beşi de render ediliyor, etkin olmayanlar `hidden`
  * ile gizleniyor: görsel sonuç aynı, HTML beş olguyu da taşıyor.
