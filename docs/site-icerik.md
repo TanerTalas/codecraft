@@ -9,14 +9,14 @@ Her bölümün altında **kaynak** satırı var: o bilginin depoda nerede yazıl
 olduğu. Site metni yazılırken olgular oradan okunacak, hatırlanmayacak. Bu
 projede bir iddia ancak ölçüldüyse yazılır.
 
-## Önce bir karar gerekiyor: dil
+## Dil kararı: İngilizce (04-09-2026, KAPANDI)
 
-Site metni tek dilde olacak ve bu karar verilmedi.
+~~Site metni tek dilde olacak ve bu karar verilmedi.~~ Karar verildi:
+**İngilizce.** Gerekçe değişmedi — depo public, MCP ucu herkese açık, bağlanan
+model global, `README.md` ve `NOTICE` zaten İngilizce.
 
-- **İngilizce** öneriliyor: depo public, MCP ucu herkese açık, bağlanan model
-  global. `README.md` ve `NOTICE` zaten İngilizce.
-- Türkçe seçilirse marka feragatinin **İngilizce aslı korunmak zorunda**
-  (aşağıda, "Altbilgi").
+Türkçe seçilseydi marka feragatinin İngilizce aslı yine korunmak zorundaydı
+(aşağıda, "Altbilgi"). Bugün zaten öyle duruyor.
 
 Aşağıdaki bölüm adları Türkçe yazıldı çünkü bu doküman geliştirici tarafında
 duruyor; site hangi dilde olacaksa metin o dilde yazılacak.
@@ -411,3 +411,85 @@ Bunlar içerik kuralı, tasarım kuralı değil:
 | Hız, gecikme veya kullanıcı sayısı iddiası | Ölçülmedi |
 | Ham Mojang şeması ya da ham vanilla dosya içeriği | EULA; yalnızca türetilmiş olgu yayınlanıyor |
 | Kullanıcıdan e-posta, hesap veya ödeme isteyen herhangi bir akış | Sunucu salt okunur ve kişisel veri tutmuyor |
+
+---
+
+# Uygulama ve ölçüm günlüğü
+
+Site 04-09-2026'da üretildi. Tasarım kaynağı `docs/CodeCraft Site.dc.html`
+(Claude Design canvas), kod `app/src/`. Bu bölüm neyin ölçüldüğünü ve neyin
+ÖLÇÜLMEDİĞİNİ yazıyor.
+
+## Ölçüldü (04-09-2026)
+
+### Tarayıcı robotu ne görüyor
+
+Tasarım dört sayfayı tek URL'de React durumuyla değiştiriyordu. Kullanıcı
+kararı SPA olmaması yönündeydi (gerekçe: sitenin Google ve yapay zekâlar
+tarafından okunabilir olması). Dört gerçek rotaya geçildi ve **durumda saklı
+metnin statik HTML'e gerçekten düştüğü** ölçüldü.
+
+Yöntem: `next build` + `next start`, `curl` ile alınan HTML'den RSC flight
+script'leri (`<script>…</script>`) çıkarıldı, kalan DOM'da sayıldı.
+
+| Ne | Beklenen | Ölçülen |
+|---|---|---|
+| `/tools` DOM boyutu (script'siz) | — | 19.336 bayt (ham HTML 50.835) |
+| `<details>` araç kartı | 9 | **9** |
+| Kart gövdesindeki not (`tcard-note`) | 9 | **9** |
+| Sürüm paneli (`role="tabpanel"`) | 5 | **5** |
+| Bunlardan gizli olan (`hidden`) | 4 | **4** |
+| `syntaxChecked` (kapalı kart içinde) | 1 | **1** |
+| `2.11.0-beta.1.26.50-preview.27` | 1 | **1** |
+| Beş sürüm örneği (`26.40`, `1.26.40.5`, `[1, 26, 40]`, `2.9.0`, `1.21.100`) | 5/5 | **5/5** |
+| `/` araç satırı | 9 | **9** |
+| `/limits` kaynak satırı | 4 | **4** |
+
+Tasarımın SPA hâlinde bu sayıların hepsi 0 olurdu: dokuz aracın `when`/`note`
+metni `sc-if t.open` arkasındaydı, beş sürüm panelinden dördü hiç render
+edilmiyordu.
+
+`/`, `/setup`, `/tools`, `/limits`, `/robots.txt`, `/sitemap.xml`,
+`/llms.txt`, `/icon.svg` — sekizi de **200**. Dört sayfa `next build`
+çıktısında `○ (Static)`.
+
+### MCP ucu bozulmadı
+
+`npm run mcp:probe -- http://localhost:3000/mcp` → **HEPSİ YEŞİL**.
+Dokuz araç listeleniyor, dokuzu da `readOnlyHint`, GET ve DELETE 405.
+
+### Üstbilgi kontrastı
+
+Tasarımdaki alt yazı `#efe6d6` üzerine `#8d8577` = **2.9:1**, WCAG AA eşiği
+4.5:1. Bant `#6f685c`'ye koyulaştırıldı → **4.4:1**. `#8d8577` başka iki
+yerde (adım kartları, kaynak kutusu) aynen duruyor; oralarda metin `#f7f1e6`
+ve kontrast zaten yeterliydi.
+
+## Ölçülmedi — açık kalan
+
+### Responsive davranış tarayıcıda GÖRÜLMEDİ
+
+Kırılma noktaları (1080 / 900 / 700 / 520) yazıldı ama **gerçek bir tarayıcıda
+ölçülmedi**: oturumdaki tarayıcı eklentisi bağlı değildi ve depoda başsız
+tarayıcı yok. Bunun yerine yalnızca **statik CSS analizi** yapıldı:
+
+- Esneyemeyen `minmax(<px>, 1fr)` tabanı kalmadı; dördü de (`.row`,
+  `.row-tool`, `.row-nb`, `.row-src`) ≤700px'te `1fr`'e iniyor.
+- `auto-fit` ızgaralarının tabanı `minmax(min(<px>, 100%), 1fr)` yapıldı.
+  Öncesinde `.cards2` 300px taban istiyordu ve 320px ekranda kap 284px —
+  **taşırdı**. Statik analizde bulundu, tarayıcıda görülmedi.
+- Uzun kimlikler için `code { overflow-wrap: anywhere }` eklendi.
+  `Blockception/Minecraft-bedrock-json-schemas` 13px'te ~328px sürüyordu ve
+  320px ekranda taşardı. Aynı şekilde statik analizde bulundu.
+- `min-width` kuralı yok; kalan sabit genişlikler (`68px`, `28px`, `56px`)
+  `flex: none` öğelerde ve viewport'tan bağımsız.
+
+**Yapılacak:** `document.documentElement.scrollWidth <= innerWidth` ölçütü
+1440 / 1024 / 768 / 390 / 320px'te dört rotada koşturulmalı, ve 1440px'te
+tasarımla yan yana karşılaştırma yapılmalı. O ölçüm yapılana kadar "mobilde
+sorunsuz" yazılmayacak.
+
+### JavaScript'siz kullanım denenmedi
+
+`<details>` ve `<Link>` tanım gereği JavaScript'siz çalışıyor, ama bu da
+tarayıcıda görülmedi. Aynı engelde.

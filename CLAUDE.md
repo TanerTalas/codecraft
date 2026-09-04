@@ -21,10 +21,12 @@ boşluğu kapatıyor: değerler sürüme kilitli veriden okunuyor, çıktı resm
 
 ## İki bileşen
 
-1. **MCP sunucusu.** Dokuz salt okunur araç. Bugünkü tek çalışan parça.
-2. **Kullanım sitesi.** MCP'nin nasıl kurulup kullanılacağını anlatan web
-   sayfası ya da sayfaları. **Henüz üretilmedi** — tasarım ve içerik ayrı bir
-   süreçte ele alınacak. Bugün `app/` yalnızca MCP ucunun barındığı yer.
+1. **MCP sunucusu.** Dokuz salt okunur araç.
+2. **Kullanım sitesi.** MCP'nin nasıl kurulup kullanılacağını anlatan dört
+   sayfa: `/`, `/setup`, `/tools`, `/limits`. 04-09-2026'da üretildi.
+   Tasarım kaynağı `docs/CodeCraft Site.dc.html`, içerik kaynağı
+   `docs/site-icerik.md`. Metin İngilizce, dördü de statik HTML'e
+   önceden render ediliyor.
 
 ## Katmanlar
 
@@ -38,7 +40,7 @@ bulanıklaştırmak değil.
 | Veri erişimi | `packages/knowledge/` | `data/` üzerinde lookup. Sürüm çözümü, kimlik arama, blok durumları |
 | Veri indeksleri | `data/` | Üretilen indeksler, oyun sürümüne göre klasörlenmiş |
 | Veri boru hattı | `pipeline/` | Kaynakları çekip indeks üreten script'ler + günlük cron |
-| Site | `app/` | Bugün yalnızca `app/src/app/mcp/route.ts` — ince kabuk |
+| Site | `app/` | Dört sayfalık kullanım sitesi + MCP ucunun barındığı ince kabuk (`app/src/app/mcp/route.ts`) |
 
 Bağımlılık yönü tek taraflı: `mcp → validator → knowledge → data`. Ters yönde
 import yok.
