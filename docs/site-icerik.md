@@ -652,8 +652,33 @@ Kullanıcı isteğiyle sürüm paneli de kalkıyor. Ölçüldü: hover →
 > kaymış oluyordu. Doğru yöntem: her ölçümde DOM'u taze sorgula, rect'i
 > tıklamadan hemen önce al.
 
+## Ölçüldü (04-09-2026) — üretim dağıtımı
+
+Bu ölçümden önce site **hiç yayına alınmamıştı.** Dört sayfa yalnızca `dev`
+dalında duruyordu; `origin/main` altındaki `app/src/app/` sadece `layout.tsx`
+ve `mcp/route.ts` taşıyordu. Yani üretimde `/` **404** dönüyordu ve README de
+(commit `8647ae8`) o 404'e link veriyordu.
+
+`dev` → `main` birleştirilip push edildi (`2092039`). Vercel'in git
+entegrasyonu kendiliğinden dağıttı — `npx vercel --prod` gerekmedi.
+
+Push sonrası Chrome ile ölçüldü:
+
+| Sayfa | Ölçüm |
+|---|---|
+| `/` | Başlık `CodeCraft — MCP server for Minecraft Bedrock`, H1 ve dört stat kutusu (9 / 60 / 5 / 0) yerinde |
+| `/setup` | Başlık `Setup · CodeCraft`, altı bölümün altısı da metinde |
+| `/tools` | Başlık `Tools · CodeCraft`, çağrı sırası ve beş sürüm sekmesi görünür |
+| `/limits` | Başlık `Limits & data · CodeCraft`, `MEASURED` rozetleri render oluyor |
+
+Üstbilgi, uç adresi kutusu, sekmeler ve seçili sekmenin kırmızı çizgisi dört
+sayfada da yerelde ölçüldüğü gibi. `/mcp` ucu aynı dağıtımda çağrıldı ve
+`1.26.40.5`, `[1, 26, 40]`, `@minecraft/server 2.9.0` döndürdü.
+
 ## Ölçülmedi — açık kalan
 
 - **Gerçek cihazda denenmedi.** Ölçüm masaüstü Chrome'da, iframe viewport'uyla
   yapıldı. Dokunmatik hedef boyutları ve iOS Safari davranışı denenmedi.
-- **Üretim dağıtımı görülmedi.** Ölçümlerin hepsi `next start` ile yerelde.
+- ~~**Üretim dağıtımı görülmedi.**~~ Kapandı 04-09-2026, yukarıdaki bölüme
+  gitti. Yalnızca masaüstü Chrome'da ve yalnızca dört sayfanın ilk ekranında
+  ölçüldü; responsive ve hover ölçümleri hâlâ yerelden.
