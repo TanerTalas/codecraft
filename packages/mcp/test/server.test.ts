@@ -127,6 +127,36 @@ test("sunucu sürümü package.json ile aynı ve istemciye ulaşıyor", async ()
     "server.ts ile package.json'ın sürümü ayrışmış.",
   );
 
+  // Üçüncü kopya: resmi MCP Registry'ye giden `server.json`. Aynı sürüm orada
+  // da yazıyor ve registry'de görünen dize o. Elle senkron tutulan her üçüncü
+  // kopya bayatlar; bu satır bayatlamayı sessiz olmaktan çıkarıyor.
+  const registry = JSON.parse(
+    readFileSync(new URL("../../../server.json", import.meta.url), "utf8"),
+  ) as { version: string; remotes: { url: string }[] };
+
+  assert.equal(
+    registry.version,
+    manifest.version,
+    "server.json ile package.json'ın sürümü ayrışmış.",
+  );
+
+  // Uç adresi burada DOĞRULANAMAZ, sadece biçimi kontrol edilebilir: adresin
+  // tek kaynağı `app/src/content/site.ts` ve `packages/mcp` oradan okuyamaz —
+  // bağımlılık yönü tek taraflı (CLAUDE.md, "Katmanlar"). O yüzden burada
+  // yalnızca kaba biçim ölçülüyor; adresin gerçekten cevap verdiğini
+  // `npm run mcp:probe` canlı uçta ölçüyor.
+  const remote = registry.remotes[0]?.url ?? "";
+
+  assert.ok(
+    remote.startsWith("https://"),
+    `server.json'daki uç adresi https değil: ${remote}`,
+  );
+
+  assert.ok(
+    remote.endsWith("/mcp"),
+    `server.json'daki uç adresi /mcp ile bitmiyor: ${remote}`,
+  );
+
   // İkinci yol: dizeyi karşılaştırmak, onun initialize cevabına GERÇEKTEN
   // konduğunu söylemiyor. Bağlanıp istemcinin ne gördüğüne bakılıyor.
   const client = await connect();

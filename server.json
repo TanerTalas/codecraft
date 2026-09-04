@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.TanerTalas/codecraft",
+  "title": "CodeCraft",
+  "description": "Checks whether generated Minecraft Bedrock content will actually load. Nine read-only tools.",
+  "version": "0.1.0",
+  "websiteUrl": "https://codecraft-ashy-seven.vercel.app",
+  "repository": {
+    "url": "https://github.com/TanerTalas/codecraft",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://codecraft-ashy-seven.vercel.app/mcp"
+    }
+  ]
+}
