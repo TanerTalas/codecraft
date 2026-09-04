@@ -43,7 +43,15 @@ export const metadata: Metadata = {
     description:
       "An MCP server that checks whether Minecraft Bedrock content will actually load. Nine read-only tools. You bring the model.",
   },
-  twitter: { card: "summary" },
+  // `summary` küçük kare kart demek. Görsel 1200x630 (ölçüldü 05-09-2026,
+  // PNG başlığından), yani geniş kart formatı — `summary_large_image` olmazsa
+  // paylaşımda kırpılıyor.
+  //
+  // Görselin kendisi `opengraph-image.png` dosya adıyla duruyor: Next bu adı
+  // tanıyıp `og:image`, `og:image:width/height` ve `og:image:type`
+  // etiketlerini kendisi üretiyor, elle URL yazılmıyor. `twitter:image` ayrı
+  // bir dosya adı ister; yazılmadığında istemciler `og:image`'a düşüyor.
+  twitter: { card: "summary_large_image" },
 };
 
 /**
