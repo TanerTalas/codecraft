@@ -1,0 +1,75 @@
+# CodeCraft
+
+> An MCP server that checks whether Minecraft Bedrock content will actually
+> load. You bring the model — it runs in your own Claude client, on your own
+> subscription. CodeCraft never sits in between and never generates content.
+> Nine tools, all read-only. The server is stateless and stores nothing.
+
+Endpoint: https://codecraft-ashy-seven.vercel.app/mcp
+Source: https://github.com/TanerTalas/codecraft (Apache-2.0)
+
+## Why it exists
+
+Bedrock fails silently. A general model invents a `format_version`, references
+a `minecraft:` identifier that does not exist, or calls an API that is not in
+`@minecraft/server` — and none of it raises an error until the pack is loaded
+in the game. Values are read from version-pinned data, not recalled.
+
+## The nine tools
+
+- check_feasibility — can Bedrock do this at all; if not, why, and what the
+  alternative is. Call it first, before any file is written. Input is
+  language-independent, output is always English.
+- get_version_info — which version number goes where.
+- get_schema — which fields this document type requires, and which
+  format_version is valid. Returns a summary, not the raw schema.
+- lookup_id — does this minecraft: identifier exist in this version, what type
+  is it, what block states does it have.
+- validate_json — does this file match the official schema. Errors carry a JSON
+  pointer, the violated rule, and readable text.
+- validate_command — is this command line valid, does it require cheats.
+- validate_script — does the script compile with real tsc and real
+  @minecraft/server types.
+- validate_python — is this out-of-game automation script and the commands
+  inside it valid. The hosted endpoint has no Python interpreter, so the syntax
+  axis is skipped and reported as syntaxChecked: false.
+- review_pack — the whole pack, plus the checks a schema structurally cannot
+  see. Call it last.
+
+Call order: check_feasibility, then get_version_info and get_schema, then
+review_pack once the files are written.
+
+## Five separate version numbers
+
+- Marketing number, e.g. 26.40 — announcements only, never written to a file.
+- Game / data version, e.g. 1.26.40.5 — data indexes.
+- min_engine_version, e.g. [1, 26, 40] — manifest.json, three-part array.
+- @minecraft/server module version, e.g. 2.9.0 — manifest.json dependencies.
+- format_version, e.g. 1.21.100 / 1.13.0 / 2 — content files.
+
+format_version is NOT the game version. It is that document type's own schema
+version: block 1.21.100, feature rule 1.13.0, spawn rule 1.8.0, manifest 2.
+The module version is 2.x while the game version is 1.26.x; on a prerelease tag
+the game version arrives embedded inside the module version, as in
+2.11.0-beta.1.26.50-preview.27.
+
+## What it does not catch
+
+- Valid but not intended. The file is correct, the behaviour is wrong.
+- Context. A Molang query that exists but is used in the wrong context.
+- Silent failure. An entity pointing at a missing loot table loads and drops
+  nothing, and the game writes nothing.
+- Untried document types. The pack verified in-game touched 11 of 60 types.
+
+## Pages
+
+- https://codecraft-ashy-seven.vercel.app/ - what it is, the problem, how it works, privacy
+- https://codecraft-ashy-seven.vercel.app/setup - connecting a Claude client, first try, troubleshooting
+- https://codecraft-ashy-seven.vercel.app/tools - call order, version numbers, the nine tool cards
+- https://codecraft-ashy-seven.vercel.app/limits - limits, measurements, data sources and licences
+
+## Attribution
+
+NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR
+MICROSOFT. Schemas: Blockception Ltd, BSD-3-Clause. Script types: Microsoft,
+MIT. Release notes: Microsoft, CC-BY-4.0. CodeCraft: Apache-2.0.
