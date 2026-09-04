@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #cfc6b6; color: #26221f; -webkit-font-smoothing: none; }
+  a { color: #a8322b; text-decoration: none; border-bottom: 2px solid #d8b0ac; }
+  a:hover { color: #26221f; border-bottom-color: #26221f; }
+  ::selection { background: #a8322b; color: #f4efe6; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:15px;line-height:1.65;background:
+  repeating-linear-gradient(0deg,rgba(0,0,0,.045) 0 1px,transparent 1px 32px),
+  repeating-linear-gradient(90deg,rgba(0,0,0,.045) 0 1px,transparent 1px 32px),
+  #cfc6b6;">
+
+  <header style="border-bottom:4px solid #26221f;background:#8d8577;box-shadow:inset 0 4px 0 rgba(255,255,255,.28),inset 0 -4px 0 rgba(0,0,0,.22);">
+    <div style="max-width:1080px;margin:0 auto;padding:26px 28px 0;display:flex;flex-direction:column;gap:22px;">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:16px;">
+          {{ logoMark }}
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="font-family:Silkscreen,monospace;font-size:26px;letter-spacing:.02em;color:#f4efe6;text-shadow:3px 3px 0 rgba(0,0,0,.45);">CodeCraft</div>
+            <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#efe6d6;">MCP server · validation &amp; data lookup for Bedrock</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;background:#efe7d8;border:4px solid #26221f;padding:8px 8px 8px 14px;box-shadow:4px 4px 0 rgba(0,0,0,.3);">
+          <code style="font-size:13px;color:#26221f;">{{ endpoint }}</code>
+          <button onClick="{{ copyEndpoint }}" style="font-family:Silkscreen,monospace;font-size:11px;cursor:pointer;background:#a8322b;color:#f7f1e6;border:3px solid #26221f;padding:7px 10px;box-shadow:inset -3px -3px 0 rgba(0,0,0,.3),inset 3px 3px 0 rgba(255,255,255,.25);" style-hover="background:#8d8577;">{{ copyLabel }}</button>
+        </div>
+      </div>
+
+      <nav style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onClick="{{ goHome }}" style="position:relative;font-family:Silkscreen,monospace;font-size:12px;cursor:pointer;background:#efe7d8;color:#26221f;border:4px solid #26221f;border-bottom:none;padding:13px 18px 15px;box-shadow:inset 4px 4px 0 rgba(255,255,255,.6);" style-hover="background:#f7f1e6;">Home<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}"><span style="position:absolute;left:0;right:0;bottom:-4px;height:6px;background:#a8322b;"></span></sc-if></button>
+        <button onClick="{{ goSetup }}" style="position:relative;font-family:Silkscreen,monospace;font-size:12px;cursor:pointer;background:#efe7d8;color:#26221f;border:4px solid #26221f;border-bottom:none;padding:13px 18px 15px;box-shadow:inset 4px 4px 0 rgba(255,255,255,.6);" style-hover="background:#f7f1e6;">Setup<sc-if value="{{ isSetup }}"><span style="position:absolute;left:0;right:0;bottom:-4px;height:6px;background:#a8322b;"></span></sc-if></button>
+        <button onClick="{{ goTools }}" style="position:relative;font-family:Silkscreen,monospace;font-size:12px;cursor:pointer;background:#efe7d8;color:#26221f;border:4px solid #26221f;border-bottom:none;padding:13px 18px 15px;box-shadow:inset 4px 4px 0 rgba(255,255,255,.6);" style-hover="background:#f7f1e6;">Tools<sc-if value="{{ isTools }}"><span style="position:absolute;left:0;right:0;bottom:-4px;height:6px;background:#a8322b;"></span></sc-if></button>
+        <button onClick="{{ goLimits }}" style="position:relative;font-family:Silkscreen,monospace;font-size:12px;cursor:pointer;background:#efe7d8;color:#26221f;border:4px solid #26221f;border-bottom:none;padding:13px 18px 15px;box-shadow:inset 4px 4px 0 rgba(255,255,255,.6);" style-hover="background:#f7f1e6;">Limits &amp; data<sc-if value="{{ isLimits }}"><span style="position:absolute;left:0;right:0;bottom:-4px;height:6px;background:#a8322b;"></span></sc-if></button>
+      </nav>
+    </div>
+  </header>
+
+  <main style="max-width:1080px;margin:0 auto;padding:44px 28px 64px;display:flex;flex-direction:column;gap:44px;">
+
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:44px;">
+
+        <section style="background:#f4efe6;border:5px solid #26221f;box-shadow:10px 10px 0 rgba(38,34,31,.35),inset 6px 6px 0 rgba(255,255,255,.7),inset -6px -6px 0 rgba(0,0,0,.08);padding:38px 34px;display:flex;flex-direction:column;gap:32px;">
+          <div style="display:grid;grid-template-columns:1.15fr .85fr;gap:38px;align-items:start;">
+            <div style="display:flex;flex-direction:column;gap:20px;">
+              <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">01 — WHAT IT IS</div>
+              <h1 style="margin:0;font-family:Silkscreen,monospace;font-size:32px;line-height:1.42;text-wrap:pretty;">An MCP server that checks whether Bedrock content will actually load.</h1>
+              <p style="margin:0;text-wrap:pretty;">You bring the model. It runs in your own Claude client, on your own subscription. CodeCraft never sits in between and never generates content.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:14px;">
+              <p style="margin:0;text-wrap:pretty;">The one thing it does: measure whether the thing that was generated is going to work.</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div style="background:#efe7d8;border:3px solid #26221f;padding:12px 14px;"><div style="font-family:Silkscreen,monospace;font-size:18px;">9</div><div style="font-size:11.5px;line-height:1.4;">read-only tools</div></div>
+                <div style="background:#efe7d8;border:3px solid #26221f;padding:12px 14px;"><div style="font-family:Silkscreen,monospace;font-size:18px;">60</div><div style="font-size:11.5px;line-height:1.4;">document types</div></div>
+                <div style="background:#efe7d8;border:3px solid #26221f;padding:12px 14px;"><div style="font-family:Silkscreen,monospace;font-size:18px;">5</div><div style="font-size:11.5px;line-height:1.4;">version numbers</div></div>
+                <div style="background:#f0dcd9;border:3px solid #a8322b;padding:12px 14px;"><div style="font-family:Silkscreen,monospace;font-size:18px;color:#a8322b;">0</div><div style="font-size:11.5px;line-height:1.4;">stored requests</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch;">
+            <div style="border:4px solid #26221f;box-shadow:5px 5px 0 rgba(38,34,31,.28);background:#f7f1e6;display:flex;flex-direction:column;">
+              <div style="background:#e3dac9;border-bottom:3px solid #26221f;padding:9px 12px;font-family:Silkscreen,monospace;font-size:10px;letter-spacing:.08em;">WHAT THE MODEL WROTE</div>
+              <pre style="margin:0;padding:14px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;white-space:pre-wrap;">{
+  "format_version": <span style="background:#f0dcd9;border-bottom:3px solid #a8322b;">"1.26.40"</span>,
+  "minecraft:spawn_rules": {
+    "description": { "identifier": "ex:guardian" }
+  }
+}</pre>
+              <div style="margin-top:auto;border-top:3px solid #ded4c0;padding:10px 12px;font-size:11.5px;color:#7a3a35;">Loads in the game with no error and no entity.</div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:center;">
+              <div style="font-family:Silkscreen,monospace;font-size:11px;background:#a8322b;color:#f7f1e6;border:3px solid #26221f;padding:10px 8px;writing-mode:vertical-rl;letter-spacing:.12em;">VALIDATE</div>
+            </div>
+            <div style="border:4px solid #26221f;box-shadow:5px 5px 0 rgba(38,34,31,.28);background:#f7f1e6;display:flex;flex-direction:column;">
+              <div style="background:#e3dac9;border-bottom:3px solid #26221f;padding:9px 12px;font-family:Silkscreen,monospace;font-size:10px;letter-spacing:.08em;">WHAT CODECRAFT RETURNS</div>
+              <pre style="margin:0;padding:14px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;white-space:pre-wrap;">"ok": false
+"pointer": "/format_version"
+"rule": "enum"
+"allowed": [<span style="color:#4f7a3a;">"1.8.0"</span>, "1.10.0", "1.12.0"]
+"version": "1.26.40.5"</pre>
+              <div style="margin-top:auto;border-top:3px solid #ded4c0;padding:10px 12px;font-size:11.5px;color:#3f5c30;">Pointer, rule, and the values the schema accepts.</div>
+            </div>
+          </div>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:20px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">02 — THE PROBLEM</div>
+          <h2 style="margin:0;font-family:Silkscreen,monospace;font-size:22px;line-height:1.5;max-width:34ch;">Bedrock fails silently.</h2>
+          <p style="margin:0;max-width:64ch;text-wrap:pretty;">A general model invents a <code style="background:#efe7d8;border:2px solid #26221f;padding:1px 5px;">format_version</code>, references a <code style="background:#efe7d8;border:2px solid #26221f;padding:1px 5px;">minecraft:</code> identifier that does not exist, calls an API that is not in <code style="background:#efe7d8;border:2px solid #26221f;padding:1px 5px;">@minecraft/server</code> — and none of it raises an error until the pack is loaded in the game.</p>
+          <div style="display:grid;gap:14px;">
+            <sc-for list="{{ failures }}" as="f" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:minmax(220px,1fr) 2fr;gap:0;background:#f4efe6;border:4px solid #26221f;box-shadow:6px 6px 0 rgba(38,34,31,.3);transition:transform .08s steps(2),box-shadow .08s steps(2);" style-hover="transform:translate(-3px,-3px);box-shadow:9px 9px 0 rgba(38,34,31,.35);">
+                <div style="padding:18px 20px;background:#e3dac9;border-right:4px solid #26221f;font-size:13px;"><code>{{ f.what }}</code></div>
+                <div style="padding:18px 20px;font-size:14px;text-wrap:pretty;">{{ f.result }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:20px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">03 — HOW IT WORKS</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;">
+            <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+              <div style="background:#8d8577;color:#f7f1e6;border:4px solid #26221f;padding:22px 20px;box-shadow:6px 6px 0 rgba(38,34,31,.3),inset 5px 5px 0 rgba(255,255,255,.22),inset -5px -5px 0 rgba(0,0,0,.18);display:flex;flex-direction:column;gap:12px;transition:transform .08s steps(2);" style-hover="transform:translate(-3px,-3px);">
+                <div style="font-family:Silkscreen,monospace;font-size:26px;text-shadow:3px 3px 0 rgba(0,0,0,.4);">{{ s.n }}</div>
+                <div style="font-size:14px;text-wrap:pretty;">{{ s.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#f4efe6;border-left:10px solid #a8322b;border-top:4px solid #26221f;border-right:4px solid #26221f;border-bottom:4px solid #26221f;padding:18px 22px;font-size:14px;max-width:70ch;text-wrap:pretty;">Values are read from version-pinned data, not recalled.</div>
+        </section>
+
+        <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;">
+          <div style="background:#f4efe6;border:4px solid #26221f;box-shadow:6px 6px 0 rgba(38,34,31,.3);padding:24px;display:flex;flex-direction:column;gap:12px;">
+            <div style="font-family:Silkscreen,monospace;font-size:14px;">What it guarantees</div>
+            <p style="margin:0;font-size:14px;text-wrap:pretty;">The validator catches things the game will reject. It does not say your content will behave the way you wanted.</p>
+            <a href="#limits" onClick="{{ goLimits }}" style="font-size:13px;">Read the limits →</a>
+          </div>
+          <div style="background:#f4efe6;border:4px solid #26221f;box-shadow:6px 6px 0 rgba(38,34,31,.3);padding:24px;display:flex;flex-direction:column;gap:12px;">
+            <div style="font-family:Silkscreen,monospace;font-size:14px;">Quick setup</div>
+            <ul style="margin:0;padding-left:20px;font-size:14px;display:flex;flex-direction:column;gap:8px;">
+              <li>Endpoint: <code>{{ endpoint }}</code></li>
+              <li>In Claude: <strong>Customize &gt; Connectors</strong> (not Settings) → custom connector → paste the address</li>
+              <li>Once connected, <strong>9 tools</strong> should appear — all nine read-only</li>
+            </ul>
+            <a href="#setup" onClick="{{ goSetup }}" style="font-size:13px;">Full setup →</a>
+          </div>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:20px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">04 — NINE TOOLS, ALL READ-ONLY</div>
+          <p style="margin:0;max-width:64ch;">The server writes nothing, anywhere.</p>
+          <div style="display:grid;gap:10px;">
+            <sc-for list="{{ tools }}" as="t" hint-placeholder-count="9">
+              <div style="display:grid;grid-template-columns:minmax(200px,1fr) 2.2fr;background:#f4efe6;border:4px solid #26221f;box-shadow:5px 5px 0 rgba(38,34,31,.28);transition:transform .08s steps(2);" style-hover="transform:translate(-3px,-3px);">
+                <div style="padding:14px 18px;background:#e3dac9;border-right:4px solid #26221f;"><code style="font-size:13px;font-weight:700;">{{ t.name }}</code></div>
+                <div style="padding:14px 18px;font-size:14px;text-wrap:pretty;">{{ t.line }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <a href="#tools" onClick="{{ goTools }}" style="font-size:13px;">Tool reference →</a>
+        </section>
+
+        <section style="background:#3a352f;color:#efe6d6;border:5px solid #26221f;box-shadow:10px 10px 0 rgba(38,34,31,.35),inset 6px 6px 0 rgba(255,255,255,.12),inset -6px -6px 0 rgba(0,0,0,.3);padding:34px;display:flex;flex-direction:column;gap:18px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#e08d87;">05 — PRIVACY</div>
+          <ul style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px;font-size:15px;">
+            <li>No authentication, no accounts, no sessions.</li>
+            <li>No user data is stored. The server is stateless; every request is discarded.</li>
+            <li>All nine tools are read-only. The server sends data nowhere.</li>
+            <li>The validation layer connects to no LLM — that is not a promise, it is a test.</li>
+            <li>Source is open, Apache-2.0.</li>
+          </ul>
+        </section>
+
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSetup }}">
+      <div style="display:flex;flex-direction:column;gap:40px;">
+        <h1 id="setup" style="margin:0;font-family:Silkscreen,monospace;font-size:30px;line-height:1.4;">Setup</h1>
+
+        <section style="display:flex;flex-direction:column;gap:16px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">REQUIREMENTS</div>
+          <ul style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px;max-width:70ch;">
+            <li>A Claude client that can add a custom MCP connector.</li>
+            <li>Measured clients: the <strong>Claude desktop app (Pro account)</strong> and <strong>Claude Code's own MCP client</strong>. No other client has been tried, so this page does not claim it works everywhere.</li>
+            <li>A Minecraft Bedrock license is needed only to try the output in the game — not to use the tools.</li>
+          </ul>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:16px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">STEPS</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <sc-for list="{{ setupSteps }}" as="s" hint-placeholder-count="3">
+              <div style="display:flex;gap:18px;align-items:stretch;background:#f4efe6;border:4px solid #26221f;box-shadow:6px 6px 0 rgba(38,34,31,.3);">
+                <div style="flex:none;width:64px;display:flex;align-items:center;justify-content:center;background:#a8322b;color:#f7f1e6;border-right:4px solid #26221f;font-family:Silkscreen,monospace;font-size:22px;text-shadow:2px 2px 0 rgba(0,0,0,.4);">{{ s.n }}</div>
+                <div style="padding:18px 20px 18px 0;font-size:14px;text-wrap:pretty;">{{ s.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#efe7d8;border:4px solid #26221f;padding:16px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+            <code style="font-size:14px;">{{ endpoint }}</code>
+            <button onClick="{{ copyEndpoint }}" style="font-family:Silkscreen,monospace;font-size:11px;cursor:pointer;background:#a8322b;color:#f7f1e6;border:3px solid #26221f;padding:8px 12px;box-shadow:inset -3px -3px 0 rgba(0,0,0,.3),inset 3px 3px 0 rgba(255,255,255,.25);" style-hover="background:#8d8577;">{{ copyLabel }}</button>
+          </div>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:16px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">HOW YOU KNOW IT WORKED</div>
+          <ul style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px;max-width:70ch;">
+            <li><strong>9 tools</strong> should be listed.</li>
+            <li>The client should classify all of them as read-only; in the Claude desktop app they appear under "read only tools".</li>
+            <li>Tool titles should be visible, for example "Can Bedrock do this" and "Schema summary for a document type".</li>
+          </ul>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:16px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">YOUR FIRST TRY</div>
+          <p style="margin:0;max-width:70ch;text-wrap:pretty;">Type a request. The expected behaviour: the model calls the tools on its own, without you naming any of them. <code style="background:#efe7d8;border:2px solid #26221f;padding:1px 5px;">check_feasibility</code> reads requests in Turkish and English alike; its answer is always in English.</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;">
+            <sc-for list="{{ scenarios }}" as="sc" hint-placeholder-count="4">
+              <div style="background:#f4efe6;border:4px solid #26221f;box-shadow:6px 6px 0 rgba(38,34,31,.3);padding:20px;display:flex;flex-direction:column;gap:10px;transition:transform .08s steps(2);" style-hover="transform:translate(-3px,-3px);">
+                <div style="font-size:14px;font-weight:700;text-wrap:pretty;">“{{ sc.ask }}”</div>
+                <sc-if value="{{ sc.note }}"><div style="font-size:13px;color:#6b3d39;background:#f0dcd9;border:3px solid #a8322b;padding:10px 12px;text-wrap:pretty;">{{ sc.note }}</div></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:16px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">THREE THINGS THAT ARE EXPECTED, NOT BUGS</div>
+          <div style="display:grid;gap:12px;">
+            <sc-for list="{{ nonBugs }}" as="n" hint-placeholder-count="3">
+              <div style="display:grid;grid-template-columns:minmax(230px,1fr) 2fr;background:#f4efe6;border:4px solid #26221f;box-shadow:5px 5px 0 rgba(38,34,31,.28);">
+                <div style="padding:16px 18px;background:#e3dac9;border-right:4px solid #26221f;font-size:13px;"><code>{{ n.seen }}</code></div>
+                <div style="padding:16px 18px;font-size:14px;text-wrap:pretty;">{{ n.why }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:16px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">TROUBLESHOOTING</div>
+          <ul style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px;max-width:70ch;">
+            <li>Tools not listed: check that the address ends in <code style="background:#efe7d8;border:2px solid #26221f;padding:1px 5px;">/mcp</code>.</li>
+            <li>A call drops with a connection error: retry it. In real use, three calls dropped on a transient transport error and passed when the same payload was sent again. The cause was not on the server.</li>
+            <li>Tool permissions can be left on "ask every time". There are no logs on the server, so the approval prompt is the only record of which tool was called with which arguments.</li>
+          </ul>
+        </section>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isTools }}">
+      <div style="display:flex;flex-direction:column;gap:40px;">
+        <h1 id="tools" style="margin:0;font-family:Silkscreen,monospace;font-size:30px;line-height:1.4;">Tools</h1>
+
+        <section style="display:flex;flex-direction:column;gap:16px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">CALL ORDER</div>
+          <p style="margin:0;max-width:70ch;">The order the server hands to the model, in plain words:</p>
+          <ol style="margin:0;padding-left:24px;display:flex;flex-direction:column;gap:10px;max-width:70ch;">
+            <li><code style="background:#efe7d8;border:2px solid #26221f;padding:1px 5px;">check_feasibility</code> — can Bedrock do this at all.</li>
+            <li><code style="background:#efe7d8;border:2px solid #26221f;padding:1px 5px;">get_version_info</code> and <code style="background:#efe7d8;border:2px solid #26221f;padding:1px 5px;">get_schema</code> — which fields are required, which <code style="background:#efe7d8;border:2px solid #26221f;padding:1px 5px;">format_version</code>.</li>
+            <li>After the files are written, <code style="background:#efe7d8;border:2px solid #26221f;padding:1px 5px;">review_pack</code>.</li>
+          </ol>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:18px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">FIVE SEPARATE VERSION NUMBERS</div>
+          <p style="margin:0;max-width:70ch;text-wrap:pretty;">This is what <code style="background:#efe7d8;border:2px solid #26221f;padding:1px 5px;">get_version_info</code> returns. They are five different things and they are routinely confused.</p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <sc-for list="{{ versionTabs }}" as="v" hint-placeholder-count="5">
+              <button onClick="{{ v.select }}" style="position:relative;font-family:Silkscreen,monospace;font-size:11px;cursor:pointer;background:#e3dac9;color:#26221f;border:4px solid #26221f;padding:11px 14px;box-shadow:4px 4px 0 rgba(38,34,31,.28);" style-hover="background:#f7f1e6;">{{ v.label }}<sc-if value="{{ v.active }}"><span style="position:absolute;left:-4px;right:-4px;bottom:-4px;height:6px;background:#a8322b;"></span></sc-if></button>
+            </sc-for>
+          </div>
+          <div style="background:#f4efe6;border:5px solid #26221f;box-shadow:8px 8px 0 rgba(38,34,31,.32);padding:28px;display:flex;flex-direction:column;gap:16px;">
+            <div style="font-family:Silkscreen,monospace;font-size:18px;">{{ activeVersion.label }}</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+              <span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#5d564d;">Example</span>
+              <code style="font-size:15px;background:#efe7d8;border:3px solid #26221f;padding:6px 10px;">{{ activeVersion.example }}</code>
+            </div>
+            <div style="font-size:14px;text-wrap:pretty;"><span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#5d564d;">Where it goes</span><br />{{ activeVersion.where }}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;">
+            <div style="background:#f0dcd9;border:4px solid #a8322b;padding:18px 20px;font-size:14px;text-wrap:pretty;"><strong>Trap 1.</strong> <code>format_version</code> is not the game version. It is that document type's own schema version: block <code>1.21.100</code>, feature rule <code>1.13.0</code>, spawn rule <code>1.8.0</code>, manifest <code>2</code>.</div>
+            <div style="background:#f0dcd9;border:4px solid #a8322b;padding:18px 20px;font-size:14px;text-wrap:pretty;"><strong>Trap 2.</strong> The module version is <code>2.x</code> while the game version is <code>1.26.x</code>. On a prerelease tag the game version arrives embedded inside the module version: <code>2.11.0-beta.1.26.50-preview.27</code>.</div>
+          </div>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:14px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">NINE TOOL CARDS</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{ toolCards }}" as="t" hint-placeholder-count="9">
+              <div style="background:#f4efe6;border:4px solid #26221f;box-shadow:6px 6px 0 rgba(38,34,31,.3);">
+                <button onClick="{{ t.toggle }}" style="width:100%;box-sizing:border-box;display:flex;align-items:center;gap:16px;text-align:left;cursor:pointer;background:transparent;border:none;padding:18px 20px;font-family:'JetBrains Mono',monospace;" style-hover="background:#e9e1d2;">
+                  <span style="flex:none;width:22px;height:22px;display:flex;align-items:center;justify-content:center;background:#a8322b;color:#f7f1e6;border:3px solid #26221f;font-family:Silkscreen,monospace;font-size:11px;">{{ t.sign }}</span>
+                  <code style="font-size:14px;font-weight:700;">{{ t.name }}</code>
+                  <span style="font-size:13px;color:#5d564d;flex:1;text-wrap:pretty;">{{ t.line }}</span>
+                </button>
+                <sc-if value="{{ t.open }}">
+                  <div style="border-top:4px solid #26221f;padding:20px;display:flex;flex-direction:column;gap:14px;background:#efe7d8;">
+                    <div style="font-size:14px;text-wrap:pretty;"><span style="font-family:Silkscreen,monospace;font-size:10px;letter-spacing:.1em;color:#a8322b;">WHEN IT IS CALLED</span><br />{{ t.when }}</div>
+                    <div style="font-size:14px;text-wrap:pretty;background:#f7f1e6;border-left:8px solid #a8322b;border-top:3px solid #26221f;border-right:3px solid #26221f;border-bottom:3px solid #26221f;padding:14px 16px;"><span style="font-family:Silkscreen,monospace;font-size:10px;letter-spacing:.1em;color:#a8322b;">DO NOT SKIP THIS</span><br />{{ t.note }}</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isLimits }}">
+      <div style="display:flex;flex-direction:column;gap:40px;">
+        <h1 id="limits" style="margin:0;font-family:Silkscreen,monospace;font-size:30px;line-height:1.4;">Limits &amp; data</h1>
+
+        <section style="display:flex;flex-direction:column;gap:18px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">WHAT IT DOES NOT CATCH</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <sc-for list="{{ misses }}" as="m" hint-placeholder-count="4">
+              <div style="background:#3a352f;color:#efe6d6;border:4px solid #26221f;box-shadow:6px 6px 0 rgba(38,34,31,.32),inset 5px 5px 0 rgba(255,255,255,.1);padding:22px 24px;display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                  <span style="font-family:Silkscreen,monospace;font-size:14px;color:#f7f1e6;">{{ m.title }}</span>
+                  <sc-if value="{{ m.measured }}"><span style="font-family:Silkscreen,monospace;font-size:9px;letter-spacing:.1em;background:#a8322b;color:#f7f1e6;border:2px solid #f0dcd9;padding:4px 7px;">MEASURED</span></sc-if>
+                </div>
+                <div style="font-size:14px;text-wrap:pretty;">{{ m.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:16px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">WHAT WAS MEASURED</div>
+          <p style="margin:0;max-width:70ch;text-wrap:pretty;">This project separates "it works" from "it was measured".</p>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <sc-for list="{{ measurements }}" as="m" hint-placeholder-count="3">
+              <div style="display:flex;gap:14px;align-items:flex-start;background:#f4efe6;border:4px solid #26221f;box-shadow:5px 5px 0 rgba(38,34,31,.28);padding:18px 20px;">
+                <span style="flex:none;font-family:Silkscreen,monospace;font-size:9px;letter-spacing:.1em;background:#a8322b;color:#f7f1e6;border:3px solid #26221f;padding:5px 7px;margin-top:2px;">MEASURED</span>
+                <span style="font-size:14px;text-wrap:pretty;">{{ m }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#f0dcd9;border:4px solid #a8322b;padding:18px 20px;font-size:15px;max-width:70ch;text-wrap:pretty;">A rule is not coded until it is measured, and everything measured is written down with its history.</div>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:16px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.12em;color:#a8322b;">WHERE THE DATA COMES FROM</div>
+          <p style="margin:0;max-width:70ch;text-wrap:pretty;">Derived facts, not republication. No raw content is served; facts like "this id exists" and "this field is required" are indexed.</p>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <sc-for list="{{ sources }}" as="s" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:minmax(220px,1fr) 2fr minmax(200px,1fr);background:#f4efe6;border:4px solid #26221f;box-shadow:5px 5px 0 rgba(38,34,31,.28);">
+                <div style="padding:16px 18px;background:#e3dac9;border-right:4px solid #26221f;"><code style="font-size:13px;">{{ s.name }}</code></div>
+                <div style="padding:16px 18px;font-size:14px;text-wrap:pretty;">{{ s.use }}</div>
+                <div style="padding:16px 18px;font-size:13px;border-left:4px solid #26221f;background:#efe7d8;text-wrap:pretty;">{{ s.license }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;">
+          <div style="background:#f4efe6;border:4px solid #26221f;box-shadow:6px 6px 0 rgba(38,34,31,.3);padding:24px;display:flex;flex-direction:column;gap:12px;">
+            <div style="font-family:Silkscreen,monospace;font-size:14px;">How fresh the data is</div>
+            <ul style="margin:0;padding-left:20px;font-size:14px;display:flex;flex-direction:column;gap:9px;">
+              <li>Data indexes update automatically, daily.</li>
+              <li>The scheduled run is set to 05:00 UTC, but it was measured starting about 5 hours late on average. So the data can be at most <strong>1 day + ~5 hours</strong> old.</li>
+              <li>Data is foldered by game version, and the tools state which version they used in their answer.</li>
+            </ul>
+          </div>
+          <div style="background:#f4efe6;border:4px solid #26221f;box-shadow:6px 6px 0 rgba(38,34,31,.3);padding:24px;display:flex;flex-direction:column;gap:12px;">
+            <div style="font-family:Silkscreen,monospace;font-size:14px;">Hosting and privacy</div>
+            <ul style="margin:0;padding-left:20px;font-size:14px;display:flex;flex-direction:column;gap:9px;">
+              <li>Hosted on a free tier. That is a design choice, not a constraint being hidden.</li>
+              <li>There is no rate limit on the endpoint, and that is stated openly.</li>
+              <li>No tool-usage log is kept on the server; the server is stateless.</li>
+              <li>No personal data is collected. There are no accounts.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section style="background:#8d8577;color:#f7f1e6;border:5px solid #26221f;box-shadow:8px 8px 0 rgba(38,34,31,.32),inset 6px 6px 0 rgba(255,255,255,.2),inset -6px -6px 0 rgba(0,0,0,.18);padding:28px;display:flex;flex-direction:column;gap:12px;">
+          <div style="font-family:Silkscreen,monospace;font-size:14px;">Source and contributing</div>
+          <p style="margin:0;max-width:70ch;font-size:14px;text-wrap:pretty;">The repository is public and licensed Apache-2.0. Issues are the way to report a problem. The measurement logs sit in the repo in the open — claims being checkable is a feature here.</p>
+        </section>
+      </div>
+    </sc-if>
+
+  </main>
+
+  <footer style="border-top:5px solid #26221f;background:#3a352f;color:#cfc6b6;">
+    <div style="max-width:1080px;margin:0 auto;padding:38px 28px 46px;display:flex;flex-direction:column;gap:28px;">
+      <div style="background:#26221f;border:4px solid #57504a;padding:20px 22px;display:flex;flex-direction:column;gap:10px;">
+        <pre style="margin:0;font-family:Silkscreen,monospace;font-size:12px;line-height:1.9;color:#f7f1e6;white-space:pre-wrap;">NOT AN OFFICIAL MINECRAFT PRODUCT.
+NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.</pre>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;font-size:13px;">
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.1em;color:#e08d87;">ATTRIBUTIONS</div>
+          <div>Schemas: Blockception Ltd, BSD-3-Clause (attribution required).</div>
+          <div>Script types: Microsoft, MIT.</div>
+          <div>Release notes: Microsoft, CC-BY-4.0.</div>
+          <div>CodeCraft: Apache-2.0.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.1em;color:#e08d87;">LINKS</div>
+          <div>Repository</div>
+          <div>License</div>
+          <div>Third-party notices</div>
+          <div><a href="https://www.minecraft.net/en-us/usage-guidelines" style="color:#f0dcd9;">Minecraft Usage Guidelines</a></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.1em;color:#e08d87;">ENDPOINT</div>
+          <code style="font-size:12px;color:#f7f1e6;">{{ endpoint }}</code>
+          <div>Stateless. Read-only. No auth.</div>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  state = { page: 'home', openTool: null, verTab: 0, copied: false };
+
+  copy = () => {
+    const url = 'https://codecraft-ashy-seven.vercel.app/mcp';
+    if (navigator.clipboard) navigator.clipboard.writeText(url).catch(() => {});
+    this.setState({ copied: true });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ copied: false }), 1600);
+  };
+
+  go = (page) => () => this.setState({ page });
+
+  cube(size) {
+    const R = React.createElement;
+    const s = size, half = s / 2, bw = Math.max(2, Math.round(s / 26)), tiny = s < 40;
+    const tone = { top: '#a8a094', front: '#8a8277', side: '#69625a', notch: '#4a443c',
+      edge: '#26221f', plate: '#ded8cd', plateEdge: '#8a8277', well: '#b3aca0' };
+    const cells = ['r','a','r','r','r','r','g','r','r'];
+    const cellColor = { r: '#a8322b', a: '#c98b2c', g: '#4f7a3a' };
+
+    const panel = (shade) => {
+      const p = Math.round(s * 0.56), cell = Math.max(2, Math.round(p * 0.2));
+      return R('div', {
+        style: {
+          position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)',
+          width: p + 'px', height: p + 'px', background: tone.plate,
+          border: Math.max(2, Math.round(s / 30)) + 'px solid ' + tone.plateEdge, boxSizing: 'border-box',
+          boxShadow: 'inset 0 0 0 ' + Math.max(1, Math.round(s / 44)) + 'px ' + tone.well,
+          filter: shade ? 'brightness(' + shade + ')' : 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }
+      }, tiny
+        ? R('div', { style: { width: cell * 2 + 'px', height: cell * 2 + 'px', background: '#a8322b' } })
+        : R('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3,' + cell + 'px)', gap: Math.max(1, Math.round(cell * 0.45)) + 'px' } },
+            cells.map((c, i) => R('div', { key: i, style: { width: cell + 'px', height: cell + 'px', background: cellColor[c] } }))));
+    };
+
+    const notches = (shade) => {
+      const n = Math.round(s * 0.14);
+      const outer = [{ left: 0, top: 0 }, { right: 0, top: 0 }, { left: 0, bottom: 0 }, { right: 0, bottom: 0 }];
+      const inner = [{ left: n, top: 0 }, { right: n, bottom: 0 }, { left: 0, top: n }, { right: 0, bottom: n }];
+      return outer.map((p, i) => R('div', { key: 'n' + i, style: Object.assign({ position: 'absolute', width: n + 'px', height: n + 'px', background: tone.notch, opacity: shade ? .5 : .38 }, p) }))
+        .concat(inner.map((p, i) => R('div', { key: 'i' + i, style: Object.assign({ position: 'absolute', width: Math.round(n * .6) + 'px', height: Math.round(n * .6) + 'px', background: tone.notch, opacity: .2 }, p) })));
+    };
+
+    const face = (key, bg, transform, shade) => R('div', {
+      key: key,
+      style: {
+        position: 'absolute', left: 0, top: 0, width: s + 'px', height: s + 'px', background: bg,
+        border: bw + 'px solid ' + tone.edge, boxSizing: 'border-box', overflow: 'hidden', transform: transform
+      }
+    }, [].concat(notches(shade), [panel(shade)]));
+
+    return R('div', {
+      style: { flex: 'none', width: (s * 1.5) + 'px', height: (s * 1.8) + 'px', display: 'flex', alignItems: 'center', justifyContent: 'center', perspective: (s * 7) + 'px' }
+    }, R('div', {
+      style: { position: 'relative', width: s + 'px', height: s + 'px', transformStyle: 'preserve-3d', transform: 'rotateX(58deg) rotateZ(45deg)' }
+    }, [
+      face('t', tone.top, 'translateZ(' + half + 'px)'),
+      face('f', tone.front, 'rotateX(-90deg) translateZ(' + half + 'px)', 0.94),
+      face('s', tone.side, 'rotateY(90deg) translateZ(' + half + 'px)', 0.82)
+    ]));
+  }
+
+  renderVals() {
+    const s = this.state;
+    const cards = [
+      { name: 'check_feasibility', line: 'Can Bedrock do this at all; if not, why, and what the alternative is',
+        when: 'First. Before any file is written.',
+        note: 'Input is language-independent, output is always English. Blocked classes: input simulation, filesystem access, network access. A blocked answer carries the reason, the evidence, and an alternative.' },
+      { name: 'get_version_info', line: 'Which version number goes where',
+        when: 'Second, together with get_schema, before writing files.',
+        note: 'The returned format_version list may have been narrowed by measurement; get_schema gives the raw schema enum. That is why the two can look different.' },
+      { name: 'get_schema', line: 'Which fields this document type requires, and which format_version is valid',
+        when: 'Second, together with get_version_info.',
+        note: 'It does not return the raw schema, it returns a summary. On crowded nodes it narrows and says what it cut; use path to descend into a subnode.' },
+      { name: 'lookup_id', line: 'Does this minecraft: identifier exist in this version, what type is it, what block states does it have',
+        when: 'Whenever an identifier is referenced.',
+        note: 'For a block it also returns the valid block states and the values they accept. A name without a namespace is treated as minecraft:.' },
+      { name: 'validate_json', line: 'Does this file match the official schema',
+        when: 'After each JSON file is written.',
+        note: 'The error message carries a JSON pointer, the rule that was violated, and readable text. Unexpected field names and the valid enum values make it into the message.' },
+      { name: 'validate_command', line: 'Is this command line valid, does it require cheats',
+        when: 'On any command string, including ones embedded in files.',
+        note: 'An execute ... run <command> chain is unwrapped and the inner command is validated too. It tells you whether cheats are required.' },
+      { name: 'validate_script', line: 'Does the script compile with real tsc and real @minecraft/server types',
+        when: 'After script files are written.',
+        note: 'Real TypeScript compiler, real @minecraft/server types. The answer states which module version it compiled against.' },
+      { name: 'validate_python', line: 'Is this out-of-game automation script and the commands inside it valid',
+        when: 'On automation that runs outside the game.',
+        note: 'Three axes: Python syntax, embedded commands, the /connect envelope. There is no Python interpreter on the hosted endpoint, so the syntax axis is skipped and reported as syntaxChecked: false — ok:true alone does not mean the syntax is valid.' },
+      { name: 'review_pack', line: 'The whole pack: the right validator per file, plus the checks a schema structurally cannot see',
+        when: 'Last, once the pack is complete.',
+        note: 'Also runs the checks a schema structurally cannot see: identifier consistency, filename rules, manifest module type, texture keys, component names, Molang queries, loot and trade table paths.' }
+    ];
+
+    const versions = [
+      { label: 'Marketing number', example: '26.40', where: 'Announcements only. It is never written into any file.' },
+      { label: 'Game / data version', example: '1.26.40.5', where: 'Data indexes.' },
+      { label: 'min_engine_version', example: '[1, 26, 40]', where: 'manifest.json, as a three-part array.' },
+      { label: '@minecraft/server module version', example: '2.9.0', where: 'manifest.json → dependencies.' },
+      { label: 'format_version', example: '1.21.100 · 1.13.0 · 2', where: 'Content files. Each document type has its own.' }
+    ];
+
+    return {
+      logoMark: this.cube(46),
+      endpoint: 'https://codecraft-ashy-seven.vercel.app/mcp',
+      copyLabel: s.copied ? 'Copied' : 'Copy',
+      copyEndpoint: this.copy,
+      goHome: this.go('home'), goSetup: this.go('setup'), goTools: this.go('tools'), goLimits: this.go('limits'),
+      isHome: s.page === 'home', isSetup: s.page === 'setup', isTools: s.page === 'tools', isLimits: s.page === 'limits',
+
+      failures: [
+        { what: '"format_version": "1.26.40"', result: 'The schema rejected it: a spawn rule accepts only 1.8.0, 1.10.0 or 1.12.0.' },
+        { what: 'feature rule filename ≠ identifier', result: 'The game rejected it: "Feature rule identifier \'ruby_ore_feature\' does not match filename \'ruby_ore\'".' },
+        { what: 'recipe with no unlock field', result: 'The game never loaded the recipe: "1.20+ Recipes require unlock data".' },
+        { what: 'query.is_babyy', result: 'The entire block definition was dropped. The block never registered in the game.' }
+      ],
+      steps: [
+        { n: '1', text: 'You add the MCP endpoint to your own Claude client.' },
+        { n: '2', text: 'While working on a Bedrock task, the model calls the tools by itself: which field is required, which identifier exists, is this line valid.' },
+        { n: '3', text: 'The generated files are validated against the official schema, the command grammar, and real tsc.' }
+      ],
+      tools: cards.map(c => ({ name: c.name, line: c.line })),
+      toolCards: cards.map((c, i) => ({
+        name: c.name, line: c.line, when: c.when, note: c.note,
+        open: s.openTool === i, sign: s.openTool === i ? '–' : '+',
+        toggle: () => this.setState({ openTool: s.openTool === i ? null : i })
+      })),
+
+      setupSteps: [
+        { n: '1', text: 'In Claude, open Customize > Connectors. Not Settings — that distinction got confused in real use.' },
+        { n: '2', text: 'Add a custom connector and enter the address.' },
+        { n: '3', text: 'Save. The tools are listed on the tool permissions screen.' }
+      ],
+      scenarios: [
+        { ask: 'Make a guardian creature spawn on the surface at night', note: '' },
+        { ask: 'When I break a block, break its neighbours of the same kind too', note: '' },
+        { ask: 'Build a ten-by-ten glass box around me', note: '' },
+        { ask: 'Make it fish automatically without me touching the keyboard', note: 'This one is blocked, with a reason and an alternative. It is a good first try because it shows the tool can say no.' }
+      ],
+      nonBugs: [
+        { seen: 'GET /mcp returns 405', why: 'The spec allows a server that does not offer SSE to return 405.' },
+        { seen: 'No OAuth discovery endpoints', why: 'The endpoint is unauthenticated, deliberately.' },
+        { seen: 'Server version never appears in the client UI', why: 'A remote connector is proxied and the client does not surface the initialize response. Measured.' }
+      ],
+
+      versionTabs: versions.map((v, i) => ({ label: v.label, active: s.verTab === i, select: () => this.setState({ verTab: i }) })),
+      activeVersion: versions[s.verTab] || versions[0],
+
+      misses: [
+        { title: 'Valid but not intended', measured: false, text: 'The file is correct, the behaviour is wrong. Example: sending a player a message on the worldLoad event — the event fires, but there is no player there to receive it. No schema can catch this.' },
+        { title: 'Context', measured: false, text: 'An existing Molang query used in the wrong context is rejected by the game. The check only looks at whether the query exists.' },
+        { title: 'Silent failure', measured: true, text: 'An entity pointing at a loot table that does not exist loads, spawns and dies. The game writes nothing; nothing drops.' },
+        { title: 'Untried document types', measured: true, text: 'The pack that was verified in-game carried 13 files and touched 11 document types. The number of recognised types is 60.' }
+      ],
+      measurements: [
+        'The validator\u2019s error findings and the game\u2019s ContentLog errors converged on the same set for one test pack: both empty.',
+        'An unknown Molang query drops the entire block definition in-game. After the measurement, the check was raised to error.',
+        'An unknown component name is rejected the same way, but the check stayed a warning, because the source list had a measured gap of 126 names. The gap has been closed; the severity decision is being handled separately.'
+      ],
+      sources: [
+        { name: 'Mojang/bedrock-samples', use: 'Block, entity and item identifiers; command grammar; Molang queries; component names; schemas', license: 'Minecraft EULA — derived index only' },
+        { name: 'Blockception/Minecraft-bedrock-json-schemas', use: 'The schemas JSON validation uses', license: 'BSD-3-Clause, attribution required' },
+        { name: '@minecraft/* npm packages', use: 'Script type definitions', license: 'MIT, Microsoft' },
+        { name: 'MicrosoftDocs/minecraft-creator', use: 'Release notes', license: 'CC-BY-4.0' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
