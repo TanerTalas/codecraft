@@ -7,7 +7,7 @@ import { VersionTabs } from "@/components/VersionTabs";
 import { toolCards } from "@/content/site";
 
 export const metadata: Metadata = {
-  title: "Tools",
+  title: "Tools — nine read-only Bedrock validation tools",
   description:
     "The nine read-only tools, the order the server hands to the model, and the five separate Bedrock version numbers that are routinely confused with each other.",
   alternates: { canonical: "/tools" },

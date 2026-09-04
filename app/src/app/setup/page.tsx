@@ -6,7 +6,7 @@ import { CopyEndpoint } from "@/components/CopyEndpoint";
 import { ENDPOINT, nonBugs, scenarios, setupSteps } from "@/content/site";
 
 export const metadata: Metadata = {
-  title: "Setup",
+  title: "Setup — add the Bedrock MCP server to Claude",
   description:
     "How to add the CodeCraft MCP endpoint to your own Claude client, how to tell it worked, what to try first, and the three things that look like bugs but are not.",
   alternates: { canonical: "/setup" },

@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 import { measurements, misses, sources } from "@/content/site";
 
 export const metadata: Metadata = {
-  title: "Limits & data",
+  title: "Limits & data — what Bedrock validation does not catch",
   description:
     "What the validator does not catch, what was actually measured, where the data comes from and under which licence, how fresh it is, and what the server does not keep.",
   alternates: { canonical: "/limits" },
