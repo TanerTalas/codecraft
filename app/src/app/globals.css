@@ -41,6 +41,20 @@
   box-sizing: border-box;
 }
 
+/*
+ * `hidden` özniteliğinin UA kuralı `[hidden] { display: none }` bir ELEMENT
+ * seçicisi kadar zayıf; sınıf üzerinden verilen her `display` onu eziyor.
+ * Ölçüldü (04-09-2026): `.vpanel { display: flex }` yüzünden beş sürüm
+ * panelinin BEŞİ de aynı anda ekrandaydı, sekmeye tıklamak görünürde hiçbir
+ * şey yapmıyordu. Kullanıcı "tıklanınca bir şey olmuyor" diye bildirdi.
+ *
+ * Önceki ölçüm bunu kaçırmıştı çünkü `hidden` ÖZNİTELİĞİNİ sayıyordu
+ * (4 gizli, doğru) ama render'ı ölçmüyordu (`getComputedStyle().display`).
+ */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   background: var(--sand);
@@ -819,6 +833,9 @@ code.inl {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  transition:
+    transform 0.08s steps(2),
+    box-shadow 0.08s steps(2);
 }
 
 .vpanel-h {
@@ -1151,17 +1168,29 @@ code.inl {
   .row:hover,
   .snum:hover,
   .card:hover,
+  .meas:hover,
   .tcard:not([open]):hover {
     transform: translate(-3px, -3px);
     box-shadow: 9px 9px 0 rgba(38, 34, 31, 0.35);
   }
 
-  /* Gölgesi 4px olanlar → 7px. */
+  /*
+   * Gölgesi 4px olanlar → 7px. `.row-*` üçlüsü kaymayı yukarıdaki kuraldan
+   * alıyor çünkü `.row` sınıfını da taşıyorlar; `.meas` taşımıyor ve bu
+   * yüzden BİR SÜRE yalnızca gölgesi büyüyordu, kutu yerinde duruyordu
+   * (kullanıcı bildirdi, 04-09-2026). Artık yukarıdaki listede.
+   */
   .row-tool:hover,
   .row-nb:hover,
   .row-src:hover,
   .meas:hover {
     box-shadow: 7px 7px 0 rgba(38, 34, 31, 0.32);
+  }
+
+  /* Sürüm paneli: büyük kutu, biraz kalkıyor. */
+  .vpanel:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: 11px 11px 0 rgba(38, 34, 31, 0.32);
   }
 
   /* Tuzak kutularının tasarımda hiç gölgesi yok; hover'da beliriyor. */
@@ -1393,6 +1422,8 @@ code.inl {
   .row:hover,
   .snum:hover,
   .card:hover,
+  .meas:hover,
+  .vpanel:hover,
   .tcard:not([open]):hover,
   .trap:hover,
   .miss:hover,

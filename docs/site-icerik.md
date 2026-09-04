@@ -586,6 +586,66 @@ Hover eklendikten sonra taşma ölçümü tekrarlandı: **20/20 hâlâ temiz.**
 dokunmatik ekranda `:hover` dokunduktan sonra üzerinde kalıyor, yani karta bir
 kez dokununca kart kaymış hâlde takılı kalırdı.
 
+## Ölçüldü (04-09-2026) — `hidden` özniteliği ezilmişti (HATA)
+
+Kullanıcı bildirdi: araçlar sayfasındaki sürüm sekmelerine tıklayınca "hiçbir
+şey olmuyor". Doğru çıktı, ve sebebi sekmelerde değildi.
+
+`.vpanel` bir sınıf üzerinden `display: flex` alıyordu. `hidden` özniteliğinin
+tarayıcı kuralı `[hidden] { display: none }` bir ELEMENT seçicisi kadar zayıf,
+yani sınıf onu eziyor. Sonuç: **beş sürüm panelinin beşi de aynı anda
+ekrandaydı**, üst üste dizilmiş hâlde. Sekmeye basmak yalnızca küçük kırmızı
+işareti oynatıyordu, altındaki içerik hiç değişmiyordu.
+
+**Bu hata bir önceki ölçümden KAÇTI ve niye kaçtığı önemli.** O ölçüm
+`role="tabpanel"` sayısını ve `hidden` ÖZNİTELİĞİNİ saymıştı — 5 panel, 4'ü
+gizli — ve ikisi de doğruydu. Ölçülmeyen şey render'dı. Öznitelik doğru,
+`getComputedStyle().display` yanlıştı. Bundan sonra görünürlük iddiası
+`getBoundingClientRect().height > 0` ile ölçülüyor.
+
+Düzeltme `[hidden] { display: none !important }`. Sonrası ölçüldü:
+
+| Ölçüm | Önce | Sonra |
+|---|---|---|
+| `/tools` ekranda yer kaplayan panel | 5 | **1** |
+| Gerçek fare tıklamasından sonra | değişmiyor | **"@minecraft/server module version", örnek `2.9.0`** |
+| `aria-selected` ve kırmızı işaret | sekme 0'da kalıyor | **sekme 3'e geçiyor** |
+| 390px'te görünür panel | 5 | **1** |
+
+Tarayıcı robotu tarafı bozulmadı: `display: none` içerik HTML'de duruyor, ham
+`/tools` çıktısında beş sürüm örneği ve dokuz araç notu hâlâ mevcut.
+
+> Sekmeler artık gerçek fareyle çalıştığı için "tıklanamaz olsun" isteği
+> askıya alındı — isteğin gerekçesi bu hataydı. Karar kullanıcıda.
+
+## Ölçüldü (04-09-2026) — `.meas` kutusu kıpırdamıyordu (HATA)
+
+Kullanıcı bildirdi: sınırlar sayfasındaki "what was measured" kutularında
+hover'da gölge büyüyor ama kutu yerinde duruyor. Doğru çıktı.
+
+Sebep: kayma kuralı `.row:hover, .snum:hover, .card:hover, .tcard...` idi.
+`.row-tool`, `.row-nb` ve `.row-src` kaymayı buradan alıyor çünkü `.row`
+sınıfını DA taşıyorlar; `.meas` taşımıyor ve yalnızca gölge kuralına giriyordu.
+Kayma kuralına eklendi.
+
+Ölçüldü: `.meas` hover → `transform: matrix(1,0,0,1,-3,-3)`, gölge `7px 7px`.
+Öncesi `matrix(1,0,0,1,0,0)` idi, yani kayma sıfır.
+
+## Ölçüldü (04-09-2026) — `.vpanel` hover
+
+Kullanıcı isteğiyle sürüm paneli de kalkıyor. Ölçüldü: hover →
+`transform: matrix(1,0,0,1,-3,-3)`, gölge `8px 8px` → `11px 11px`.
+
+Üç değişiklikten sonra taşma ölçümü tekrarlandı: **20/20 hâlâ temiz.**
+
+> **İkinci ölçüm tuzağı, not düşülüyor.** Sekme hatasını araştırırken gerçek
+> fare tıklaması "hiç olay üretmiyor" göründü ve bir an araç zincirinin
+> bozuk olduğu sanıldı. İki ayrı sebep vardı: (1) sekme referansları
+> hidrasyondan ÖNCE saklanmıştı, sonraki okuma kopmuş düğümlere bakıyordu;
+> (2) `scrollIntoView` sonrası rect ölçülüp beklenmeden tıklanınca sayfa
+> kaymış oluyordu. Doğru yöntem: her ölçümde DOM'u taze sorgula, rect'i
+> tıklamadan hemen önce al.
+
 ## Ölçülmedi — açık kalan
 
 - **Gerçek cihazda denenmedi.** Ölçüm masaüstü Chrome'da, iframe viewport'uyla
