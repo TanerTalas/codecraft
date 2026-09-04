@@ -59,3 +59,9 @@ venv/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Resmi MCP Registry'ye yayın aracı. Depoya girmez: platforma özel bir ikili,
+# tek işi `server.json`'ı registry'ye göndermek (docs/MCP.md).
+mcp-publisher
+mcp-publisher.exe
+*.tar.gz
