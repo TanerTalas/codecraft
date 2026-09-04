@@ -675,6 +675,55 @@ Push sonrası Chrome ile ölçüldü:
 sayfada da yerelde ölçüldüğü gibi. `/mcp` ucu aynı dağıtımda çağrıldı ve
 `1.26.40.5`, `[1, 26, 40]`, `@minecraft/server 2.9.0` döndürdü.
 
+## Ölçüldü (05-09-2026) — arama görünürlüğü
+
+Soru şuydu: site yayında ama Google'da yok, sebep Vercel mi, eksik bir ayar mı?
+**İkisi de değil.** Yapılandırma doğru, eksik olan keşif.
+
+| Kontrol | Sonuç |
+|---|---|
+| `X-Robots-Tag` başlığı | **Yok** — Vercel indekslemeyi engellemiyor |
+| `robots.txt` | `Allow: /`, `Disallow: /mcp`, `Sitemap:` satırı doğru |
+| `sitemap.xml` | Dört URL, geçerli XML, `lastmod` dolu |
+| `<title>`, `description`, `canonical`, `og:*` | Sunulan HTML'de yerinde |
+| `<html lang>` | `en` |
+| Sunucu tarafı render | `/` 47 KB HTML, H1 ham HTML'de |
+| `site:codecraft-ashy-seven.vercel.app` | **0 sonuç** |
+| `site:github.com/TanerTalas/codecraft` | **0 sonuç** |
+
+Son iki satır kaynak sorunun kendisi: Googlebot ne siteyi ne de **depoyu**
+bulmuş. İkisine de dışarıdan hiç bağlantı yok ve site bir gün önce doğdu.
+
+### Rakip tablosu — dizinler tutuyor
+
+"minecraft mcp server" sorgusunda ilk sayfa ölçüldü. Sıralayan şeyler
+projelerin kendi siteleri değil, **MCP dizinleri**: mcpservers.org, LobeHub,
+mcpmarket, mcpserver.so, skillsllm, CurseForge. Bir GitHub deposu
+(`yuniko-software/minecraft-mcp-server`) ilk sırada.
+
+Sonuç: bu alanda dağıtım kanalı dizinler. Oraya girmek hem trafik hem bağlantı
+demek, ve "onları geçmek" diye bir hedef yok — doğru hedef o listelerde
+**yer almak**.
+
+### Buna göre yapılanlar
+
+- Üç iç sayfanın başlığı aramaya açıldı (`Setup` → `Setup — add the Bedrock
+  MCP server to Claude` vb.). Hedef dar Bedrock sorguları; "minecraft mcp
+  server" bilerek hedeflenmiyor
+- `layout.tsx`'e JSON-LD eklendi (`WebSite` + `SoftwareApplication`).
+  `aggregateRating` **yok**: puanı olmayan bir şeye puan yazmak bu deponun
+  karşı durduğu şey, zengin sonuç uğruna bile
+- Depo köküne `server.json` yazıldı, resmi MCP Registry için. Şemaya karşı
+  ajv ile doğrulandı. `description` üst sınırı 100 karakter
+
+### Ölçülmedi — bu bölümün açık ucu
+
+- **İndekslenme henüz olmadı.** Yukarıdaki "0 sonuç" satırı bugünün hâli.
+  Search Console doğrulaması, dizin kayıtları ve depo metadatası tamamlandıktan
+  sonra aynı sorgular tekrar koşulacak ve sonuç buraya yazılacak — bu satır
+  silinmeyecek, altına yenisi eklenecek
+- **Sıralama hiç ölçülmedi.** Ölçülen tek şey indekste olup olmadığı
+
 ## Ölçülmedi — açık kalan
 
 - **Gerçek cihazda denenmedi.** Ölçüm masaüstü Chrome'da, iframe viewport'uyla
