@@ -48,9 +48,14 @@ export const metadata: Metadata = {
   // paylaşımda kırpılıyor.
   //
   // Görselin kendisi `opengraph-image.png` dosya adıyla duruyor: Next bu adı
-  // tanıyıp `og:image`, `og:image:width/height` ve `og:image:type`
-  // etiketlerini kendisi üretiyor, elle URL yazılmıyor. `twitter:image` ayrı
-  // bir dosya adı ister; yazılmadığında istemciler `og:image`'a düşüyor.
+  // tanıyıp etiketleri kendisi üretiyor, elle URL yazılmıyor.
+  //
+  // ~~`twitter:image` ayrı bir dosya adı ister; yazılmadığında istemciler
+  // `og:image`'a düşüyor.~~ YANLIŞ ÇIKTI, ölçüldü 05-09-2026 dağıtılmış
+  // sayfada: Next `twitter-image` dosyası olmadan da `twitter:image`,
+  // `twitter:image:type` ve `twitter:image:width/height` etiketlerini
+  // `opengraph-image`'dan üretiyor. Yani ikinci bir kopya koymaya gerek yok —
+  // koysaydık 200 KB'ı boşuna iki kere taşıyorduk.
   twitter: { card: "summary_large_image" },
 
   // Google Search Console "HTML etiketi" doğrulaması. Alan adı bizim değil

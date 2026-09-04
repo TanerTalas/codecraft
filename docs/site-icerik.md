@@ -716,6 +716,29 @@ demek, ve "onları geçmek" diye bir hedef yok — doğru hedef o listelerde
 - Depo köküne `server.json` yazıldı, resmi MCP Registry için. Şemaya karşı
   ajv ile doğrulandı. `description` üst sınırı 100 karakter
 
+### Ölçüldü (05-09-2026) — dağıtılmış sayfa ne yayıyor
+
+Search Console doğrulama etiketi, OG görseli ve kart tipi eklendikten sonra
+üretimden okundu:
+
+| Etiket | Değer |
+|---|---|
+| `google-site-verification` | Var, GSC'nin verdiği token |
+| `og:image` | 200 döndürüyor, `image/png`, 205.505 bayt |
+| `og:image:width` / `height` | `1200` / `630` |
+| `twitter:card` | `summary_large_image` |
+| `twitter:image` | **Var** — aşağıya bak |
+
+**Bir iddia yanlış çıktı.** `layout.tsx`'e "`twitter:image` ayrı bir dosya adı
+(`twitter-image`) ister, yazılmazsa istemciler `og:image`'a düşer" diye
+yazmıştım. Dağıtılmış sayfa bunu çürüttü: Next `opengraph-image.png`'den
+`twitter:image`'ı da, tipini ve ölçülerini de kendisi üretiyor. İkinci bir
+dosya koysaydık aynı 200 KB'ı iki kere taşıyorduk. Yorum silinmedi, üstü
+çizilip nereye gittiği yazıldı.
+
+Görselin boyutu da dosya adına güvenilerek değil PNG başlığından okundu:
+1200x630, oran 1.905.
+
 ### Ölçülmedi — bu bölümün açık ucu
 
 - **İndekslenme henüz olmadı.** Yukarıdaki "0 sonuç" satırı bugünün hâli.
