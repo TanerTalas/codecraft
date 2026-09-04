@@ -52,6 +52,14 @@ export const metadata: Metadata = {
   // etiketlerini kendisi üretiyor, elle URL yazılmıyor. `twitter:image` ayrı
   // bir dosya adı ister; yazılmadığında istemciler `og:image`'a düşüyor.
   twitter: { card: "summary_large_image" },
+
+  // Google Search Console "HTML etiketi" doğrulaması. Alan adı bizim değil
+  // (`vercel.app` alt alanı), o yüzden DNS gerektiren "Alan adı" özelliği
+  // değil "URL öneki" özelliği açıldı; onun kabul ettiği yöntem bu etiket.
+  //
+  // Gizli bir değer DEĞİL: doğrulama token'ı zaten sayfanın kaynağında
+  // herkese açık duruyor, sahipliği kanıtlaması da tam bundan geliyor.
+  verification: { google: "0y40gIGXeSAZCOIFhcOHM92NINPYV6YzAYaldxf77sU" },
 };
 
 /**
