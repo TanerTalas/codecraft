@@ -92,7 +92,7 @@ export default function HomePage() {
         </p>
         <div className="rows">
           {failures.map((f) => (
-            <div key={f.what} className="row row-hover">
+            <div key={f.what} className="row">
               <div className="row-k">
                 <code>{f.what}</code>
               </div>
@@ -151,7 +151,7 @@ export default function HomePage() {
         <p className="lede">The server writes nothing, anywhere.</p>
         <div className="rows rows-10">
           {toolCards.map((t) => (
-            <div key={t.name} className="row row-tool row-lift">
+            <div key={t.name} className="row row-tool">
               <div className="row-k">
                 <code>{t.name}</code>
               </div>

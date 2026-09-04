@@ -539,6 +539,53 @@ Ham HTML'de (JavaScript çalıştırılmadan, `curl` çıktısı):
 Çalışmayan tek şey kopyala düğmesi ve sürüm sekmesi; ikisinin de metni
 görünür kalıyor.
 
+## Ölçüldü (04-09-2026) — hover, dört sayfada birden
+
+Tasarımda hover yalnızca DÖRT yerde vardı: ana sayfadaki hata tablosu, araç
+satırları, üç adım kartı, kurulum senaryoları. Kalan sayfalarda aynı görünen
+bloklar kıpırdamıyordu. Kullanıcı isteğiyle kart ve satır görünümlü her bloğa
+verildi.
+
+Kapsama — kural başına eşleşen öğe sayısı:
+
+| Rota | Hover alan bloklar |
+|---|---|
+| `/` | `.row` 13, `.row-tool` 9, `.card` 2, `.step` 3 |
+| `/setup` | `.row-nb` 3, `.snum` 3, `.scen-c` 4 |
+| `/tools` | `.tcard` 9, `.trap` 2 |
+| `/limits` | `.row-src` 4, `.card` 2, `.meas` 3, `.miss` 4 |
+
+Hover'ı bilerek OLMAYAN iki blok kaldı: ana sayfadaki iki kod paneli
+(`.panel` — tek bir diyagramın iki yarısı, ayrı ayrı kalkması bütünlüğü
+bozuyor) ve araçlar sayfasındaki sürüm paneli (`.vpanel` — üstündeki sekmenin
+içeriği, kart değil).
+
+Beş kural grubunun beşi de gerçek fareyle doğrulandı — `computer` ile üzerine
+gelinip `getComputedStyle` okundu:
+
+| Blok | Ölçülen |
+|---|---|
+| `.trap` (tools) | `translate(-3px,-3px)`, gölge `4px 4px` beliriyor |
+| `.tcard` kapalı (tools) | `translate(-3px,-3px)`, gölge `9px 9px` |
+| `.tcard` AÇIK (tools) | `transform: none` — açık kart kalkmıyor, doğru |
+| `.snum` (setup) | `translate(-3px,-3px)`, gölge `9px 9px` |
+| `.miss` (limits) | `translate(-3px,-3px)`, gölge `9px 9px` + iç kabartma korunuyor |
+| `.row-src` (limits) | `translate(-3px,-3px)`, gölge `7px 7px` |
+
+Hover eklendikten sonra taşma ölçümü tekrarlandı: **20/20 hâlâ temiz.**
+
+> **Ölçüm tuzağı, not düşülüyor.** İlk okumada `.trap` hover'da
+> `matrix(1,0,0,1,0,0)` ve saydam gölge döndü, yani "kural çalışmıyor" gibi
+> göründü. Sebep koddaki bir hata değildi: sekme arka plandaydı
+> (`document.visibilityState === "hidden"`) ve Chrome görünmeyen sekmede
+> 80 ms'lik geçişi ilerletmiyor, hesaplanan değer başlangıçta takılı
+> kalıyordu. `el.style.transition = "none"` ile geçiş kapatılınca hedef
+> değerler tam çıktı. Arka plan sekmesinde CSS geçişi ölçülmez.
+
+`@media (hover: hover)` sarmalı da bu turda eklendi ve tasarımda yoktu:
+dokunmatik ekranda `:hover` dokunduktan sonra üzerinde kalıyor, yani karta bir
+kez dokununca kart kaymış hâlde takılı kalırdı.
+
 ## Ölçülmedi — açık kalan
 
 - **Gerçek cihazda denenmedi.** Ölçüm masaüstü Chrome'da, iframe viewport'uyla

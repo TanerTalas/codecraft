@@ -508,15 +508,6 @@ code.inl {
     box-shadow 0.08s steps(2);
 }
 
-.row-hover:hover {
-  transform: translate(-3px, -3px);
-  box-shadow: 9px 9px 0 rgba(38, 34, 31, 0.35);
-}
-
-.row-lift:hover {
-  transform: translate(-3px, -3px);
-}
-
 .row-k {
   padding: 18px 20px;
   background: var(--clay);
@@ -602,10 +593,6 @@ code.inl {
   transition: transform 0.08s steps(2);
 }
 
-.step:hover {
-  transform: translate(-3px, -3px);
-}
-
 .step-n {
   font-family: var(--font-pixel), monospace;
   font-size: 26px;
@@ -635,6 +622,9 @@ code.inl {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  transition:
+    transform 0.08s steps(2),
+    box-shadow 0.08s steps(2);
 }
 
 .card-h {
@@ -715,6 +705,9 @@ code.inl {
   background: var(--paper);
   border: 4px solid var(--ink);
   box-shadow: var(--shadow-md);
+  transition:
+    transform 0.08s steps(2),
+    box-shadow 0.08s steps(2);
 }
 
 .snum-n {
@@ -767,10 +760,6 @@ code.inl {
   flex-direction: column;
   gap: 10px;
   transition: transform 0.08s steps(2);
-}
-
-.scen-c:hover {
-  transform: translate(-3px, -3px);
 }
 
 .scen-q {
@@ -875,6 +864,9 @@ code.inl {
   padding: 18px 20px;
   font-size: 14px;
   text-wrap: pretty;
+  transition:
+    transform 0.08s steps(2),
+    box-shadow 0.08s steps(2);
 }
 
 /* ----------------------------------------------------------- araç kartları -- */
@@ -895,6 +887,9 @@ code.inl {
   background: var(--paper);
   border: 4px solid var(--ink);
   box-shadow: var(--shadow-md);
+  transition:
+    transform 0.08s steps(2),
+    box-shadow 0.08s steps(2);
 }
 
 .tcard-s {
@@ -992,6 +987,9 @@ code.inl {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  transition:
+    transform 0.08s steps(2),
+    box-shadow 0.08s steps(2);
 }
 
 .miss-h {
@@ -1030,6 +1028,9 @@ code.inl {
   border: 4px solid var(--ink);
   box-shadow: var(--shadow-sm);
   padding: 18px 20px;
+  transition:
+    transform 0.08s steps(2),
+    box-shadow 0.08s steps(2);
 }
 
 .badge-solid {
@@ -1128,6 +1129,60 @@ code.inl {
 .ft a:hover {
   color: var(--linen);
   border-bottom-color: var(--linen);
+}
+
+/* ================================================================ hover == */
+/*
+ * Tasarımda hover yalnızca DÖRT yerde vardı: ana sayfadaki hata tablosu, araç
+ * satırları, üç adım kartı ve kurulum senaryoları. Kalan sayfalarda aynı
+ * görünen bloklar kıpırdamıyordu ve bu tutarsız duruyordu (kullanıcı isteği,
+ * 04-09-2026). Aynı davranış kart ve satır görünümlü her bloğa verildi.
+ *
+ * Kural: 3px sol-üste kayma, gölge 3px büyür. `inset` taşıyan iki blok
+ * (`.step`, `.scen-c`) tasarımdaki gibi yalnızca kayıyor.
+ *
+ * `@media (hover: hover)` sarmalı yeni ve tasarımda yoktu: dokunmatik ekranda
+ * `:hover` dokunduktan SONRA üzerinde kalıyor, yani karta bir kez dokununca
+ * kart kaymış hâlde takılı kalırdı. Bu sarmal fare olmayan cihazda kuralı
+ * hiç uygulamıyor.
+ */
+@media (hover: hover) {
+  /* Gölgesi 6px olanlar → 9px. */
+  .row:hover,
+  .snum:hover,
+  .card:hover,
+  .tcard:not([open]):hover {
+    transform: translate(-3px, -3px);
+    box-shadow: 9px 9px 0 rgba(38, 34, 31, 0.35);
+  }
+
+  /* Gölgesi 4px olanlar → 7px. */
+  .row-tool:hover,
+  .row-nb:hover,
+  .row-src:hover,
+  .meas:hover {
+    box-shadow: 7px 7px 0 rgba(38, 34, 31, 0.32);
+  }
+
+  /* Tuzak kutularının tasarımda hiç gölgesi yok; hover'da beliriyor. */
+  .trap:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Koyu kartlar; iç kabartma korunuyor. */
+  .miss:hover {
+    transform: translate(-3px, -3px);
+    box-shadow:
+      9px 9px 0 rgba(38, 34, 31, 0.32),
+      inset 5px 5px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  /* Tasarımdaki hâlleri: yalnızca kayma, gölge büyümüyor. */
+  .step:hover,
+  .scen-c:hover {
+    transform: translate(-3px, -3px);
+  }
 }
 
 /* ================================================================= mobil == */
@@ -1335,8 +1390,12 @@ code.inl {
     transition: none !important;
   }
 
-  .row-hover:hover,
-  .row-lift:hover,
+  .row:hover,
+  .snum:hover,
+  .card:hover,
+  .tcard:not([open]):hover,
+  .trap:hover,
+  .miss:hover,
   .step:hover,
   .scen-c:hover {
     transform: none;
