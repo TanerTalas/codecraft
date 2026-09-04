@@ -465,31 +465,82 @@ Tasarımdaki alt yazı `#efe6d6` üzerine `#8d8577` = **2.9:1**, WCAG AA eşiği
 yerde (adım kartları, kaynak kutusu) aynen duruyor; oralarda metin `#f7f1e6`
 ve kontrast zaten yeterliydi.
 
+## Ölçüldü (04-09-2026) — responsive davranış
+
+İlk turda ölçülememişti (tarayıcı eklentisi bağlı değildi) ve "ölçülmedi"
+diye yazılmıştı. Eklenti bağlandıktan sonra ölçüldü.
+
+Yöntem: sayfa hedef genişlikte bir `<iframe>` içine yükleniyor — iframe'in
+kendi viewport'u olduğu için medya sorguları gerçekten tetikleniyor — ve
+`documentElement.scrollWidth <= innerWidth` kontrol ediliyor. Taşma varsa
+`getBoundingClientRect().right > innerWidth` olan en geniş öğe raporlanıyor.
+
+**Kapalı hâl — 5 genişlik × 4 rota = 20 ölçüm, 20'si de temiz:**
+
+| Genişlik | scrollWidth | Sonuç |
+|---|---|---|
+| 1440px | 1425 | 4/4 rota OK |
+| 1024px | 1009 | 4/4 rota OK |
+| 768px | 753 | 4/4 rota OK |
+| 390px | 375 | 4/4 rota OK |
+| 320px | 305 | 4/4 rota OK |
+
+(Aradaki 15px kaydırma çubuğu.)
+
+**Açık hâl** — kapalı ölçüm yetmez, `<details>` açılınca da taşmamalı.
+`/tools` sayfasında dokuz kart açılıp beş sürüm sekmesi tek tek gezilerek:
+
+| Genişlik | Açık kart | Görünür not | Temiz sekme | En geniş scrollWidth |
+|---|---|---|---|---|
+| 1440px | 9/9 | 9/9 | 5/5 | 1425 |
+| 768px | 9/9 | 9/9 | 5/5 | 753 |
+| 390px | 9/9 | 9/9 | 5/5 | 375 |
+| 320px | 9/9 | 9/9 | 5/5 | 305 |
+
+Görsel olarak da doğrulandı: 3 sütunlu kaynak tablosu 390px'te üç satıra
+iniyor ve `Blockception/Minecraft-bedrock-json-schemas` satır kırıyor;
+`VALIDATE` rozeti iki panel arasında yataya dönüyor; üstbilgi uç adresi iki
+satıra sarıyor; nav sekmeleri iki sıraya iniyor.
+
+### Tasarımla yan yana karşılaştırma
+
+Tasarım dosyası (`docs/CodeCraft Site.dc.html`) ve uygulanan site aynı anda,
+ikisi de 1120px viewport'lu iframe'lerde açılıp karşılaştırıldı. Bölüm bölüm
+örtüşüyor: kahraman ızgarası, dört stat kutusu, iki kod paneli ve dikey
+`VALIDATE` rozeti, dört satırlık hata tablosu, üç adım kartı, `note` şeridi,
+iki kart, dokuz araç satırı.
+
+**Görülen tek fark, bilerek yapılan tek sapma:** üstbilgi bandı. Tasarımda
+`#8d8577`, sitede `#6f685c` (kontrast kararı, aşağıda).
+
+760px'te ikisi ayrışıyor ve bu da beklenen: tasarımın kırılma noktası yok, o
+genişlikte iki sütunu sıkıştırıyor; site tek sütuna iniyor.
+
+### İki taşma statik analizde bulundu, tarayıcıdan ÖNCE düzeltildi
+
+Bunlar tarayıcı ölçümünden önce statik CSS analiziyle yakalandı; yukarıdaki
+20/20 sonucu düzeltilmiş hâlin ölçümü:
+
+- `.cards2` `minmax(300px, 1fr)` taban istiyordu, 320px ekranda kap 284px.
+  Bütün `auto-fit` ızgaraları `minmax(min(<px>, 100%), 1fr)` yapıldı.
+- `Blockception/Minecraft-bedrock-json-schemas` inline `code` içinde
+  bölünmüyordu, 13px'te ~328px sürüyordu. `code { overflow-wrap: anywhere }`
+  eklendi.
+
+## Ölçüldü (04-09-2026) — JavaScript'siz kullanım
+
+Ham HTML'de (JavaScript çalıştırılmadan, `curl` çıktısı):
+
+- `<details>` 9, `<summary>` 9 — dokuz araç kartı da native, JavaScript
+  gerekmiyor.
+- `href="/setup"`, `href="/tools"`, `href="/limits"` — her biri 2 kez
+  (üstbilgi sekmesi + sayfa içi bağlantı). Gezinme gerçek `<a href>`.
+
+Çalışmayan tek şey kopyala düğmesi ve sürüm sekmesi; ikisinin de metni
+görünür kalıyor.
+
 ## Ölçülmedi — açık kalan
 
-### Responsive davranış tarayıcıda GÖRÜLMEDİ
-
-Kırılma noktaları (1080 / 900 / 700 / 520) yazıldı ama **gerçek bir tarayıcıda
-ölçülmedi**: oturumdaki tarayıcı eklentisi bağlı değildi ve depoda başsız
-tarayıcı yok. Bunun yerine yalnızca **statik CSS analizi** yapıldı:
-
-- Esneyemeyen `minmax(<px>, 1fr)` tabanı kalmadı; dördü de (`.row`,
-  `.row-tool`, `.row-nb`, `.row-src`) ≤700px'te `1fr`'e iniyor.
-- `auto-fit` ızgaralarının tabanı `minmax(min(<px>, 100%), 1fr)` yapıldı.
-  Öncesinde `.cards2` 300px taban istiyordu ve 320px ekranda kap 284px —
-  **taşırdı**. Statik analizde bulundu, tarayıcıda görülmedi.
-- Uzun kimlikler için `code { overflow-wrap: anywhere }` eklendi.
-  `Blockception/Minecraft-bedrock-json-schemas` 13px'te ~328px sürüyordu ve
-  320px ekranda taşardı. Aynı şekilde statik analizde bulundu.
-- `min-width` kuralı yok; kalan sabit genişlikler (`68px`, `28px`, `56px`)
-  `flex: none` öğelerde ve viewport'tan bağımsız.
-
-**Yapılacak:** `document.documentElement.scrollWidth <= innerWidth` ölçütü
-1440 / 1024 / 768 / 390 / 320px'te dört rotada koşturulmalı, ve 1440px'te
-tasarımla yan yana karşılaştırma yapılmalı. O ölçüm yapılana kadar "mobilde
-sorunsuz" yazılmayacak.
-
-### JavaScript'siz kullanım denenmedi
-
-`<details>` ve `<Link>` tanım gereği JavaScript'siz çalışıyor, ama bu da
-tarayıcıda görülmedi. Aynı engelde.
+- **Gerçek cihazda denenmedi.** Ölçüm masaüstü Chrome'da, iframe viewport'uyla
+  yapıldı. Dokunmatik hedef boyutları ve iOS Safari davranışı denenmedi.
+- **Üretim dağıtımı görülmedi.** Ölçümlerin hepsi `next start` ile yerelde.
