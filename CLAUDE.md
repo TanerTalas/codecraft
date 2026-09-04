@@ -180,6 +180,7 @@ her biri bir kez gerçekten patlamış bir şeyin kaydı.
 - Veri kaynakları ve lisansları: `docs/SOURCES.md`
 - MCP sunucusu, uç ve kurulum: `docs/MCP.md`
 - Araçların gerçek kullanımı, ölçüm günlüğü: `docs/mcp-kullanim.md`
+- Kullanım sitesinin içeriği ve ölçüm günlüğü: `docs/site-icerik.md`
 - Komut doğrulama ve kapsamı: `docs/COMMANDS.md`
 - Doğrulamanın yakalayamadıkları: `docs/VALIDATION-LIMITS.md`
 - WebSocket köprüsü ve ölçümü: `docs/WEBSOCKET.md`

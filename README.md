@@ -12,6 +12,9 @@ Modeli sen getiriyorsun. CodeCraft üretmiyor — üretilenin gerçekten
 [![MCP](https://img.shields.io/badge/MCP-9%20read--only%20tools-6f42c1.svg)](docs/MCP.md)
 [![Bedrock](https://img.shields.io/badge/Bedrock-1.26.40.5-3ba55d.svg)](data/1.26.40.5/index.json)
 
+**[Kullanım sitesi](https://codecraft-ashy-seven.vercel.app/)** · kurulum,
+araç referansı ve doğrulamanın sınırları
+
 </div>
 
 ---
@@ -66,6 +69,7 @@ Sıra alfabetik değil, **kullanım sırası** — ve `tools/list` bu sırayı k
 | | |
 |---|---|
 | Uç | `https://codecraft-ashy-seven.vercel.app/mcp` |
+| Kullanım sitesi | [`codecraft-ashy-seven.vercel.app`](https://codecraft-ashy-seven.vercel.app/) — dört sayfa: ana sayfa, kurulum, araçlar, sınırlar |
 | Transport | Durumsuz Streamable HTTP, yalnızca `POST` |
 | Kimlik doğrulama | Yok — uç salt okunur, gizli veri döndürmüyor |
 
@@ -190,6 +194,7 @@ patlamış bir şeyin kaydı.
 | [`CLAUDE.md`](CLAUDE.md) | Mimari, değişmezler, sürüm eksenleri |
 | [`docs/MCP.md`](docs/MCP.md) | Uç, kurulum, araç sözleşmesi |
 | [`docs/mcp-kullanim.md`](docs/mcp-kullanim.md) | Araçların gerçek kullanımı, ölçüm günlüğü |
+| [`docs/site-icerik.md`](docs/site-icerik.md) | Kullanım sitesinin içerik yapısı ve ölçüm günlüğü |
 | [`docs/SOURCES.md`](docs/SOURCES.md) | Veri kaynakları ve lisansları |
 | [`docs/VALIDATION-LIMITS.md`](docs/VALIDATION-LIMITS.md) | Doğrulamanın yakalayamadıkları |
 | [`docs/COMMANDS.md`](docs/COMMANDS.md) | Komut doğrulama ve kapsamı |
