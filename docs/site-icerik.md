@@ -716,6 +716,17 @@ demek, ve "onları geçmek" diye bir hedef yok — doğru hedef o listelerde
 - Depo köküne `server.json` yazıldı, resmi MCP Registry için. Şemaya karşı
   ajv ile doğrulandı. `description` üst sınırı 100 karakter
 
+### Ölçüldü (04-09-2026) — resmi registry kaydı, siteye ilk dış bağlantı
+
+Sunucu resmi MCP Registry'ye yayınlandı ve API'den doğrulandı: `status:
+active`, `isLatest: true`. Kayıt `websiteUrl` alanında siteyi gösteriyor.
+
+Bu, bu bölümün başındaki "siteye dışarıdan hiç bağlantı yok" tespitine karşı
+atılan **ilk adım** — keşif sorununun kaynağı tam olarak oydu. Tek bir kayıt
+sıralama getirmez; getirdiği şey Googlebot'un siteye ulaşabileceği bir yol.
+
+Ayrıntı ve alan alan karşılaştırma: `docs/MCP.md`, "Resmi MCP Registry kaydı".
+
 ### Ölçüldü (05-09-2026) — dağıtılmış sayfa ne yayıyor
 
 Search Console doğrulama etiketi, OG görseli ve kart tipi eklendikten sonra

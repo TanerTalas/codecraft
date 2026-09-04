@@ -19,6 +19,7 @@ göndermiyor.
 | Çalışma ortamı | Vercel Node runtime, `maxDuration = 60`, `linux-x64`, bölge `iad1` |
 | Kimlik doğrulama | Yok — Vercel Authentication kapalı ve kapalı kalmak zorunda |
 | Veri sürümü | `1.26.40.5` (`@minecraft/server` 2.9.0) |
+| Resmi kayıt | `io.github.TanerTalas/codecraft`, registry.modelcontextprotocol.io |
 
 **Ölçüldü 01-09-2026**, dağıtılmış uçta `npm run mcp:probe` ile: dokuz
 kontrolün dokuzu da yeşil.
@@ -26,6 +27,45 @@ kontrolün dokuzu da yeşil.
 Kimlik doğrulamasının olmaması bir eksiklik değil, gereklilik: bağlantıyı
 Anthropic'in bulut altyapısı kuruyor, SSO'nun arkasına geçemez. Uç salt okunur
 ve gizli veri döndürmüyor. Hız sınırı yok, gerekçesi `## Açık kalan` altında.
+
+## Resmi MCP Registry kaydı
+
+Sunucu 04-09-2026'da resmi registry'ye yayınlandı. Depo kökündeki
+`server.json` künyeyi taşıyor; registry kod tutmuyor, yalnızca metadata.
+
+Uzak sunucu olarak kayıtlı — npm paketi yok, `remotes` girdisi doğrudan ucu
+gösteriyor:
+
+| Alan | Değer |
+|---|---|
+| `name` | `io.github.TanerTalas/codecraft` |
+| `version` | `0.1.0` |
+| `remotes[0]` | `streamable-http` → `https://codecraft-ashy-seven.vercel.app/mcp` |
+| `websiteUrl` | `https://codecraft-ashy-seven.vercel.app` |
+
+`name` ad alanı GitHub kimliğine bağlı: `io.github.<kullanıcı>/` önekini ancak
+o GitHub hesabıyla giriş yapan yayınlayabiliyor. Yani yayın adımı bir kimlik
+adımı, ve sunucuyu çalıştıran kişiye ait.
+
+**`description` üst sınırı 100 karakter** — şemadan okundu, tahmin edilmedi.
+Sitedeki ve README'deki daha uzun açıklamalar buraya sığmıyor, o yüzden
+registry'deki cümle ayrı ve kısa.
+
+`server.json`'ın sürümü `packages/mcp/package.json` ile aynı olmak zorunda;
+`packages/mcp/test/server.test.ts` ayrışmayı ölçüyor. Sürüm yükseltilirken üç
+dosya birden güncellenir ve yeniden `publish` edilir.
+
+### Ölçüldü 04-09-2026 — kayıt gerçekten görünüyor
+
+```
+curl "https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.TanerTalas/codecraft"
+```
+
+Dönen kayıt: `status: active`, `isLatest: true`, `publishedAt`
+`2026-09-04T22:55:06Z`. Ad, sürüm, açıklama, `websiteUrl`, depo adresi ve
+`remotes[0].url` gönderilen `server.json` ile birebir aynı.
+
+Yayın aracı (`mcp-publisher`) depoya girmiyor, `.gitignore`'da.
 
 ## Bağlayıcı olarak ekleme
 
