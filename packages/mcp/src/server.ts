@@ -33,7 +33,7 @@ import type { ToolModule } from "./tool.ts";
  * Sunucunun kendi sürümü. `packages/mcp/package.json` ile aynı olmak zorunda;
  * `test/server.test.ts` eşleştiklerini ölçüyor, elle senkrona güvenilmiyor.
  *
- * DEPO KURALINDAN SAPMA: diğer yedi workspace paketi `0.0.0` duruyor, çünkü
+ * DEPO KURALINDAN SAPMA: diğer dört workspace paketi `0.0.0` duruyor, çünkü
  * hiçbiri yayınlanmıyor (`private: true`) ve sürümleri kimse görmüyor. Bu paket
  * farklı — burada yazan dize bağlayıcıyı ekleyen kullanıcının ekranında
  * görünüyor. `0.0.0` orada "yarım" diye okunuyordu.
