@@ -58,6 +58,12 @@ export const metadata: Metadata = {
   // koysaydık 200 KB'ı boşuna iki kere taşıyorduk.
   twitter: { card: "summary_large_image" },
 
+  // `icons` ve `manifest` BURADA YOK, bilerek. Aynı dosya adı kuralı:
+  // `favicon.ico`, `icon.png`, `icon.svg`, `apple-icon.png` ve `manifest.ts`
+  // bu klasörde duruyor, Next beş `<link>` etiketini de onlardan üretiyor.
+  // Elle yazılsaydı ikinci bir kaynak olurdu ve dosya adı değişince sessizce
+  // 404 verirdi. Ölçüm: `docs/site-icerik.md`, "favicon seti".
+
   // Google Search Console "HTML etiketi" doğrulaması. Alan adı bizim değil
   // (`vercel.app` alt alanı), o yüzden DNS gerektiren "Alan adı" özelliği
   // değil "URL öneki" özelliği açıldı; onun kabul ettiği yöntem bu etiket.
