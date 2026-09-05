@@ -161,7 +161,21 @@ jobs:
             echo "kalmalı."
             echo
             echo '```'
-            tail -n 60 "$RUNNER_TEMP/verify.log"
+            # Sayılar önce: "246 testten 1'i düştü" tek satırda okunsun.
+            grep -E '^ℹ (tests|pass|fail) ' "$RUNNER_TEMP/verify.log" || true
+            echo
+            # Sonra yalnız DÜŞEN testler. Ham tail -60 ölçüldü (05-09-2026,
+            # issue #1): 60 satırın ilk 35'i geçen testlerdi, hata en altta
+            # kalıyordu ve okuyan kişi aratıyordu. node --test düşenleri
+            # sonda ayrı bir bölümde topluyor, o bölüm alınıyor.
+            #
+            # typecheck düşerse `npm test` hiç koşmaz ve o bölüm olmaz —
+            # geri çekilme yolu tsc çıktısının kuyruğu.
+            if grep -q 'failing tests:' "$RUNNER_TEMP/verify.log"; then
+              sed -n '/failing tests:/,$p' "$RUNNER_TEMP/verify.log" | head -n 80
+            else
+              tail -n 40 "$RUNNER_TEMP/verify.log"
+            fi
             echo '```'
           } | bash .github/scripts/notify-issue.sh "Yeni veri kodla tutarsız"
 
