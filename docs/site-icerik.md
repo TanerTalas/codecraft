@@ -727,6 +727,26 @@ sıralama getirmez; getirdiği şey Googlebot'un siteye ulaşabileceği bir yol.
 
 Ayrıntı ve alan alan karşılaştırma: `docs/MCP.md`, "Resmi MCP Registry kaydı".
 
+### Ölçüldü (05-09-2026) — Bing "discovered but not crawled", sorun çıkmadı
+
+Bing, `/limits` için URL gönderimi sırasında "known to Bing but has some
+issues which are preventing indexation" dedi. Sayfa Bingbot kimliğiyle
+ölçüldü, kusur bulunamadı:
+
+| Kontrol | Sonuç |
+|---|---|
+| HTTP | 200, yönlendirme yok, 1,12 sn, 45.465 bayt |
+| `X-Robots-Tag` / `<meta name="robots">` | Yok |
+| `canonical` | Kendini gösteriyor |
+| Gövde | 33.070 karakter metin |
+
+Yani mesaj bir kusur bildirimi değil, bir **kuyruk durumu**: Bing URL'yi
+sitemap'ten biliyor ama henüz çekmedi ve o duruma iliştirdiği metin genel bir
+şablon. "Request indexing" doğru hamleydi, düzeltilecek bir şey yok.
+
+Bu kayıt bilerek tutuluyor: dışarıdan gelen her uyarı bir hata değil, ama
+ölçülmeden "boş ver" de denmiyor.
+
 ### Ölçüldü (05-09-2026) — meta açıklama uzunlukları
 
 Bing Webmaster Tools, URL gönderimi sırasında kendi kontrolüyle yakaladı:
