@@ -727,6 +727,28 @@ sıralama getirmez; getirdiği şey Googlebot'un siteye ulaşabileceği bir yol.
 
 Ayrıntı ve alan alan karşılaştırma: `docs/MCP.md`, "Resmi MCP Registry kaydı".
 
+### Ölçüldü (05-09-2026) — meta açıklama uzunlukları
+
+Bing Webmaster Tools, URL gönderimi sırasında kendi kontrolüyle yakaladı:
+160 karakteri aşan `description` arama sonucunda kırpılıyor, kuyruğu kimse
+görmüyor. Kaynaktan değil **dağıtılmış sayfalardan** ölçüldü:
+
+| Sayfa | Önce | Sonra |
+|---|---|---|
+| `/` | 230 | 157 |
+| `/limits` | 165 | 139 |
+| `layout` varsayılanı | 170 | 149 |
+| `/setup` | 160 | değişmedi |
+| `/tools` | 157 | değişmedi |
+
+Ana sayfada uzunluktan bağımsız bir kazanç daha: "Minecraft Bedrock" artık
+cümlenin başında, kırpılma riski olan kuyrukta değil. Hedeflenen sorgu o.
+
+JSON-LD'deki `SoftwareApplication.description` 248 karakterde bırakıldı:
+yapısal veri, snippet olarak gösterilmiyor, sınır oraya işlemiyor.
+
+Düzeltme sonrası dağıtımdan doğrulandı: dördü de sınır içinde.
+
 ### Ölçüldü (05-09-2026) — dağıtılmış sayfa ne yayıyor
 
 Search Console doğrulama etiketi, OG görseli ve kart tipi eklendikten sonra
