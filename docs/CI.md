@@ -107,3 +107,51 @@ makinede kurulu değil.
 - **`data/` büyümesi.** Sürüm klasörü başına 3.1 MB ve eski klasör silinmiyor.
   Bugün sorun değil (`.git` 17 MB), aylık atlamayla yılda ~37 MB. Budama
   politikası yok.
+
+## Doğrulama adımı daha kurulurken bir şey buldu
+
+**05-09-2026.** Yukarıdaki "bildirim yolu uçtan uca koşulmadı" maddesini
+kapatmak için sahte bir kırık hazırlanıyordu: `ABSENT_APIS` listesine
+`.d.ts` içinde gerçekten var olan bir ad konup testin kırmızıya döndüğü
+görülecekti.
+
+**Test kırmızıya dönmedi.** `Player` `.d.ts` içinde 346 kez geçiyor ve
+"kuralların dayandığı API'ler tip tanımlarında gerçekten yok" testi yine geçti.
+
+Sebep `packages/mcp/test/feasibility.test.ts:74`:
+
+```js
+new RegExp(`\b${name}\b`)   // şablon dizgesinde \b = BACKSPACE (U+0008)
+```
+
+Şablon dizgesinde `\b` kelime sınırı değil, backspace karakteri. Üretilen
+desen `<BS>SimulatedPlayer<BS>` oluyordu, hiçbir metinde eşleşmiyordu,
+`!test()` her zaman `true` dönüyordu. **Bütün yapılabilirlik kurallarının
+dayandığı ölçüm bir no-op'tu.**
+
+`String.raw` ile düzeltildi — `"\b"` de doğru olurdu ama aynı hatayı tekrar
+yazmak kolay, `String.raw` kaçış sırasına bağışık.
+
+### Vardığı sonuç yanlış değildi
+
+Düzeltmeden sonra iki ölçüm koşuldu:
+
+| Ölçüm | Sonuç |
+|---|---|
+| Sahte kırık (`Player` listede) | test **düşüyor**, mesaj doğru |
+| Gerçek liste | test **geçiyor** |
+| Bağımsız `grep -cw`, 12 adın hepsi | `.d.ts`'de **0** |
+
+Yani kurallar doğruydu, dayanakları doğrulanmıyordu. Bu depoda ikisi ayrı şey
+ve fark tam olarak burada görüldü.
+
+Aynı hata başka yerde aranmadı değil: `new RegExp(<şablon>)` kullanan diğer
+iki yer (`packages/validator/src/command.ts:269`,
+`pipeline/src/script-types.ts:101`) çift ters bölü kullanıyor, ikisi de doğru.
+
+### Kayda değer olan
+
+Bu bulgu, doğrulama adımının **ilk kez koşmasından önce** geldi. Onu sınamaya
+hazırlanmak, sınayacağı şeyin bozuk olduğunu ortaya çıkardı. Ölçüm yolunun
+kendisini ölçmenin bedeli buydu ve bir kez daha karşılığını verdi —
+`docs/mcp-kullanim.md`'deki curl prob dersinin aynısı, ters yönden.

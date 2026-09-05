@@ -58,6 +58,27 @@ test("her kuralın kanıtı ve alternatifi var", () => {
   }
 });
 
+/**
+ * Bütün yapılabilirlik kurallarının dayandığı ölçüm. Dosyanın başındaki
+ * "asıl değerli kısmı ikinci blok" cümlesi bunu kastediyor.
+ *
+ * > **05-09-2026: bu test iki gün boyunca HİÇBİR ŞEY ÖLÇMEDİ.** Desen
+ * > `` new RegExp(`\b${name}\b`) `` diye yazılmıştı ve şablon dizgesinde `\b`
+ * > kelime sınırı değil **backspace karakteri** (U+0008). Üretilen desen
+ * > `<BS>SimulatedPlayer<BS>` oluyordu, hiçbir metinde eşleşmiyordu, `!test()`
+ * > her zaman `true` dönüyordu ve iddia her koşulda geçiyordu.
+ * >
+ * > Nasıl bulundu: `.github/workflows/data.yml`'ye eklenen doğrulama adımını
+ * > sahte bir kırıkla sınamak için `ABSENT_APIS`'e `Player` konuldu — `.d.ts`
+ * > içinde 346 kez geçiyor — ve test **yine geçti**.
+ * >
+ * > `String.raw` bilerek seçildi: `"\\b"` de doğru olurdu ama aynı hatanın
+ * > tekrar yazılması kolay, `String.raw` ise kaçış sırasına tamamen bağışık.
+ * >
+ * > Vardığı sonuç yanlış değildi, ölçülmemişti: düzeltmeden sonra bağımsız
+ * > bir `grep -cw` ile 12 adın hepsi `.d.ts`'de 0 kez çıktı. Yani kurallar
+ * > doğruydu, dayanakları doğrulanmıyordu — bu depoda ikisi ayrı şey.
+ */
 test("kuralların dayandığı API'ler tip tanımlarında gerçekten yok", async () => {
   const { dir, index } = await resolveVersion();
   const release = index.sources.scriptTypes.modules["@minecraft/server"]?.stable;
@@ -71,7 +92,7 @@ test("kuralların dayandığı API'ler tip tanımlarında gerçekten yok", async
   for (const [category, names] of Object.entries(ABSENT_APIS)) {
     for (const name of names) {
       assert.ok(
-        !new RegExp(`\b${name}\b`).test(types),
+        !new RegExp(String.raw`\b${name}\b`).test(types),
         `${category}: "${name}" artık @minecraft/server ${release} içinde var — ` +
           "yapılabilirlik kuralı yeniden ölçülmeli",
       );
