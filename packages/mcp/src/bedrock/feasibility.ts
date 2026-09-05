@@ -50,10 +50,7 @@ export const ABSENT_APIS: Record<Category, string[]> = {
   // Bu yorum 05-09-2026'da düzeltildi: "o modül bu veri kümesinde yok"
   // yazıyordu ve artık yanlıştı, gametest tipleri çekiliyor. İngilizce
   // evidence metni ("beta-only module") doğruydu, yanlış olan yalnız yorumdu.
-  // GEÇİCİ — bildirim yolunu ölçmek için ekilmiş kırık, 05-09-2026.
-  // "Player" .d.ts içinde 346 kez geçiyor, yani bu satır testi düşürmeli.
-  // Ölçüm biter bitmez geri alınacak.
-  "input-simulation": ["SimulatedPlayer", "simulateUse", "simulateBreak", "sendKey", "Player"],
+  "input-simulation": ["SimulatedPlayer", "simulateUse", "simulateBreak", "sendKey"],
   filesystem: ["readFile", "writeFile", "readFileSync", "FileSystem"],
   network: ["XMLHttpRequest", "WebSocket", "HttpRequest", "HttpClient"],
 };

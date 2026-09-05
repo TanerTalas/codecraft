@@ -90,15 +90,41 @@ söylediğiyle issue'nun söylediğinin zamanla ayrışması demekti.
 issue'yu bırak), gerçek `gh`/`jq` ve gerçek GitHub ölçülmedi — `gh` bu
 makinede kurulu değil.
 
+## Uçtan uca ölçüm — 05-09-2026
+
+Üç `workflow_dispatch` koşusu, dal `dev`. `ABSENT_APIS`'e `Player` ekilip
+(`.d.ts`'de 346 kez geçiyor) yol gerçekten koşturuldu, sonra geri alındı.
+
+| Koşu | Ne ölçüldü | Sonuç |
+|---|---|---|
+| `33968087850` (kırıksız) | mutlu yol | koşu **yeşil**, doğrulama adımı 8 sn, üç bildirim de **skipped** |
+| `33969468638` (kırıklı) | bildirim açılıyor mu | koşu **yeşil**, `Tutarsızlığı bildir` **koştu**, **issue #1 açıldı**, `TanerTalas`'a **atandı** |
+| `33970399855` (kırıklı, ikinci) | tekilleştirme | **yeni issue AÇILMADI**, #1'e yorum eklendi |
+
+Yeşil koşu + açılan issue doğru davranış: doğrulama adımı işi bilerek kırmızıya
+düşürmüyor, yoksa bildirim adımları hiç koşmazdı.
+
+**E-posta ölçüldü ve geldi.** `--assignee`'nin gerekçesi buydu ve karşılığını
+verdi; watch ayarına bakılmadan çalıştığı doğrulandı.
+
+Yan ürün: `ci` koşusu da aynı kırıkta kırmızıya döndü (`7491cec`), yani push
+yolu da aynı kırığı yakalıyor.
+
+### Ölçümün gösterdiği kusur
+
+İlk issue'nun gövdesi ham `tail -n 60` idi ve 60 satırın ilk ~35'i **geçen**
+testlerdi; hata en altta kalıyordu. Kayıp değildi ama okuyanı aratıyordu.
+Gövde düzeltildi: önce `tests/pass/fail` sayıları, sonra yalnız `node --test`'in
+sonda topladığı düşen testler bölümü, typecheck düşerse tsc kuyruğuna geri
+çekilme. İkinci koşuda düzeltilmiş hâli doğrulandı.
+
 ## Ölçülmemiş olan
 
-- **Bildirim yolunun uçtan uca koşusu.** Sahte bir kırıkla (`ABSENT_APIS`'e
-  `.d.ts` içinde var olan bir ad eklenip) `workflow_dispatch` tetiklenmeli,
-  issue'nun gerçekten açıldığı ve gövdesinde düşen testin adının geçtiği
-  görülmeli, sonra geri alınmalı. **Bir bildirim adımının kendisi patlarsa hiç
-  haber gelmez ve bu sessiz bir arızadır** — yol ölçülmeden kurulmuş sayılmaz.
-- **Depo sahibine e-posta gidiyor mu.** Watch ayarına bağlı ve dışarıdan
-  görülemiyor; `--assignee` bu yüzden var. İlk gerçek issue'da doğrulanmalı.
+- **Sürüm bildiriminin uçtan uca koşusu.** `Yeni sürümü bildir` adımı üç
+  koşuda da doğru şekilde atlandı ama hiç **tetiklenmedi** — tetiklenmesi için
+  gerçek bir sürüm atlaması gerekiyor ve ucuz bir taklidi yok. Gövdeyi üreten
+  `version:summary` yerelde ölçüldü (geçici `data/1.26.99.0/` klasörüyle);
+  ölçülmemiş olan yalnızca workflow'un o adımı ateşlemesi.
 - **Sürüm atlamasında pipeline'ın kendisi.** `data/` içinde bugüne kadar tek
   sürüm klasörü oldu (`1.26.40.5`, `165a71a`'da eklendi, hiç silinmedi) ve
   bütün cron commit'leri aynı sürüm için. Proje **hiç sürüm atlamasından
