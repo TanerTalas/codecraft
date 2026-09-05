@@ -800,6 +800,74 @@ Görselin boyutu da dosya adına güvenilerek değil PNG başlığından okundu:
   silinmeyecek, altına yenisi eklenecek
 - **Sıralama hiç ölçülmedi.** Ölçülen tek şey indekste olup olmadığı
 
+## Ölçüldü (05-09-2026) — favicon seti
+
+Site yayına girdiğinden beri tek ikon vardı: elle yazılmış, düz 32x32 piksel
+sanatı bir `icon.svg`. Yerine izometrik küp markasının tam seti kondu
+(realfavicongenerator, 05-09-2026 çıktısı).
+
+**Dosyalar Next'in ad kuralına göre yerleştirildi**, üreticinin verdiği
+adlarla değil. Sebep: bu adları Next tanıyor ve `<link>` etiketlerini kendisi
+üretiyor; `layout.tsx` içine elle yazılsalardı ikinci bir kaynak olur ve dosya
+adı değiştiğinde sessizce 404 verirlerdi.
+
+| Üreticinin adı | Repodaki yeri |
+|---|---|
+| `favicon.ico` | `app/src/app/favicon.ico` |
+| `favicon.svg` | `app/src/app/icon.svg` (eski düz sürümün üstüne) |
+| `favicon-96x96.png` | `app/src/app/icon.png` |
+| `apple-touch-icon.png` | `app/src/app/apple-icon.png` |
+| `web-app-manifest-192x192.png` | `app/public/icon-192.png` |
+| `web-app-manifest-512x512.png` | `app/public/icon-512.png` |
+| `site.webmanifest` | `app/src/app/manifest.ts` (rota olarak) |
+
+**Yayılan etiketler**, `next build` çıktısındaki önceden render edilmiş
+`index.html`'den okundu — layout'a bakılarak değil:
+
+```
+<link rel="manifest"         href="/manifest.webmanifest">
+<link rel="icon"             href="/favicon.ico?favicon.3qgwc9z0zwor9.ico" sizes="48x48"  type="image/x-icon">
+<link rel="icon"             href="/icon.png?icon.1o8-jot_pfxjx.png"       sizes="96x96"  type="image/png">
+<link rel="icon"             href="/icon.svg?icon.239jb88ikw2a4.svg"       sizes="any"    type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-icon.png?apple-icon.2wbc_g98oajf6.png" sizes="180x180" type="image/png">
+```
+
+Sıra önemli ve doğru çıktı: SVG en sonda, yani destekleyen tarayıcı onu,
+desteklemeyen `.ico`'yu alıyor. `.ico` içinde üç görüntü var (ölçüldü, ICO
+dizin girdilerinden: 48x48, 32x32, 16x16); Next `sizes` alanına en büyüğünü
+yazıyor.
+
+**Üreticinin "version/refresh" seçeneği kapalı bırakıldı ve gerek olmadığı
+ölçüldü.** O seçeneğin tek işi enjekte edilen etiketlere `?v=` eklemek. Next
+zaten her ikon URL'sine içerik hash'i koyuyor (yukarıdaki sorgu dizeleri),
+yani önbellek kırma dosyanın kendisinden geliyor. "Skip metadata injection" de
+seçiliydi: enjekte edilecek statik HTML yok, `<head>` `metadata` export'undan
+üretiliyor.
+
+**Üreticinin manifest'inde iki hata vardı, ikisi de düzeltildi:**
+
+- `purpose: "maskable"`. Bu bir taahhüt: ikonun içeriği kenardan %10 içeride,
+  güvenli bölgede duruyor demek — Android o söze güvenip görseli
+  daire/squircle'a kırpıyor. 512'lik görsel ölçüldü: küpün köşeleri tuvalin
+  kenarına kadar geliyor, güvenli bölge yok. Bırakılsaydı ana ekran ikonunun
+  köşeleri kesilirdi. `"any"` yapıldı.
+- `theme_color` ve `background_color` `#ffffff` idi — üreticinin varsayılanı,
+  sitenin rengi değil. `globals.css` ile eşitlendi: `--stone-deep` (#6f685c)
+  üstbilgi bandı, `--sand` (#cfc6b6) sayfa zemini.
+
+**Bilerek yapılmayan iki şey:**
+
+- `<meta name="theme-color">` eklenmedi. Manifest'teki `theme_color` yalnızca
+  kurulmuş uygulamayı etkiliyor; meta etiketi mobil tarayıcının kendi çubuğunu
+  boyar, yani istenmemiş görünür bir değişiklik olurdu.
+- `icon.svg` içindeki C2PA blobu silinmedi. Dosyanın 13.350 baytının ~7.700'ü
+  o; içeriği çözüldü (Anthropic Content Credentials, "Claude provided this
+  file"), kişisel veri yok. Provenans kaydını küçültmek uğruna silmek yanlış
+  taraf olurdu ve favicon bir kez indirilip önbelleğe giriyor.
+
+**Ölçülmeyen:** gerçek cihazda ana ekrana ekleme denenmedi. Maskable kararı
+görselin geometrisinden verildi, Android'in kırpmasından değil.
+
 ## Ölçülmedi — açık kalan
 
 - **Gerçek cihazda denenmedi.** Ölçüm masaüstü Chrome'da, iframe viewport'uyla
