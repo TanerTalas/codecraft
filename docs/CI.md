@@ -129,8 +129,12 @@ desen `<BS>SimulatedPlayer<BS>` oluyordu, hiçbir metinde eşleşmiyordu,
 `!test()` her zaman `true` dönüyordu. **Bütün yapılabilirlik kurallarının
 dayandığı ölçüm bir no-op'tu.**
 
-`String.raw` ile düzeltildi — `"\b"` de doğru olurdu ama aynı hatayı tekrar
-yazmak kolay, `String.raw` kaçış sırasına bağışık.
+`String.raw` ile düzeltildi. Çift ters bölü de doğru olurdu ama aynı hatayı
+tekrar yazmak kolay; `String.raw` kaçış sırasına tamamen bağışık.
+
+> Bu satırın kendisi bir kez yanlış yazıldı: çift ters bölü örneği heredoc'tan
+> geçerken tek ters bölüye indi ve cümle tam da hatalı biçimi "doğru" diye
+> gösterir hâle geldi. Aynı sınıf, aynı gün, üçüncü kez.
 
 ### Vardığı sonuç yanlış değildi
 
