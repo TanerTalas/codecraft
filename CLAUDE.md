@@ -178,6 +178,7 @@ her biri bir kez gerçekten patlamış bir şeyin kaydı.
 ## Ayrıntı
 
 - Veri kaynakları ve lisansları: `docs/SOURCES.md`
+- CI ve bildirim zinciri (kaynak güncellenince ne oluyor): `docs/CI.md`
 - MCP sunucusu, uç ve kurulum: `docs/MCP.md`
 - Araçların gerçek kullanımı, ölçüm günlüğü: `docs/mcp-kullanim.md`
 - Kullanım sitesinin içeriği ve ölçüm günlüğü: `docs/site-icerik.md`
