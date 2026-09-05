@@ -28,6 +28,7 @@
     "pipeline:notes": "node pipeline/src/release-notes.ts",
     "pipeline:freshness": "node pipeline/src/check-freshness.ts",
     "mcp:probe": "node packages/mcp/scripts/probe.ts",
+    "version:summary": "node packages/mcp/scripts/version-summary.ts",
     "ws:health": "node pipeline/src/ws-health.ts",
     "ws:probe": "node pipeline/src/ws-probe.ts",
     "data:version": "node pipeline/src/latest-version.ts",

@@ -1,5 +1,19 @@
-# Repo her sabah otomatik güncelleniyor ve veri bayatladığında bildirim
-# geliyor.
+# Repo her sabah otomatik güncelleniyor. Üç şey için bildirim gelir, üçü de
+# ayrı başlıklı bir issue:
+#
+#   1. Pipeline patladı            — upstream değişti, veri yazılamadı
+#   2. Yeni veri kodla tutarsız    — veri geldi, kodun varsayımı artık geçersiz
+#   3. Yeni Bedrock sürümü         — arıza değil, bilgi
+#
+# İkincisi 05-09-2026'da eklendi ve boşluğun asıl yeri orasıydı: cron veriyi
+# tazeliyordu ama kodun o veriye karşı hâlâ doğru olduğunu hiçbir şey
+# ölçmüyordu. Dedektör zaten yazılıydı — 19 test dosyasının 11'i data/ okuyor —
+# yalnızca bu koşuda hiç çalıştırılmıyordu.
+#
+# SIRA ÖNEMLİ: veri, testler kırmızı olsa BİLE commit ediliyor. Kırmızı test
+# "veri yanlış" demek değil, "belgelenmiş varsayımımız artık doğrulanmadı"
+# demek; düzeltme kodda. Commit'i bloklamak üretimi bayat veriyle dondururdu ve
+# cron'un main'de koşmasının sebebi tam olarak verinin orada taze olması.
 #
 # Pipeline deterministik yazar — içerik değişmediyse dosyaya dokunmaz. Bu yüzden
 # "değişiklik varsa commit et" adımı boş commit atmaz.
@@ -37,7 +51,20 @@ jobs:
           node-version: "24"
           cache: npm
 
+      # Testler bu işte de koşuyor (aşağıda), python.test.ts yorumlayıcı
+      # istiyor. ci.yml ile aynı gerekçe.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - run: npm ci
+
+      # Pipeline'dan ÖNCE. data:version upstream'i değil data/ klasörlerini
+      # okuyor (pipeline/src/latest-version.ts), yani buradaki değer
+      # commit'lenmiş hâl; sonrasındakiyle farkı gerçek sürüm atlaması demek.
+      - name: Önceki sürüm
+        id: before
+        run: echo "version=$(npm run --silent data:version)" >> "$GITHUB_OUTPUT"
 
       - name: Pipeline
         run: npm run pipeline
@@ -55,30 +82,118 @@ jobs:
           git commit -m "data(pipeline): update indexes for $version"
           git push
 
+      - name: Yeni sürüm
+        id: after
+        run: echo "version=$(npm run --silent data:version)" >> "$GITHUB_OUTPUT"
+
       - name: Bayatlama kontrolü
         run: npm run pipeline:freshness
 
-      # Bildirim: açık bir issue varsa yorum ekle, yoksa aç. Aynı arıza her gün
-      # yeni issue açmasın diye başlığa göre eşleşir.
+      # Asıl tutarlılık kontrolü. pipeline:freshness verinin YAPISAL olarak
+      # yerinde olduğunu ölçüyor; bu adım kodun varsayımlarının hâlâ doğru
+      # olduğunu ölçüyor. 19 test dosyasının 11'i data/ okuyor ve en keskini
+      # feasibility.test.ts: ABSENT_APIS listesini gerçek index.d.ts'e karşı
+      # sınıyor. Mojang SimulatedPlayer'ı stable modüle taşırsa
+      # check_feasibility'nin kuralı yalan olur ve burası kırmızıya döner.
+      #
+      # Adım kendisi işi kırmızıya DÜŞÜRMÜYOR: sonraki bildirim adımlarının
+      # koşması ve sürüm bildiriminin de düşmemesi gerekiyor. Sonuç output'a
+      # yazılıyor.
+      - name: Kodu taze veriye karşı doğrula
+        id: verify
+        run: |
+          set +e
+          { npm run typecheck && npm test; } > "$RUNNER_TEMP/verify.log" 2>&1
+          code=$?
+          set -e
+          tail -n 40 "$RUNNER_TEMP/verify.log"
+          if [ "$code" -eq 0 ]; then
+            echo "failed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "failed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Üç bildirim yolu, üçü de .github/scripts/notify-issue.sh üzerinden:
+      # aynı başlıklı açık issue varsa yorum ekler, yoksa açar. Başlıklar
+      # BİLEREK ayrı — tekilleştirme başlığa bakıyor ve bunlar farklı arızalar.
+
+      # 1. Pipeline'ın kendisi patladı: upstream yolu değişti, modül sürümü
+      #    eşleşmedi, veri yazılamadı. `failure()` bunu yakalar çünkü doğrulama
+      #    adımı işi kırmızıya düşürmüyor.
       - name: Başarısızlığı bildir
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
-          TITLE: "Veri pipeline'ı başarısız"
+          ISSUE_ASSIGNEE: ${{ github.repository_owner }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          body="Günlük veri pipeline'ı başarısız oldu.
+          {
+            echo "Günlük veri pipeline'ı başarısız oldu."
+            echo
+            echo "Koşu: $RUN_URL"
+            echo "Tarih: $(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo
+            echo "Olası sebepler: upstream yol değişikliği, npm modül sürümü"
+            echo "eşleşmemesi veya sürüm biçiminin beklenenden farklı gelmesi."
+            echo "Ayrıntı için koşu günlüğüne bakın."
+          } | bash .github/scripts/notify-issue.sh "Veri pipeline'ı başarısız"
 
-          Koşu: $RUN_URL
-          Tarih: $(date -u '+%Y-%m-%d %H:%M UTC')
+      # 2. Veri geldi ama kodun varsayımı artık doğrulanmıyor. Sorulan soru
+      #    buydu: "kaynak güncellenince kodumun hâlâ geçerli olduğunu nasıl
+      #    anlarım."
+      - name: Tutarsızlığı bildir
+        if: always() && steps.verify.outputs.failed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_ASSIGNEE: ${{ github.repository_owner }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo "Taze veri commit edildi ama kod ona karşı doğrulanamadı."
+            echo
+            echo "Sürüm: \`${{ steps.after.outputs.version }}\`"
+            echo "Koşu: $RUN_URL"
+            echo
+            echo "**Bu, verinin yanlış olduğu anlamına gelmez.** Belgelenmiş bir"
+            echo "varsayımın artık doğrulanmadığı anlamına gelir — düzeltme kodda,"
+            echo "kural yeniden ölçülüp güncellenmeli. Veri bilerek yine de"
+            echo "commit edildi: cron main'de koşuyor ve üretimin verisi taze"
+            echo "kalmalı."
+            echo
+            echo '```'
+            tail -n 60 "$RUNNER_TEMP/verify.log"
+            echo '```'
+          } | bash .github/scripts/notify-issue.sh "Yeni veri kodla tutarsız"
 
-          Olası sebepler: upstream yol değişikliği, npm modül sürümü eşleşmemesi
-          veya sürüm biçiminin beklenenden farklı gelmesi. Ayrıntı için koşu
-          günlüğüne bakın."
-          number=$(gh issue list --state open --json number,title \
-            --jq "[.[] | select(.title == \"$TITLE\") | .number] | first // empty")
-          if [ -n "$number" ]; then
-            gh issue comment "$number" --body "$body"
-          else
-            gh issue create --title "$TITLE" --body "$body"
-          fi
+      # 3. Oyun sürümü atladı. Arıza değil, bilgi — her şey yeşilse de gelir.
+      #    Başlıkta sürümler var, yani her atlama kendi issue'sunu alıyor;
+      #    aynı atlama için ikinci koşu yorum ekler.
+      #
+      #    `after` boş kontrolü şart: pipeline erken patlarsa o adım atlanır,
+      #    çıktısı boş kalır ve boş != önceki olduğu için sahte bildirim giderdi.
+      - name: Yeni sürümü bildir
+        if: >-
+          always()
+          && steps.after.outputs.version != ''
+          && steps.before.outputs.version != steps.after.outputs.version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_ASSIGNEE: ${{ github.repository_owner }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          BEFORE: ${{ steps.before.outputs.version }}
+          AFTER: ${{ steps.after.outputs.version }}
+          VERIFY_FAILED: ${{ steps.verify.outputs.failed }}
+        run: |
+          {
+            npm run --silent version:summary -- "$BEFORE" "$AFTER"
+            echo
+            if [ "$VERIFY_FAILED" = "true" ]; then
+              echo "Testler: **KIRMIZI** — ayrıntı \"Yeni veri kodla tutarsız\" issue'sunda."
+            elif [ "$VERIFY_FAILED" = "false" ]; then
+              echo "Testler: yeşil. Kod bu sürümle tutarlı."
+            else
+              echo "Testler: koşmadı."
+            fi
+            echo
+            echo "Koşu: $RUN_URL"
+          } | bash .github/scripts/notify-issue.sh "Yeni Bedrock sürümü: $BEFORE → $AFTER"
