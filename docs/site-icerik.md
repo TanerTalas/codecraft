@@ -839,10 +839,35 @@ yazıyor.
 
 **Üreticinin "version/refresh" seçeneği kapalı bırakıldı ve gerek olmadığı
 ölçüldü.** O seçeneğin tek işi enjekte edilen etiketlere `?v=` eklemek. Next
-zaten her ikon URL'sine içerik hash'i koyuyor (yukarıdaki sorgu dizeleri),
-yani önbellek kırma dosyanın kendisinden geliyor. "Skip metadata injection" de
-seçiliydi: enjekte edilecek statik HTML yok, `<head>` `metadata` export'undan
-üretiliyor.
+zaten her ikon URL'sine bir hash koyuyor (yukarıdaki sorgu dizeleri), yani
+önbellek kırma elle tutulan bir sayaçtan değil yapıdan geliyor. "Skip metadata
+injection" de seçiliydi: enjekte edilecek statik HTML yok, `<head>` `metadata`
+export'undan üretiliyor.
+
+> ~~"Next her ikon URL'sine İÇERİK hash'i koyuyor, önbellek kırma dosyanın
+> kendisinden geliyor."~~ YANLIŞ, aynı gün üretimden ölçüldü: dosyalar bayt
+> bayt aynıyken hash yerel yapıda `favicon.3qgwc9z0zwor9.ico`, üretim
+> yapısında `favicon.22rinc7xtik8-.ico` çıktı. Yani hash içeriğe değil YAPIYA
+> bağlı — her dağıtım ikonlara yeni URL veriyor. Sonuç değişmiyor (version
+> parametresi yine gereksiz), gerekçe değişiyor.
+
+### Üretimden doğrulandı (05-09-2026)
+
+`main`'e dağıtıldıktan sonra altı URL'nin altısı da çekildi. Etiketler
+üretimde de yukarıdaki beşin aynısı, hash'ler dışında.
+
+| URL | Kod | Tip | Bayt |
+|---|---|---|---|
+| `/favicon.ico` | 200 | `image/vnd.microsoft.icon` | 15.086 |
+| `/icon.png` | 200 | `image/png` | 9.633 |
+| `/icon.svg` | 200 | `image/svg+xml` | 13.350 |
+| `/apple-icon.png` | 200 | `image/png` | 15.783 |
+| `/icon-192.png` | 200 | `image/png` | 17.085 |
+| `/icon-512.png` | 200 | `image/png` | 54.887 |
+
+`/manifest.webmanifest` de 200 ve gövdesi `manifest.ts`in ürettiğiyle birebir
+aynı. İlk iki denemede 404 geldi — dağıtım daha bitmemişti, ölçüm erken
+yapılmıştı.
 
 **Üreticinin manifest'inde iki hata vardı, ikisi de düzeltildi:**
 
