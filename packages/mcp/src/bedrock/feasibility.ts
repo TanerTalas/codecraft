@@ -39,7 +39,17 @@ export type FeasibilityRule = {
 export const ABSENT_APIS: Record<Category, string[]> = {
   // Girdi OKUNABİLİR (playerButtonInput) ve KISITLANABİLİR
   // (PlayerInputPermissions) ama ÜRETİLEMEZ. SimulatedPlayer yalnızca
-  // @minecraft/server-gametest içinde ve o modül bu veri kümesinde yok.
+  // @minecraft/server-gametest içinde.
+  //
+  // Buradaki yokluk ölçümü BİLEREK yalnız @minecraft/server üzerinde koşuyor
+  // (bkz. test). O modül veri kümesinde ayrıca duruyor —
+  // script-types/@minecraft/server-gametest/1.0.0-beta/ — ve SimulatedPlayer
+  // orada var. Kuralın dayanağı "hiçbir yerde yok" değil, "shipped bir
+  // behavior pack'in kullanabileceği stable modülde yok".
+  //
+  // Bu yorum 05-09-2026'da düzeltildi: "o modül bu veri kümesinde yok"
+  // yazıyordu ve artık yanlıştı, gametest tipleri çekiliyor. İngilizce
+  // evidence metni ("beta-only module") doğruydu, yanlış olan yalnız yorumdu.
   "input-simulation": ["SimulatedPlayer", "simulateUse", "simulateBreak", "sendKey"],
   filesystem: ["readFile", "writeFile", "readFileSync", "FileSystem"],
   network: ["XMLHttpRequest", "WebSocket", "HttpRequest", "HttpClient"],
@@ -85,6 +95,32 @@ const RULES: FeasibilityRule[] = [
       /(hold|press|spam)\w*\s+(down\s+)?(the\s+)?(key|button|mouse|left|right)/i,
       /simulate\s+\w*\s*(input|click|key|mouse|player|press)/i,
       /without\s+(me\s+)?(touching|pressing|using|holding)\s+(the\s+)?(keyboard|mouse|key|button)/i,
+
+      // "otomatik" ile fiil arasında boşluk (05-09-2026). Ölçülen kayıp:
+      // "Crosshair taşın üstündeyken otomatik olarak o bloğu kırmaya
+      // başlasın" isteği `blocked: false` döndü. Yukarıdaki
+      // /otomatik\s*(...)/ kalıbı fiili BİTİŞİK arıyor, araya "olarak o
+      // bloğu" giriyor. Senaryo 4 ile aynı sınıfta üçüncü vaka.
+      //
+      // Genişletme iki yerden dar tutuldu, çünkü satır 67-71'deki gerekçe
+      // ("otomatik <şey>" tek başına engellenmez) hâlâ geçerli:
+      //   1. Araya en fazla 25 karakter, ve cümle sonu işaretleri hariç —
+      //      iki ayrı cümle birleştirilip yanlış eşleşme üretmesin.
+      //   2. Fiil kökü TEK BAŞINA yetmiyor, bir çekim eki de gerekiyor.
+      //      Bu şart ölçülerek eklendi: eksiz hâli "otomatik olarak kazan
+      //      dolsun", "otomatik olarak kesin bir sayı göster", "otomatik
+      //      olarak kırmızı yün ver", "otomatik olarak vurgu rengini
+      //      değiştir" isteklerini yanlış engelliyordu — hepsi yapılabilir.
+      //      Ek şartıyla dördü de geçiyor.
+      /otomatik[^.!?\n]{0,25}?\b(t[ıi]kla|vur|kaz|k[ıi]r|kes)(s[ıiuü]n|m[ae]|m[ıi]ş|acak|ecek|[ıiuü]yor|ar|er)/i,
+
+      // İngilizce karşılığı. Aynı 25 karakterlik sınır: "automatically start
+      // mining" geçiyor, "automatically place a block and break the old one"
+      // geçmiyor (boşluk 25'i aşıyor) — ikincisi yapılabilir bir istek.
+      /automatic(ally)?[^.!?\n]{0,25}?\b(click|min(e|ing)|break|dig|attack|hit|chop)/i,
+      // İsim hâlleri. Fiil değil isim arandığı için sınır gerekmiyor;
+      // "autofarm" BİLEREK yok, otomatik çiftlik yapılabilir bir istek.
+      /\bauto[\s-]?(clicker|mine|miner|mining|breaker|digger)\b/i,
     ],
     reason:
       "@minecraft/server cannot simulate player input. It can read input " +
@@ -97,10 +133,24 @@ const RULES: FeasibilityRule[] = [
       "is published as a beta-only module and is meant for automated GameTest runs, " +
       "not for shipped behavior packs.",
     alternative:
-      "Two options: (1) a behavior pack that produces the desired outcome " +
-      "directly — for example, instead of \"hold the button to mine\", chain " +
-      "mining that also breaks the neighbouring blocks of the block you broke; " +
-      "(2) an automation script that runs outside the game (Python).",
+      "Two options. (1) A behavior pack that produces the desired outcome " +
+      "directly instead of faking the input. The general recipe is to read the " +
+      "state the input would have acted on and act on it yourself: " +
+      "Player.getBlockFromViewDirection gives the block under the crosshair, " +
+      "Block.setType removes it, LootTableManager.generateLootFromTable(table, " +
+      "tool) produces the drops, and world.afterEvents.playerButtonInput gives " +
+      "you a toggle. Chain mining — breaking the neighbours of the block the " +
+      "player broke — is the same idea in a simpler form. " +
+      "(2) An automation script that runs outside the game (Python) and holds " +
+      "the real key or mouse button. Prefer (2) when the request asks for " +
+      "vanilla fidelity — mining time per tool, durability loss, correct " +
+      "drops — because there the game still does the work and that fidelity is " +
+      "free, whereas a pack would have to reimplement all of it and every " +
+      "approximation shows. Prefer (1) when the behaviour has to depend on game " +
+      "state an outside script cannot see, such as which block is targeted. " +
+      "You usually cannot have both: the only bridge between the game and an " +
+      "outside process is the /connect WebSocket, and that requires cheats to " +
+      "be enabled in the world.",
   },
   {
     category: "filesystem",

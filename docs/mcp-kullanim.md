@@ -1287,3 +1287,92 @@ değiştirilecekti.
 
 Üretilen **paketlerin** hiçbiri oyuna yüklenmedi. Doğrulanan tek şey komut
 yolu. `docs/VALIDATION-LIMITS.md`'nin cümlesi paketler için aynen geçerli.
+
+## Üçüncü ölçüm — 05-09-2026, gerçek bir kullanıcı isteği
+
+Bu sefer senaryo listesinden değil, kullanıcının kendi ihtiyacından geldi:
+fare sol tuşu bozuk, hilelerin kapalı olduğu survival dünyasında crosshair
+toprak/çim/taş üstündeyken kazma kendiliğinden başlasın, açma/kapama tuşu
+olsun, **hile hissi olmasın** (alet süreye göre kırsın, dayanıklılık düşsün).
+
+### Bulgu — `check_feasibility` isteği kaçırdı
+
+İstek üretimdeki uca kullanıcının kendi cümlesiyle soruldu:
+
+```json
+{"blocked": false}
+```
+
+Bu bir yanlış negatif. İlgili üç tetikleyici tek tek koşuldu, üçü de eşleşmedi:
+
+| Tetikleyici | Sonuç |
+|---|---|
+| `/otomatik\s*(t[ıi]kla\|vur\|kaz\|k[ıi]r)/i` | false |
+| `/bas[ıi]l[ıi]\s*tut/i` | false |
+| `/(klavye\|fare\|mouse\|tu[şs]a?)\w*\s*(dokun\|bas\|de[ğg])\w*m[ae]/i` | false |
+
+Sebep: cümlede "otomatik olarak o bloğu **kırmaya** başlasın" geçiyor. Kalıp
+`otomatik` ile fiili **bitişik** arıyor, araya "olarak o bloğu" giriyor.
+
+**Senaryo 4 ile aynı sınıfta üçüncü vaka.** Orada da modeli durduran şey araç
+değil kendi bilgisi olmuştu. Tetikleyici listesi bir regex listesi, doğası
+gereği eksik kalıyor; kaydedilen şey kapsamın tamamlandığı değil, ölçülen
+kaybın sabitlendiği.
+
+### Düzeltme ve fiyatı
+
+`otomatik` ile fiil arasına en fazla 25 karakter (cümle sonu işaretleri hariç)
+boşluk açıldı, İngilizce karşılığı da eklendi. Satır 67-71'deki "otomatik
+`<şey>` tek başına engellenmez" gerekçesi geçerli kaldığı için genişletme iki
+yerden daraltıldı.
+
+İkinci daraltma **ölçülerek** kondu ve asıl kayda değer olan o: fiil kökü tek
+başına yetmiyor, bir çekim eki de gerekiyor. Eksiz hâli şu dördünü yanlış
+engelliyordu, dördü de tamamen yapılabilir istek:
+
+| İstek | Kök olarak eşleşen |
+|---|---|
+| "Otomatik olarak **kazan** suyla dolsun" | `kaz` |
+| "Otomatik olarak **kesin** bir sayı göster" | `kes` |
+| "Otomatik olarak **kırmızı** yün bloğu versin" | `kır` |
+| "Otomatik olarak **vurgu** rengini değiştir" | `vur` |
+
+Ek şartıyla 9 istek yakalanıyor, 18 yanlış-pozitif adayının hiçbiri takılmıyor.
+Testte sabit: `packages/mcp/test/feasibility.test.ts`, iki yeni test.
+
+### Bayat yorum düzeltildi
+
+`feasibility.ts` içinde "`@minecraft/server-gametest` bu veri kümesinde yok"
+yazıyordu. Artık yanlış: `data/1.26.40.5/script-types/@minecraft/server-gametest/1.0.0-beta/`
+duruyor ve `SimulatedPlayer` orada 8 kez geçiyor. İngilizce `evidence` metni
+("beta-only module") doğruydu — kuralın dayanağı "hiçbir yerde yok" değil,
+"shipped bir behavior pack'in kullanabileceği stable modülde yok". Yorum
+düzeltildi, kural değişmedi.
+
+### İkinci bulgu — `alternative` metni bu vakada eksik kalıyordu
+
+Araç doğru cevabı verse bile eski `alternative` metni yalnızca zincirleme
+kazmayı örnek veriyordu. Bu istekte doğru cevap **oyunun dışından bir script**
+ve nedeni de metinde yoktu.
+
+Ölçülen gerekçe şu: kullanıcı vanilla sadakati istiyor (alete göre kırma
+süresi, dayanıklılık kaybı, doğru düşen eşya). Dışarıdan bir script sol tuşu
+basılı tutar ve kazmayı **oyun** yapar, yani o sadakat bedava gelir. Behavior
+pack ise kazmayı yeniden yazmak zorunda — sertlik, alet hızı, Efficiency,
+Haste, dayanıklılık, loot — ve her yaklaşıklık görünür.
+
+İki yolun birleştirilemediği de ölçülü: oyunla dışarısı arasındaki tek kanal
+`/connect` ve `docs/WEBSOCKET.md` (30-08-2026) o kanalın **dünyada hileler
+açık** olmasını şart koştuğunu kaydediyor. Hile kapalıysa kanal yok.
+
+`alternative` bu ayrımı taşıyacak biçimde yeniden yazıldı: (1) ne zaman pack —
+davranış dışarıdan görülemeyen oyun durumuna bağlıysa, ve genel tarif
+(`getBlockFromViewDirection` → `setType` → `generateLootFromTable` →
+`playerButtonInput`); (2) ne zaman dış script — vanilla sadakati istendiğinde;
+ve ikisinin neden birleştirilemediği.
+
+### Bu ölçümde henüz yapılmayan
+
+Kullanıcıya verilen Python script'i **oyunda koşulmadı**. Bedrock'un sentetik
+`SendInput` fare girdisini kabul edip etmediği bu planın dayandığı tek
+doğrulanmamış varsayım; ölçülünce buraya yazılacak.

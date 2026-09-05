@@ -133,3 +133,56 @@ test("genişletme yapılabilir istekleri engellemiyor", () => {
     assert.equal(checkFeasibility(request).blocked, false, request);
   }
 });
+
+/**
+ * "otomatik" ile fiil arasına kelime giren istek.
+ *
+ * Ölçüldü 05-09-2026 (docs/mcp-kullanim.md): kullanıcının kendi cümlesi MCP
+ * ucundan geçirildi ve check_feasibility `blocked: false` döndü. İlgili üç
+ * tetikleyici tek tek koşuldu, üçü de eşleşmedi; sebebi /otomatik\s*(fiil)/
+ * kalıbının fiili BİTİŞİK araması, cümlede araya "olarak o bloğu" girmesi.
+ * Senaryo 4 ile aynı sınıfta üçüncü vaka.
+ *
+ * Bu testin işi kapsamı genişletmek değil, ÖLÇÜLEN kaybı sabitlemek —
+ * senaryo 4 testinin yanındaki not aynen geçerli.
+ */
+test("otomatik ile fiil arasına kelime giren istek de yakalanır", () => {
+  const result = checkFeasibility(
+    "Crosshair toprak, çim veya taş bloğun üstündeyken otomatik olarak o bloğu " +
+      "kırmaya başlasın. Hilelerin kapalı olduğu tek kişilik dünyada kullanacağım.",
+  );
+  assert.equal(result.blocked, true);
+  assert.equal(result.blocked && result.category, "input-simulation");
+
+  for (const request of [
+    "Otomatik olarak taşı kazsın",
+    "Otomatik olarak ağaç kessin",
+    "automatically break the block I am looking at",
+    "automatically start mining the stone in front of me",
+    "I want an auto miner",
+  ]) {
+    assert.equal(checkFeasibility(request).blocked, true, request);
+  }
+});
+
+test("aradaki boşluğa izin vermek yapılabilir istekleri engellemiyor", () => {
+  // Bu liste yukarıdaki genişletmenin fiyatı. Fiil köküne çekim eki şartı
+  // ÖLÇÜLEREK kondu: eksiz hâlde "kazan", "kesin", "kırmızı" ve "vurgu"
+  // kelimeleri kök olarak eşleşiyor ve dördü de yanlış engelleniyordu.
+  for (const request of [
+    "Otomatik olarak kapı açılsın",
+    "Yakut cevheri otomatik olarak yer altında oluşsun",
+    "Otomatik olarak her gece bir zombi belirsin",
+    "Otomatik olarak kazan suyla dolsun",
+    "Otomatik olarak kazandığım puanı ekranda göster",
+    "Otomatik olarak kırmızı yün bloğu versin",
+    "Otomatik olarak kesin bir sayı göster",
+    "Otomatik olarak vurgu rengini değiştir",
+    "spawn a zombie automatically every thirty seconds",
+    "the door should open automatically",
+    "automatically fill the cauldron with water",
+    "build an automatic farm",
+  ]) {
+    assert.equal(checkFeasibility(request).blocked, false, request);
+  }
+});
