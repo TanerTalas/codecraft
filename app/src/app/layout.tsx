@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     template: "%s · CodeCraft",
   },
   description:
-    "An MCP server that checks whether Minecraft Bedrock content will actually load. Nine read-only tools for schema, command, script and pack validation. You bring the model.",
+    "An MCP server that checks whether Minecraft Bedrock content will actually load. Nine read-only tools for schema, command, script and pack validation.",
   applicationName: "CodeCraft",
   openGraph: {
     type: "website",

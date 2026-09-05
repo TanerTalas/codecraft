@@ -8,7 +8,7 @@ import { ENDPOINT, failures, steps, toolCards } from "@/content/site";
 export const metadata: Metadata = {
   title: "CodeCraft — MCP server for Minecraft Bedrock",
   description:
-    "Bedrock fails silently: an invented format_version, a missing identifier, an API that is not in @minecraft/server. CodeCraft is an MCP server with nine read-only tools that measure whether the generated content will actually load.",
+    "Minecraft Bedrock fails silently. An MCP server with nine read-only tools that check whether the content your model generated will actually load in the game.",
   alternates: { canonical: "/" },
 };
 
