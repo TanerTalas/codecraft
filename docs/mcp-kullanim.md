@@ -1376,3 +1376,34 @@ ve ikisinin neden birleştirilemediği.
 Kullanıcıya verilen Python script'i **oyunda koşulmadı**. Bedrock'un sentetik
 `SendInput` fare girdisini kabul edip etmediği bu planın dayandığı tek
 doğrulanmamış varsayım; ölçülünce buraya yazılacak.
+
+### Oyun içi ölçüm — dış script çalıştı
+
+**05-09-2026, kullanıcının kendi survival dünyası, hileler kapalı.** Yukarıdaki
+"henüz yapılmayan" maddesi kapandı.
+
+`autohold.py` oyunun yanında koşuldu. Sonuç: **Bedrock sentetik `SendInput`
+fare girdisini kabul ediyor.** Planın dayandığı tek doğrulanmamış varsayım
+buydu, doğrulandı. AutoHotkey'e geri çekilmek gerekmedi.
+
+| Ne | Sonuç |
+|---|---|
+| Sol tuşun basılı tutulması → kazma başlıyor mu | **çalıştı** |
+| F8 ile aç/kapa | **çalıştı**, oyunla çakışma bildirilmedi |
+| Dayanıklılık kaybı ve düşen eşya | **ayrıca doğrulanmadı** — kullanıcı bildirmedi, ölçülmedi sayılır |
+
+Üçüncü satır bilerek "ölçülmedi" duruyor. Beklenti, kazmayı oyunun kendisi
+yaptığı için vanilla olması yönünde, ama beklenti ölçüm değil.
+
+### Bilinen sınırın oyunda göründüğü yer
+
+Kullanıcı tek bir davranış bildirdi: script açıkken **baktığı her bloğu**
+kırmaya çalışıyor, yalnız toprak/çim/taşı değil. Bu bir hata değil, tasarımın
+kaydedilmiş bedeli — script oyunun dışında koşuyor, crosshair'in altındaki
+bloğu göremez. O bilgiyi ancak `Player.getBlockFromViewDirection` verir ve o da
+yalnız pack içinde çalışır; pack ile dış süreç arasındaki tek kanal `/connect`
+ve o hile açık olmasını istiyor.
+
+Kayda değer olan, kullanıcının bunu sorun saymaması: "hile hissi olmasın"
+şartıyla "blok filtresi olsun" şartı çakışıyordu ve doğru takas yapılmış.
+Filtre pratikte toggle'ın kendisi oluyor.
