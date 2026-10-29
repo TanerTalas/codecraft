@@ -11,7 +11,60 @@
       "type": "object",
       "title": "Component",
       "description": "The components of this block.",
-      "additionalProperties": true,
+      "additionalProperties": {
+        "title": "Block Custom Component",
+        "description": "A block custom component instance.",
+        "$comment": "UNDOCUMENTED",
+        "anyOf": [
+          {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "not": { "type": ["array", "object"] }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": {
+                    "not": { "type": ["array", "object"] }
+                  }
+                },
+                {
+                  "not": { "type": ["array", "object"] }
+                }
+              ]
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "not": { "type": ["array", "object"] }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": {
+                    "not": { "type": ["array", "object"] }
+                  }
+                },
+                {
+                  "not": { "type": ["array", "object"] }
+                }
+              ]
+            }
+          },
+          {
+            "not": { "type": ["array", "object"] }
+          }
+        ]
+      },
       "properties": {
         //Components
         "minecraft:block_entity": { "$ref": "./components/block_entity.json" },
@@ -149,6 +202,18 @@
           "components": {
             "type": "object",
             "title": "Component",
+            "propertyNames": {
+              "not": {
+                "enum": [
+                  "minecraft:block_entity",
+                  "minecraft:embedded_visual",
+                  "minecraft:flower_pottable",
+                  "minecraft:item_visual",
+                  "minecraft:redstone_consumer",
+                  "minecraft:support"
+                ]
+              }
+            },
             "$ref": "#/definitions/components_ref"
           }
         }

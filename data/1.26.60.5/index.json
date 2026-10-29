@@ -1,0 +1,167 @@
+{
+  "version": "1.26.60.5",
+  "minEngineVersion": [
+    1,
+    26,
+    60
+  ],
+  "releaseDate": "27-10-2026",
+  "counts": {
+    "biomes": 90,
+    "blocks": 1466,
+    "camera-presets": 7,
+    "cooldown-category": 6,
+    "dimensions": 3,
+    "effects": 38,
+    "enchantments": 42,
+    "entities": 131,
+    "features": 25,
+    "items": 1627,
+    "potion-effects": 49,
+    "potion-types": 3
+  },
+  "sources": {
+    "bedrockSamples": {
+      "repo": "Mojang/bedrock-samples",
+      "ref": "main"
+    },
+    "mojangSchemas": {
+      "index": "schemas-index.json",
+      "files": 1029
+    },
+    "commands": {
+      "file": "commands.json",
+      "commands": 84,
+      "overloads": 281,
+      "enums": 232,
+      "structuralTypes": [
+        "BLOCK_STATE_ARRAY",
+        "CLOCK_TIMEMARKER_NAME",
+        "CODEBUILDERARGS",
+        "COMPAREOPERATOR",
+        "EXECUTECHAINEDOPTION_0",
+        "FULLINTEGERRANGE",
+        "ID",
+        "INT",
+        "JSON_OBJECT",
+        "MESSAGE_ROOT",
+        "OPERATOR",
+        "PATHCOMMAND",
+        "POI_TAG",
+        "POI_TYPE",
+        "POSITION",
+        "POSITION_FLOAT",
+        "RAWTEXT",
+        "RVAL",
+        "SELECTION",
+        "VAL",
+        "WILDCARDINT",
+        "WILDCARDSELECTION",
+        "postfix_d",
+        "postfix_l",
+        "postfix_s",
+        "postfix_t"
+      ]
+    },
+    "molang": {
+      "file": "molang.json",
+      "queries": 318,
+      "math": 61,
+      "removed": 6
+    },
+    "references": {
+      "particles": {
+        "file": "particles.json",
+        "count": 192
+      },
+      "file": "references.json",
+      "sounds": 1851,
+      "music": 48,
+      "lootTables": 309,
+      "tradeTables": 27
+    },
+    "components": {
+      "file": "components.json",
+      "counts": {
+        "blockComponents": 32,
+        "blockTriggers": 7,
+        "entityComponents": 103,
+        "entityGoals": 171,
+        "entityAttributes": 2,
+        "entityProperties": 59,
+        "entityEvents": 4,
+        "featureTypes": 29,
+        "biomeComponents": 27,
+        "clientBiomeComponents": 14,
+        "entitySchemaComponents": 406,
+        "blockSchemaComponents": 52
+      }
+    },
+    "eventOrder": {
+      "file": "event-order.json",
+      "versions": 33
+    },
+    "blockception": {
+      "repo": "Blockception/Minecraft-bedrock-json-schemas",
+      "ref": "main",
+      "path": "../blockception/source",
+      "files": 1159,
+      "compiled": {
+        "path": "../blockception/compiled",
+        "map": "../blockception/schema-map.json",
+        "files": 61,
+        "missing": [
+          "resource/cubemaps/cubemaps.json"
+        ]
+      },
+      "hash": "sha256:386664e925775a03b90e0486ab312c45fa2a3ca748e38782f7caccc7b6ffb11d"
+    },
+    "scriptTypes": {
+      "path": "script-types",
+      "modules": {
+        "@minecraft/common": {
+          "stable": "1.3.0",
+          "beta": null
+        },
+        "@minecraft/server": {
+          "stable": "2.11.0",
+          "beta": "2.12.0-beta"
+        },
+        "@minecraft/server-ui": {
+          "stable": "2.3.0",
+          "beta": "2.4.0-beta"
+        },
+        "@minecraft/server-gametest": {
+          "stable": null,
+          "beta": "1.0.0-beta"
+        },
+        "@minecraft/server-net": {
+          "stable": null,
+          "beta": "1.0.0-beta"
+        },
+        "@minecraft/server-admin": {
+          "stable": null,
+          "beta": "1.0.0-beta"
+        },
+        "@minecraft/server-graphics": {
+          "stable": "1.0.0",
+          "beta": "1.1.0-beta"
+        },
+        "@minecraft/diagnostics": {
+          "stable": null,
+          "beta": "1.0.0-beta"
+        },
+        "@minecraft/debug-utilities": {
+          "stable": null,
+          "beta": "1.0.0-beta"
+        }
+      }
+    },
+    "textures": {
+      "file": "textures.json",
+      "item": 504,
+      "terrain": 1367
+    },
+    "releaseNotes": null
+  }
+}
