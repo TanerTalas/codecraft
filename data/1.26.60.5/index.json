@@ -105,7 +105,7 @@
       "repo": "Blockception/Minecraft-bedrock-json-schemas",
       "ref": "main",
       "path": "../blockception/source",
-      "files": 1159,
+      "files": 1163,
       "compiled": {
         "path": "../blockception/compiled",
         "map": "../blockception/schema-map.json",
@@ -114,7 +114,7 @@
           "resource/cubemaps/cubemaps.json"
         ]
       },
-      "hash": "sha256:386664e925775a03b90e0486ab312c45fa2a3ca748e38782f7caccc7b6ffb11d"
+      "hash": "sha256:62aeae2f3e37e2d7692be9b7594be18a9e8b8063ddef5a3e3d7b975286f29378"
     },
     "scriptTypes": {
       "path": "script-types",
